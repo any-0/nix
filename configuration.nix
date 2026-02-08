@@ -66,7 +66,7 @@
   boot.supportedFilesystems = [ "cifs" ];
 
   fileSystems."/mnt/nas" = {
-    device = "//server/share";
+    device = "//192.168.0.227/home";
     fsType = "cifs";
     options = [
       "credentials=/home/julian/nix/secrets/smb-nas.cred"
