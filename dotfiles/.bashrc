@@ -144,3 +144,4 @@ tmux_auto() {
 bind -x '"\C-t": tmux_auto'
 
 export PATH="$HOME/nix/scripts:$PATH"
+eval "$(direnv hook bash)"

@@ -18,10 +18,12 @@
   system.stateVersion = "25.11"; # never change
   users.users.julian = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "seat" "video" "input"];
+    extraGroups = [ "wheel" "networkmanager" "seat" "video" "input" "docker" ];
   };
   environment.systemPackages = with  pkgs; [
     cifs-utils
+    docker
+    docker-compose
   ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -30,14 +32,16 @@
     jetbrains-mono
   ];
 
-  programs.bash.loginShellInit = ''
-    # Auto-start niri only on the real first VT login, not inside terminal emulators.
-    if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" = 1 ] && [ "$(tty)" = /dev/tty1 ]; then
-      export WLR_BACKENDS=headless
-      export WLR_RENDERER=pixman
-      exec niri
-    fi
-    '';
+programs.bash.loginShellInit = ''
+  if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" = 1 ] && [ "$(tty)" = /dev/tty1 ]; then
+    export XDG_CURRENT_DESKTOP=niri
+    export XDG_SESSION_TYPE=wayland
+    export XDG_SESSION_DESKTOP=niri
+    exec niri
+  fi
+'';
+
+
   programs.niri.enable = true;
   services.dbus.enable = true;
   hardware.graphics.enable = true;
@@ -51,16 +55,24 @@
   security.rtkit.enable = true;
   xdg.portal = {
     enable = true;
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-gtk
-      xdg-desktop-portal-wlr
-    ];
+    wlr.enable = true;
+    config.common.default = [ "wlr" ];
   };
   console.keyMap = "de";
   services.xserver.videoDrivers = [ "virtio" ];
   services.spice-vdagentd.enable = true;
   services.openssh.enable = true;
   services.openssh.settings.PasswordAuthentication = true;
+
+
+nix.gc = {
+  automatic = true;
+  dates = "weekly";
+  options = "--delete-older-than 7d";
+};
+
+  virtualisation.docker.enable = true;
+  virtualisation.containerd.enable = true;
 
   #SMB
   boot.supportedFilesystems = [ "cifs" ];

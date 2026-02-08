@@ -8,7 +8,7 @@ return {
 
   colors = {
     foreground = "#1a1a1a",
-    background = "#000000",
+    background = "#ffffff",
   },
 
   enable_tab_bar = false,

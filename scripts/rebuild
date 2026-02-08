@@ -8,10 +8,7 @@ git diff
 git add -A
 
 echo "Rebuilding..."
-sudo nixos-rebuild switch --flake /etc/nixos#vm &> nixos-switch.log || (
-    grep --color -n error nixos-switch.log
-    false
-)
+sudo nixos-rebuild switch --flake /etc/nixos#vm
 
 gen=$(nixos-rebuild list-generations | grep -m1 ' True$')
 git commit -m "Nix rebuild #$gen"

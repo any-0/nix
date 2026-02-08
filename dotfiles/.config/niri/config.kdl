@@ -284,7 +284,8 @@ layout {
 
 // This line starts waybar, a commonly used bar for Wayland compositors.
 spawn-at-startup "swaybg" "-i" "/home/julian/Pictures/Wallpapers/pexels-lum3n-44775-167699.jpg" "-m" "fill"
-spawn-at-startup "waybar"
+spawn-at-startup "sh" "-lc" "dbus-update-activation-environment --systemd --all; systemctl --user import-environment --all"
+spawn-at-startup "sh" "-lc" "sleep 0.5; waybar >>$HOME/waybar.log 2>&1"
 spawn-at-startup "xwayland-satellite"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:

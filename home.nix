@@ -13,11 +13,26 @@
   programs.direnv.enable = true;
   programs.direnv.nix-direnv.enable = true;
 
+programs.bash.enable = true;
+
+programs.bash.profileExtra = ''
+  # Load .bashrc for interactive shells
+  if [[ $- == *i* ]] && [ -f ~/.bashrc ]; then
+    source ~/.bashrc
+  fi
+'';
+programs.bash.bashrcExtra = builtins.readFile ./dotfiles/.bashrc;
+
+
+
   xdg.configFile."nvim".source = ./dotfiles/.config/nvim;
   xdg.configFile."niri".source = ./dotfiles/.config/niri;
-  home.file.".bashrc".source = ./dotfiles/.bashrc;
+  xdg.configFile."waybar".source = ./dotfiles/.config/waybar;
+  #home.file.".bashrc".source = ./dotfiles/.bashrc;
   home.file.".wezterm.lua".source = ./dotfiles/.wezterm.lua;
   #home.file.".tmux.conf".source = ./dotfiles/.tmux.conf;
+
+  home.sessionVariables.DOCKER_CLI_PLUGIN_EXTRA_DIRS = "${pkgs.docker-compose}/libexec/docker/cli-plugins";
 
   home.packages = with pkgs; [
     ripgrep
@@ -35,6 +50,7 @@
     gnumake
     fuzzel
     waybar
+    swaybg
     mako
     grim
     slurp
