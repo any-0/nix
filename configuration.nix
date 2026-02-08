@@ -21,6 +21,7 @@
     extraGroups = [ "wheel" "networkmanager" "seat" "video" "input"];
   };
   environment.systemPackages = with  pkgs; [
+    cifs-utils
   ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -60,4 +61,23 @@
   services.spice-vdagentd.enable = true;
   services.openssh.enable = true;
   services.openssh.settings.PasswordAuthentication = true;
+
+  #SMB
+  boot.supportedFilesystems = [ "cifs" ];
+
+  fileSystems."/mnt/nas" = {
+    device = "//server/share";
+    fsType = "cifs";
+    options = [
+      "credentials=/home/julian/nix/secrets/smb-nas.cred"
+      "uid=1000"
+      "gid=100"
+      "iocharset=utf8"
+      "x-systemd.automount"
+      "nofail"
+      "x-systemd.idle-timeout=60"
+      # sometimes needed:
+      # "vers=3.0"
+    ];
+  };
 }
