@@ -25,5 +25,11 @@
         { home-manager.users.julian = import ./home.nix; }
       ];
     };
+templates = {
+      python = {
+        path = ./templates/python;
+        description = "Python project template (direnv + shared python devshell)";
+      };
+    };
   };
 }
