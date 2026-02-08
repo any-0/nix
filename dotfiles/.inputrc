@@ -1,0 +1,8 @@
+set show-all-if-unmodified on
+set visible-stats on
+set completion-ignore-case on
+set echo-control-characters off
+#Shift Tab:
+"\e[Z": menu-complete-backward
+#Tab
+"\t": menu-complete

@@ -1,0 +1,52 @@
+{
+  "layer":   "top",
+  "position":"top",
+  "height":  16,
+  "spacing": 16,
+  "modules-right":["custom/time", "custom/date"],
+  "modules-center":  ["hyprland/workspaces"],
+  "modules-left": ["pulseaudio", "custom/bt-battery"],
+
+
+  "custom/date": {
+    "exec": "date '+%A %d/%m/%Y'",
+    "interval": 60
+  },
+  "custom/time": {
+    "exec": "date '+%H:%M'",
+    "interval": 60
+  },
+
+"hyprland/workspaces": {
+  "format": "{icon} {name}",
+  "sort-by": "number",
+  "tooltip": false,
+  "show-special": true,
+  "format-icons": {
+    "Work": "󰆍",
+    "Discord": "󰙯",
+    "Steam": "󰓓",
+    "2": "󰇧",
+    "active": "󰝥",
+    "default": ""
+  }
+},
+  "pulseaudio": {
+      "format": "VOL: {volume}%",
+      "format-muted": "VOL: muted",
+      "scroll-step": 2,
+      "tooltip": false,
+      "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+    },
+  "custom/bt-battery": {
+    "exec": "~/.config/waybar/bt-battery.sh",
+    "interval": 30,
+    "signal": 1,
+    "format": "BT: {text}%",
+    "format-icons": false,
+    "tooltip": false,
+    "escape": false,
+    "return-type": "json",
+    "on-click": "~/.config/waybar/bluetooth-toggle.sh"
+  }
+}

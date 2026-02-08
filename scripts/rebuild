@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+pushd ~/nix > /dev/null
+trap 'popd > /dev/null || true' EXIT
+
+git diff
+git add -A
+
+echo "Rebuilding..."
+sudo nixos-rebuild switch --flake /etc/nixos#vm &> nixos-switch.log || (
+    grep --color -n error nixos-switch.log
+    false
+)
+
+gen=$(nixos-rebuild list-generations | grep -m1 ' True$')
+git commit -m "Nix rebuild #$gen"
