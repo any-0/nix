@@ -24,6 +24,7 @@
     cifs-utils
     docker
     docker-compose
+    home-manager
   ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -58,6 +59,7 @@ programs.bash.loginShellInit = ''
     wlr.enable = true;
     config.common.default = [ "wlr" ];
   };
+
   console.keyMap = "de";
   services.xserver.videoDrivers = [ "virtio" ];
   services.spice-vdagentd.enable = true;

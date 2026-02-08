@@ -34,6 +34,24 @@ programs.bash.bashrcExtra = builtins.readFile ./dotfiles/.bashrc;
 
   home.sessionVariables.DOCKER_CLI_PLUGIN_EXTRA_DIRS = "${pkgs.docker-compose}/libexec/docker/cli-plugins";
 
+  systemd.user.services.waybar = {
+    Unit = {
+      Description = "Waybar";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" "dbus.service" "xdg-desktop-portal.service" ];
+      Wants = [ "xdg-desktop-portal.service" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.waybar}/bin/waybar";
+      Restart = "on-failure";
+      RestartSec = "2s";
+      Environment = "XDG_CURRENT_DESKTOP=niri";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
   home.packages = with pkgs; [
     ripgrep
     fd
