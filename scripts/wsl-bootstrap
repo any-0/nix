@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+PROFILE="${1:-julian-wsl}"
+BACKUP_EXT="${HM_BACKUP_EXT:-hm-bak}"
+
+if ! command -v nix >/dev/null 2>&1; then
+  echo "nix not found in PATH."
+  echo "Install Nix first, then re-run this script."
+  echo "Example:"
+  echo "  sh <(curl -L https://nixos.org/nix/install) --daemon"
+  exit 1
+fi
+
+if [[ -z "${WSL_DISTRO_NAME:-}" ]] && ! grep -qi microsoft /proc/version 2>/dev/null; then
+  echo "Warning: this does not look like WSL."
+  echo "Continuing anyway."
+fi
+
+if [[ "$(id -un)" != "julian" ]]; then
+  echo "Warning: current user is '$(id -un)', but flake profile is configured for user 'julian'."
+  echo "If switch fails, update username/homeDirectory in flake.nix."
+fi
+
+echo "Applying Home Manager profile '${PROFILE}' from '${REPO_DIR}'..."
+nix run github:nix-community/home-manager -- switch -b "${BACKUP_EXT}" --flake "${REPO_DIR}#${PROFILE}"
+
+echo "Done."
