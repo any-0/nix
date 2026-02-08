@@ -10,6 +10,9 @@
     defaultEditor = true;
   };
 
+  programs.direnv.enable = true;
+  programs.direnv.nix-direnv.enable = true;
+
   xdg.configFile."nvim".source = ./dotfiles/.config/nvim;
   xdg.configFile."niri".source = ./dotfiles/.config/niri;
   home.file.".bashrc".source = ./dotfiles/.bashrc;

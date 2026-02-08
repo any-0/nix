@@ -1,15 +1,18 @@
 {
   description = "Python project";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    python-dev.url = "path:/home/julian/nix/devshells/python";
-  };
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs, python-dev }:
+  outputs = { self, nixpkgs }:
   let
     system = "x86_64-linux";
+    pkgs = import nixpkgs { inherit system; };
   in {
-    devShells.${system}.default = python-dev.devShells.${system}.default;
+    devShells.${system}.default = pkgs.mkShell {
+      packages = with pkgs; [
+        python312
+      ];
+    };
   };
 }
+

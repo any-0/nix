@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+nix flake init -t "path:/home/julian/nix/templates#${1}" &&
+nix flake lock &&
+direnv allow
