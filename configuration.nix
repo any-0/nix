@@ -57,7 +57,9 @@ programs.bash.loginShellInit = ''
   xdg.portal = {
     enable = true;
     wlr.enable = true;
-    config.common.default = [ "wlr" ];
+    extraPortals = with pkgs; [ xdg-desktop-portal-gtk ];
+    config.common.default = [ "wlr" "gtk" ];
+    config.niri.default = lib.mkForce [ "wlr" "gtk" ];
   };
 
   console.keyMap = "de";

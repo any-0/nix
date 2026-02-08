@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
 set -e
 
-pushd ~/nix > /dev/null
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+
+pushd "$REPO_DIR" > /dev/null
 trap 'popd > /dev/null || true' EXIT
+
+if ! command -v git >/dev/null 2>&1; then
+  echo "git not found in PATH"
+  exit 1
+fi
 
 git diff
 git add -A
 
-echo "Rebuilding..."
-sudo nixos-rebuild switch --flake /etc/nixos#vm
+echo "Rebuilding host 'vm' from '${REPO_DIR}'..."
+sudo nixos-rebuild switch --flake "${REPO_DIR}#vm"
 
 gen=$(nixos-rebuild list-generations | grep -m1 ' True$')
 git commit -m "Nix rebuild #$gen"

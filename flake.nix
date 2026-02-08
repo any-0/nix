@@ -8,22 +8,82 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }:
+  outputs = { nixpkgs, home-manager, ... }:
+  let
+    system = "x86_64-linux";
+    username = "julian";
+    homeDirectory = "/home/julian";
+    codexOverlay = import ./overlays/codex.nix;
+
+    mkPkgs = system:
+      import nixpkgs {
+        inherit system;
+        overlays = [ codexOverlay ];
+      };
+
+    mkHome = {
+      modules,
+      tmuxClipboardCommand,
+      system ? "x86_64-linux",
+      username ? "julian",
+      homeDirectory ? "/home/julian",
+    }:
+      home-manager.lib.homeManagerConfiguration {
+        pkgs = mkPkgs system;
+        extraSpecialArgs = { inherit tmuxClipboardCommand; };
+        modules = modules ++ [
+          {
+            home.username = username;
+            home.homeDirectory = homeDirectory;
+          }
+        ];
+      };
+
+    desktopModules = [
+      ./home/common.nix
+      ./home/desktop.nix
+    ];
+
+    wslModules = [
+      ./home/common.nix
+      ./home/wsl.nix
+    ];
+  in
   {
     nixosConfigurations.vm = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
+      inherit system;
       modules = [
         ./configuration.nix
-
-        # Enable overlay for the system pkgs (and HM if using global pkgs)
+        home-manager.nixosModules.home-manager
         {
+          nixpkgs.overlays = [ codexOverlay ];
+
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = { tmuxClipboardCommand = "wl-copy"; };
+          home-manager.users.${username} = import ./home.nix;
         }
-
-        home-manager.nixosModules.home-manager
-        { home-manager.users.julian = import ./home.nix; }
       ];
+    };
+
+    homeConfigurations = {
+      julian = mkHome {
+        inherit system username homeDirectory;
+        modules = desktopModules;
+        tmuxClipboardCommand = "wl-copy";
+      };
+
+      "julian-desktop" = mkHome {
+        inherit system username homeDirectory;
+        modules = desktopModules;
+        tmuxClipboardCommand = "wl-copy";
+      };
+
+      "julian-wsl" = mkHome {
+        inherit system username homeDirectory;
+        modules = wslModules;
+        tmuxClipboardCommand = "clip.exe";
+      };
     };
   };
 }
