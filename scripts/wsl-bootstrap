@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 PROFILE="${1:-julian-wsl}"
 BACKUP_EXT="${HM_BACKUP_EXT:-hm-bak}"
+EXPERIMENTAL_FEATURES_LINE="experimental-features = nix-command flakes"
 
 if ! command -v nix >/dev/null 2>&1; then
   echo "nix not found in PATH."
@@ -22,6 +23,20 @@ fi
 if [[ "$(id -un)" != "julian" ]]; then
   echo "Warning: current user is '$(id -un)', but flake profile is configured for user 'julian'."
   echo "If switch fails, update username/homeDirectory in flake.nix."
+fi
+
+NIX_CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/nix"
+NIX_CONF_FILE="${NIX_CONF_DIR}/nix.conf"
+mkdir -p "${NIX_CONF_DIR}"
+if [[ ! -f "${NIX_CONF_FILE}" ]] || \
+  ! grep -Eq '^[[:space:]]*experimental-features[[:space:]]*=.*(nix-command.*flakes|flakes.*nix-command)' "${NIX_CONF_FILE}"; then
+  printf '%s\n' "${EXPERIMENTAL_FEATURES_LINE}" >> "${NIX_CONF_FILE}"
+fi
+
+if [[ -n "${NIX_CONFIG:-}" ]]; then
+  export NIX_CONFIG="${NIX_CONFIG}"$'\n'"${EXPERIMENTAL_FEATURES_LINE}"
+else
+  export NIX_CONFIG="${EXPERIMENTAL_FEATURES_LINE}"
 fi
 
 echo "Applying Home Manager profile '${PROFILE}' from '${REPO_DIR}'..."
