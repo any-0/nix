@@ -65,7 +65,7 @@
   #SMB
   boot.supportedFilesystems = [ "cifs" ];
 
-  fileSystems."/mnt/nas" = {
+  fileSystems."/mnt/home1" = {
     device = "//192.168.0.227/home";
     fsType = "cifs";
     options = [
@@ -76,8 +76,20 @@
       "x-systemd.automount"
       "nofail"
       "x-systemd.idle-timeout=60"
-      # sometimes needed:
-      # "vers=3.0"
+    ];
+  };
+
+  fileSystems."/mnt/home2" = {
+    device = "//192.168.0.227/home2";
+    fsType = "cifs";
+    options = [
+      "credentials=/home/julian/nix/secrets/smb-nas.cred"
+      "uid=1000"
+      "gid=100"
+      "iocharset=utf8"
+      "x-systemd.automount"
+      "nofail"
+      "x-systemd.idle-timeout=60"
     ];
   };
 }

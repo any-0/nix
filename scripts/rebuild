@@ -15,3 +15,5 @@ sudo nixos-rebuild switch --flake /etc/nixos#vm &> nixos-switch.log || (
 
 gen=$(nixos-rebuild list-generations | grep -m1 ' True$')
 git commit -m "Nix rebuild #$gen"
+
+echo "Rebuild complete!"
