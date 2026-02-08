@@ -101,70 +101,97 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
     {
         "nvim-treesitter/nvim-treesitter",
+        lazy = false,
         build = ":TSUpdate",
         dependencies = {
             "nvim-treesitter/nvim-treesitter-textobjects",
         },
         config = function()
-            require("nvim-treesitter.configs").setup({
-                ensure_installed = {
-                    "python", "cpp", "lua", "bash", "json",
-                    "yaml", "javascript", "typescript", "tsx",
-                    "html", "css", "latex", "rust"
-                },
-                highlight = { enable = true },
-                indent = { enable = true },
-                textobjects = {
-                    select = {
-                        enable = true,
-                        lookahead = true,
-                        keymaps = {
-                            ["if"] = "@function.inner",
-                            ["af"] = "@function.outer",
-                            ["a#"] = "@comment.outer",
-                            ["i#"] = "@comment.inner",
-                            ["ac"] = "@call.outer",
-                            ["ic"] = "@call.inner",
-                            ["al"] = "@loop.outer",
-                            ["il"] = "@loop.inner",
-                            ["aa"] = "@parameter.outer",
-                            ["ia"] = "@parameter.inner",
-                            ["ai"] = "@conditional.outer",
-                            ["ii"] = "@conditional.inner",
-                            ["ae"] = "@assignment.outer",
-                            ["ie"] = "@assignment.inner",
-                            ["le"] = "@assignment.lhs",
-                            ["re"] = "@assignment.rhs",
-                            ["in"] = "@number.inner",
-                        }
-                    },
-                    move = {
-                        enable = true,
-                        set_jumps = true,
-                        goto_next_start = {
-                            ["mf"] = "@function.outer",
-                            ["mc"] = "@call.outer",
-                            ["m#"] = "@comment.outer",
-                            ["ml"] = "@loop.outer",
-                            ["ma"] = "@parameter.inner",
-                            ["mi"] = "@conditional.outer",
-                            ["me"] = "@assignment.outer",
-                            ["mn"] = "@number.inner",
-                            ["mv"] = "@variable.inner",
-                        },
-                        goto_previous_start = {
-                            ["Mf"] = "@function.outer",
-                            ["Mc"] = "@call.outer",
-                            ["M#"] = "@comment.outer",
-                            ["Ml"] = "@loop.outer",
-                            ["Ma"] = "@parameter.inner",
-                            ["Mi"] = "@conditional.outer",
-                            ["Me"] = "@assignment.outer",
-                            ["Mn"] = "@number.inner",
-                        },
-                    }
-                }
+            local languages = {
+                "python", "cpp", "lua", "bash", "json",
+                "yaml", "javascript", "typescript", "tsx",
+                "html", "css", "latex", "rust",
+            }
+
+            require("nvim-treesitter").install(languages)
+
+            vim.api.nvim_create_autocmd("FileType", {
+                callback = function(args)
+                    if pcall(vim.treesitter.start, args.buf) then
+                        vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+                    end
+                end,
             })
+
+            require("nvim-treesitter-textobjects").setup({
+                select = {
+                    lookahead = true,
+                },
+                move = {
+                    set_jumps = true,
+                },
+            })
+
+            local select = require("nvim-treesitter-textobjects.select")
+            local move = require("nvim-treesitter-textobjects.move")
+
+            local select_keymaps = {
+                ["if"] = "@function.inner",
+                ["af"] = "@function.outer",
+                ["a#"] = "@comment.outer",
+                ["i#"] = "@comment.inner",
+                ["ac"] = "@call.outer",
+                ["ic"] = "@call.inner",
+                ["al"] = "@loop.outer",
+                ["il"] = "@loop.inner",
+                ["aa"] = "@parameter.outer",
+                ["ia"] = "@parameter.inner",
+                ["ai"] = "@conditional.outer",
+                ["ii"] = "@conditional.inner",
+                ["ae"] = "@assignment.outer",
+                ["ie"] = "@assignment.inner",
+                ["le"] = "@assignment.lhs",
+                ["re"] = "@assignment.rhs",
+                ["in"] = "@number.inner",
+            }
+            for keymap, capture in pairs(select_keymaps) do
+                vim.keymap.set({ "x", "o" }, keymap, function()
+                    select.select_textobject(capture, "textobjects")
+                end)
+            end
+
+            local next_start_keymaps = {
+                ["mf"] = "@function.outer",
+                ["mc"] = "@call.outer",
+                ["m#"] = "@comment.outer",
+                ["ml"] = "@loop.outer",
+                ["ma"] = "@parameter.inner",
+                ["mi"] = "@conditional.outer",
+                ["me"] = "@assignment.outer",
+                ["mn"] = "@number.inner",
+                ["mv"] = "@variable.inner",
+            }
+            for keymap, capture in pairs(next_start_keymaps) do
+                vim.keymap.set({ "n", "x", "o" }, keymap, function()
+                    move.goto_next_start(capture, "textobjects")
+                end)
+            end
+
+            local prev_start_keymaps = {
+                ["Mf"] = "@function.outer",
+                ["Mc"] = "@call.outer",
+                ["M#"] = "@comment.outer",
+                ["Ml"] = "@loop.outer",
+                ["Ma"] = "@parameter.inner",
+                ["Mi"] = "@conditional.outer",
+                ["Me"] = "@assignment.outer",
+                ["Mn"] = "@number.inner",
+            }
+            for keymap, capture in pairs(prev_start_keymaps) do
+                vim.keymap.set({ "n", "x", "o" }, keymap, function()
+                    move.goto_previous_start(capture, "textobjects")
+                end)
+            end
         end
     },
     {

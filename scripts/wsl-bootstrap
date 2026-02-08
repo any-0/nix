@@ -25,6 +25,8 @@ if [[ "$(id -un)" != "julian" ]]; then
 fi
 
 echo "Applying Home Manager profile '${PROFILE}' from '${REPO_DIR}'..."
-nix run github:nix-community/home-manager -- switch -b "${BACKUP_EXT}" --flake "${REPO_DIR}#${PROFILE}"
+nix --extra-experimental-features "nix-command flakes" \
+  run github:nix-community/home-manager -- \
+  switch -b "${BACKUP_EXT}" --flake "${REPO_DIR}#${PROFILE}"
 
 echo "Done."
