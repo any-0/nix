@@ -1,3 +1,7 @@
+-- Leader (must be before lazy)
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
 -- Opts
 
 vim.opt.number = true
@@ -18,11 +22,17 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.list = true
 vim.opt.listchars = { trail = "·" }
-vim.opt.scrolloff = 16
 vim.opt.sidescrolloff = 8
--- vim.opt.cursorline = true
 vim.opt.statuscolumn = " %l  │  "
 vim.cmd.colorscheme("anyscheme")
+vim.opt.pumheight = 5
+vim.opt.pumwidth = 30
+
+vim.cmd([[
+  cabbrev Wq wq
+  cabbrev W  w
+  cabbrev Q  q
+]])
 
 
 -- Persistent undo
@@ -34,33 +44,11 @@ local undo_root = vim.fn.stdpath('state') .. '/undo'
 vim.opt.undodir = undo_root .. '//'
 
 
--- Files are opened at the last visited line
-
-vim.api.nvim_create_autocmd("BufReadPost", {
-    callback = function()
-        local last_pos = vim.fn.line([['"]])
-        if last_pos > 1 and last_pos <= vim.fn.line("$") then
-            vim.schedule(function()
-                vim.cmd('normal! g`"zz')
-            end)
-        end
-    end,
-})
-
-
--- Upper case :wq, :w, and :q alias
-
-vim.cmd([[
-  cabbrev Wq wq
-  cabbrev W  w
-  cabbrev Q  q
-]])
-
-
 -- Keymaps
 
 vim.keymap.set({ "n", "v", "o", "i" }, "<F1>", "<Nop>")
 vim.keymap.set({ "n", "v", "o" }, "§", "^")
+vim.keymap.set({ "n", "v", "o" }, "<S-§>", "^")
 vim.keymap.set({ "n", "v", "o" }, "<C-d>", "<C-d>zz")
 vim.keymap.set({ "n", "v", "o" }, "<C-u>", "<C-u>zz")
 vim.keymap.set({ "n", "v", "o" }, ";", ",")
@@ -79,9 +67,11 @@ vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 vim.keymap.set("n", "U", "<C-r>")
 vim.keymap.set("v", "<", "<gv")
 vim.keymap.set("v", ">", ">gv")
-vim.keymap.set("n", "<Tab>", ":set wrap!<CR>")
+vim.keymap.set("n", "<Tab>", "<C-i>")
 vim.keymap.set("i", "<C-Space>", "<C-x><C-n>")
-
+vim.keymap.set("n", "<Home>", function()
+    vim.diagnostic.enable(not vim.diagnostic.is_enabled())
+end)
 
 -- Lazy
 
@@ -101,97 +91,17 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
     {
         "nvim-treesitter/nvim-treesitter",
-        lazy = false,
         build = ":TSUpdate",
-        dependencies = {
-            "nvim-treesitter/nvim-treesitter-textobjects",
-        },
         config = function()
-            local languages = {
-                "python", "cpp", "lua", "bash", "json",
-                "yaml", "javascript", "typescript", "tsx",
-                "html", "css", "latex", "rust",
-            }
-
-            require("nvim-treesitter").install(languages)
-
-            vim.api.nvim_create_autocmd("FileType", {
-                callback = function(args)
-                    if pcall(vim.treesitter.start, args.buf) then
-                        vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-                    end
-                end,
-            })
-
-            require("nvim-treesitter-textobjects").setup({
-                select = {
-                    lookahead = true,
+            require("nvim-treesitter.configs").setup({
+                ensure_installed = {
+                    "python", "cpp", "lua", "bash", "json",
+                    "yaml", "javascript", "typescript", "tsx",
+                    "html", "css", "latex", "rust"
                 },
-                move = {
-                    set_jumps = true,
-                },
+                highlight = { enable = true },
+                indent = { enable = true },
             })
-
-            local select = require("nvim-treesitter-textobjects.select")
-            local move = require("nvim-treesitter-textobjects.move")
-
-            local select_keymaps = {
-                ["if"] = "@function.inner",
-                ["af"] = "@function.outer",
-                ["a#"] = "@comment.outer",
-                ["i#"] = "@comment.inner",
-                ["ac"] = "@call.outer",
-                ["ic"] = "@call.inner",
-                ["al"] = "@loop.outer",
-                ["il"] = "@loop.inner",
-                ["aa"] = "@parameter.outer",
-                ["ia"] = "@parameter.inner",
-                ["ai"] = "@conditional.outer",
-                ["ii"] = "@conditional.inner",
-                ["ae"] = "@assignment.outer",
-                ["ie"] = "@assignment.inner",
-                ["le"] = "@assignment.lhs",
-                ["re"] = "@assignment.rhs",
-                ["in"] = "@number.inner",
-            }
-            for keymap, capture in pairs(select_keymaps) do
-                vim.keymap.set({ "x", "o" }, keymap, function()
-                    select.select_textobject(capture, "textobjects")
-                end)
-            end
-
-            local next_start_keymaps = {
-                ["mf"] = "@function.outer",
-                ["mc"] = "@call.outer",
-                ["m#"] = "@comment.outer",
-                ["ml"] = "@loop.outer",
-                ["ma"] = "@parameter.inner",
-                ["mi"] = "@conditional.outer",
-                ["me"] = "@assignment.outer",
-                ["mn"] = "@number.inner",
-                ["mv"] = "@variable.inner",
-            }
-            for keymap, capture in pairs(next_start_keymaps) do
-                vim.keymap.set({ "n", "x", "o" }, keymap, function()
-                    move.goto_next_start(capture, "textobjects")
-                end)
-            end
-
-            local prev_start_keymaps = {
-                ["Mf"] = "@function.outer",
-                ["Mc"] = "@call.outer",
-                ["M#"] = "@comment.outer",
-                ["Ml"] = "@loop.outer",
-                ["Ma"] = "@parameter.inner",
-                ["Mi"] = "@conditional.outer",
-                ["Me"] = "@assignment.outer",
-                ["Mn"] = "@number.inner",
-            }
-            for keymap, capture in pairs(prev_start_keymaps) do
-                vim.keymap.set({ "n", "x", "o" }, keymap, function()
-                    move.goto_previous_start(capture, "textobjects")
-                end)
-            end
         end
     },
     {
@@ -201,46 +111,179 @@ require("lazy").setup({
             require("lualine").setup({
                 options = {
                     icons_enabled = true,
-                    theme = vim.g.eucalyptus_lualine_theme 
-                },
-                sections = {
-                    lualine_c = {
-                        {
-                            "filename",
-                            path = 2,
-                        },
-                    },
+                    theme = vim.g.eucalyptus_lualine_theme
                 },
             })
         end,
     },
+
+    -- LSP
     {
-        "sphamba/smear-cursor.nvim",
-        opts = {
-           cursor_color = "#009393",
-            stiffness = 0.5,
-            trailing_stiffness = 0.3,
-            smear_between_buffers = true,
-            smear_between_neighbor_lines = true,
-            scroll_buffer_space = true,
-            legacy_computing_symbols_support = false,
-               never_draw_over_target = true,
+        "williamboman/mason.nvim",
+        build = ":MasonUpdate",
+        config = function()
+            require("mason").setup()
+        end,
+    },
+    {
+        "williamboman/mason-lspconfig.nvim",
+        dependencies = { "mason.nvim", "neovim/nvim-lspconfig" },
+        config = function()
+            require("mason-lspconfig").setup({
+                ensure_installed = {
+                    "pyright",
+                    "clangd",
+                    "ts_ls",
+                    "rust_analyzer",
+                    "dockerls",
+                    "docker_compose_language_service",
+                    "bashls",
+                },
+                automatic_installation = true,
+            })
+        end,
+    },
+    {
+        "neovim/nvim-lspconfig",
+        dependencies = { "mason-lspconfig.nvim" },
+        config = function()
+            vim.diagnostic.config({
+                virtual_text = false,
+                signs = true,
+                underline = true,
+                update_in_insert = false,
+                severity_sort = true,
+                float = { border = "rounded", source = true },
+            })
+
+            -- Force undercurls for diagnostics
+            vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "Red" })
+            vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn", { undercurl = true, sp = "Orange" })
+            vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo", { undercurl = true, sp = "LightBlue" })
+            vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint", { undercurl = true, sp = "LightGrey" })
+
+            local capabilities = vim.lsp.protocol.make_client_capabilities()
+
+            vim.lsp.config("pyright", {
+                capabilities = capabilities,
+                settings = {
+                    python = {
+                        analysis = {
+                            typeCheckingMode = "basic",
+                            diagnosticSeverityOverrides = {
+                                reportMissingImports = "warning",
+                                reportMissingModuleSource = "none",
+                                reportOptionalMemberAccess = "none",
+                                reportArgumentType = "warning",
+                                reportAttributeAccessIssue = "warning",
+                            },
+                        },
+                    },
+                },
+            })
+
+            vim.lsp.config("clangd", { capabilities = capabilities })
+            vim.lsp.config("ts_ls", { capabilities = capabilities })
+            vim.lsp.config("rust_analyzer", { capabilities = capabilities })
+            vim.lsp.config("dockerls", { capabilities = capabilities })
+            vim.lsp.config("docker_compose_language_service", { capabilities = capabilities })
+            vim.lsp.config("bashls", { capabilities = capabilities })
+
+            vim.lsp.enable("pyright")
+            vim.lsp.enable("clangd")
+            vim.lsp.enable("ts_ls")
+            vim.lsp.enable("rust_analyzer")
+            vim.lsp.enable("dockerls")
+            vim.lsp.enable("docker_compose_language_service")
+            vim.lsp.enable("bashls")
+
+            vim.api.nvim_create_autocmd("LspAttach", {
+                callback = function(ev)
+                    local opts = { buffer = ev.buf }
+                    vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+                    vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+                    vim.keymap.set("n", "gl", vim.diagnostic.open_float, opts)
+                    vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
+                    vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
+                    vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+                    vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+                end,
+            })
+        end,
+    },
+
+    -- Completion
+    {
+        "hrsh7th/nvim-cmp",
+        dependencies = {
+            "hrsh7th/cmp-nvim-lsp",
+            "hrsh7th/cmp-buffer",
+            "hrsh7th/cmp-path",
         },
-    }
+        config = function()
+            local cmp = require("cmp")
+            cmp.setup({
+                window = {
+                    completion = {
+                        side_padding = 0,
+                    },
+                },
+                formatting = {
+                    format = function(_, item)
+                        local max = 28
+                        if vim.fn.strchars(item.abbr) > max then
+                            item.abbr = vim.fn.strcharpart(item.abbr, 0, max) .. "..."
+                        end
+                        return item
+                    end,
+                },
+                mapping = cmp.mapping.preset.insert({
+                    ["<C-Space>"] = cmp.mapping.complete(),
+                    ["<CR>"] = cmp.mapping.confirm({ select = false }),
+                    ["<Tab>"] = cmp.mapping.select_next_item(),
+                    ["<S-Tab>"] = cmp.mapping.select_prev_item(),
+                }),
+                sources = {
+                    { name = "nvim_lsp" },
+                    { name = "buffer" },
+                    { name = "path" },
+                },
+            })
+        end,
+    },
 }, { lockfile = vim.fn.stdpath("data") .. "/lazy/lazy-lock.json", })
 
+vim.keymap.set('n', '<End>', function()
+  local cmd = os.getenv("RUN_CMD")
+  if not cmd then
+    vim.notify("RUN_CMD not set", vim.log.levels.WARN)
+    return
+  end
 
+  local dir = os.getenv("DIRENV_DIR")
+  if dir then
+    dir = dir:gsub("^-", "")
+  else
+    dir = vim.fn.getcwd()
+  end
 
+  local width  = math.floor(vim.o.columns * 0.4)
+  local height = math.floor(vim.o.lines * 0.4)
+  local row    = math.floor(vim.o.lines - height - 4)
+  local col    = math.floor(vim.o.columns - width)
+  local buf = vim.api.nvim_create_buf(false, true)
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    row = row,
+    col = col,
+    width = width,
+    height = height,
+    border = "rounded",
+    style = "minimal",
+  })
+  vim.fn.termopen({ "bash", "-c", "cd " .. vim.fn.shellescape(dir) .. " && " .. cmd })
+  vim.cmd("startinsert")
+  vim.keymap.set("t", "<Esc>", "<C-\\><C-n>:close<CR>", { buffer = buf })
+end, { desc = "Run RUN_CMD in popup" })
 
-
-local runner = require("run_script")
-
-vim.keymap.set("n", "ß", runner.run_in_popup, {
-  desc = "Run project script in popup terminal",
-})
-
-vim.keymap.set("n", "?", runner.run_headless, {
-  desc = "Run project script headless",
-})
-
-require("word_anchors").setup()
+-- require("word_anchors").setup()

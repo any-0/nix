@@ -4,58 +4,84 @@
   padding: 0;
   margin: 0;
   font-family: "JetBrainsMono Nerd Font Mono";
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
 }
 
 #waybar {
-  background: rgba(13, 16, 12, 1.0);
+  background: rgba(13, 16, 12, 0.0);
   color: #c0c0c0;
 }
 
-#workspaces,
-#window,
+/* Left and right pill containers */
+.modules-left,
+.modules-right {
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid #fff;
+  border-radius: 16px;
+  margin: 6px 0px;
+  padding: 0px 8px;
+}
+
+/* Individual modules inside pills */
 #custom-date,
-#cpu,
-#memory {
-  padding: 0 6px;
+#custom-time,
+#pulseaudio,
+#custom-bt-battery,
+#network {
+  color: #303030;
+  padding: 0px 4px;
 }
 
-#pulseaudio { padding: 0 6px; color: #b0b0b0; }
-#pulseaudio.muted { color: #e06c75; }
-#workspaces {
-    margin: 0;
-}
-#workspaces button {
-  padding: 0 40px;
-  color: #aaa;
-  background: transparent;
-}
-#workspaces button.active,
-#workspaces button.focused {
-  color: #fff;
-  background: #1e1e24;
-}
-#workspaces button:hover,
-#workspaces button:focus,
-#workspaces button:active,
-#workspaces button.urgent,
-#workspaces button.visible {
-  border-radius: 0;
-}
-
-#cpu,
-#memory {
-  color: #b0b0b0;
-}
-
-#pulseaudio { padding: 0 6px; color: #b0b0b0; }
-#pulseaudio.muted { color: #e06c75; }
-#custom-bt-battery {
-  padding: 0 6px;
-  color: #b0b0b0;
+/* State-specific colors */
+#pulseaudio.muted {
+  color: #e06c75;
 }
 
 #custom-bt-battery.low {
   color: #e06c75;
+}
+
+#network.disconnected {
+  color: #e06c75;
+}
+
+/* Workspaces (center) */
+#workspaces {
+  color: #303030;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 2px 8px;
+  margin: 4px 0px;
+  border-radius: 16px;
+  border: 2px solid #fff;
+}
+
+#workspaces button {
+  background: transparent;
+  border: none;
+  padding: 2px 8px;
+  margin: 0 2px;
+  min-width: 0;
+  color: #303030;
+  border-radius: 12px;
+}
+
+#workspaces button.empty,
+#workspaces button.empty label {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  font-size: 0;
+  opacity: 0;
+}
+
+#workspaces button.focused {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #fff;
+}
+
+#workspaces button:hover {
+  background: rgba(255, 255, 255, 0.75);
 }

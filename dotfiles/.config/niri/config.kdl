@@ -284,7 +284,7 @@ layout {
 
 // This line starts waybar, a commonly used bar for Wayland compositors.
 spawn-at-startup "swaybg" "-i" "/home/julian/Pictures/Wallpapers/pexels-lum3n-44775-167699.jpg" "-m" "fill"
-spawn-sh-at-startup "dbus-update-activation-environment --systemd --all; systemctl --user import-environment --all"
+spawn-at-startup "waybar"
 spawn-at-startup "xwayland-satellite"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
@@ -401,8 +401,8 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     // Programs
-    Mod+C hotkey-overlay-title="Open a Terminal: wezterm" { spawn "wezterm"; }
-    Mod+R hotkey-overlay-title="Run an Application: rofi" { spawn-sh "fuzzel"; }
+    Mod+C hotkey-overlay-title="Open a Terminal: wezterm" { spawn "/home/julian/.local/bin/wezterm"; }
+    Mod+R hotkey-overlay-title="Run an Application: rofi" { spawn-sh "rofi -show run"; }
     Mod+E hotkey-overlay-title="Open File Manager" { spawn "fileBrowser"; }
     Mod+Y hotkey-overlay-title="Open Browser: zen-browser" { spawn "zen-browser"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }

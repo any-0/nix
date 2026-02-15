@@ -126,4 +126,4 @@ for group, settings in pairs(highlights) do
     vim.api.nvim_set_hl(0, group, settings)
 end
 
-vim.opt.guicursor = "n-v-c:block-Cursor,i-ci-ve:ver25-Cursor,r-cr-o:hor20-Cursor"
+vim.opt.guicursor = "n-v-c:block-cursor,i-ci-ve:ver25-cursor,r-cr-o:hor20-cursor"

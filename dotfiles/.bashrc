@@ -16,10 +16,14 @@ shopt -s globstar
 pwdn() {
   pwd | awk -F/ '{if (NF >= 2) print $(NF-1) "/" $NF; else print $NF;}'
 }
-PS1='▶ [\[\e[1;96m\]$(pwdn)\[\e[0m\]] \$ '
+#PS1='▶ [\[\e[1;96m\]$(pwdn)\[\e[0m\]] \$ '
+PS1='▶ [$(pwdn)] \$ '
 
 #install zoxide
 eval "$(zoxide init bash)"
+
+#hook direnv
+eval "$(direnv hook bash)"
 
 #zoxide cd
 if command -v zoxide >/dev/null 2>&1; then
@@ -143,5 +147,15 @@ tmux_auto() {
 
 bind -x '"\C-t": tmux_auto'
 
+view() {
+    nohup evince "$1" > /dev/null 2>&1 &
+}
+# Auto-start tmux: each terminal gets own session, destroyed on terminal close
+if [[ $- == *i* ]] && [[ -z "$TMUX" ]] && [[ "$TERM" != "dumb" ]] && command -v tmux &>/dev/null; then
+    __ses=0; while tmux has-session -t "$__ses" 2>/dev/null; do ((__ses++)); done
+    tmux new-session -d -s "$__ses"
+    trap "tmux kill-session -t '$__ses' 2>/dev/null" HUP
+    tmux attach -t "$__ses" && exit
+fi
+
 export PATH="$HOME/nix/scripts:$PATH"
-eval "$(direnv hook bash)"

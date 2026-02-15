@@ -68,12 +68,12 @@ function M.toggle()
 end
 
 function M.setup()
-    vim.api.nvim_set_hl(0, "WordAnchorw", { underline = true, sp = "#3366FF", bg="#EEEEEE" })
-    vim.api.nvim_set_hl(0, "WordAnchore", { underline = true, sp = "#00CC00", bg="#EEEEEE" })
-    vim.api.nvim_set_hl(0, "WordAnchorb", { underline = true, sp = "#FF4422", bg="#EEEEEE" })
-    vim.api.nvim_set_hl(0, "WordAnchorW", { underline = true, sp = "#3366FF", bg="#EEEEEE" })
-    vim.api.nvim_set_hl(0, "WordAnchorE", { underline = true, sp = "#00CC00", bg="#EEEEEE" })
-    vim.api.nvim_set_hl(0, "WordAnchorB", { underline = true, sp = "#FF4422", bg="#EEEEEE" })
+    vim.api.nvim_set_hl(0, "WordAnchorw", { underline = true, sp = "#3366FF" })
+    vim.api.nvim_set_hl(0, "WordAnchore", { underline = true, sp = "#00CC00" })
+    vim.api.nvim_set_hl(0, "WordAnchorb", { underline = true, sp = "#FF4422" })
+    vim.api.nvim_set_hl(0, "WordAnchorW", { underline = true, sp = "#3366FF" })
+    vim.api.nvim_set_hl(0, "WordAnchorE", { underline = true, sp = "#00CC00" })
+    vim.api.nvim_set_hl(0, "WordAnchorB", { underline = true, sp = "#FF4422" })
     vim.api.nvim_set_hl(0, "WordAnchorSemi", { underline = true, bold = true, sp = "#FFBBBB", bg="#EEEEEE" })
     vim.api.nvim_set_hl(0, "WordAnchorComma", { underline = true, bold = true, sp = "#FFBBBB", bg="#EEEEEE" })
 
