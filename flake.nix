@@ -23,14 +23,12 @@
 
     mkHome = {
       modules,
-      tmuxClipboardCommand,
       system ? "x86_64-linux",
       username ? "julian",
       homeDirectory ? "/home/julian",
     }:
       home-manager.lib.homeManagerConfiguration {
         pkgs = mkPkgs system;
-        extraSpecialArgs = { inherit tmuxClipboardCommand; };
         modules = modules ++ [
           {
             home.username = username;
@@ -60,7 +58,6 @@
 
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = { tmuxClipboardCommand = "wl-copy"; };
           home-manager.users.${username} = import ./home.nix;
         }
       ];
@@ -70,19 +67,22 @@
       julian = mkHome {
         inherit system username homeDirectory;
         modules = desktopModules;
-        tmuxClipboardCommand = "wl-copy";
       };
 
       "julian-desktop" = mkHome {
         inherit system username homeDirectory;
         modules = desktopModules;
-        tmuxClipboardCommand = "wl-copy";
       };
 
+      "julian-cli" = mkHome {
+        inherit system username homeDirectory;
+        modules = wslModules;
+      };
+
+      # Backward-compatible alias.
       "julian-wsl" = mkHome {
         inherit system username homeDirectory;
         modules = wslModules;
-        tmuxClipboardCommand = "clip.exe";
       };
     };
   };
