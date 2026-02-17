@@ -1,0 +1,1 @@
+nix run github:nix-community/home-manager -- switch -b hm-bak --flake /home/julian/nix#julian-cli

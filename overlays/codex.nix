@@ -1,8 +1,9 @@
 final: prev:
 let
-  version = "0.98.0";
-  tag = "rust-v${version}";
   system = prev.stdenv.hostPlatform.system;
+  # Run ./update-codex.sh to update
+  version = "0.101.0";
+  hash = "sha256:06ska18qypmri76cbmmd42zacjbwxz3gls0a3a947q2agpm2cg24";
 in
 {
   codex =
@@ -11,20 +12,18 @@ in
     else
       prev.stdenvNoCC.mkDerivation {
         pname = "codex";
-        version = version;
+        inherit version;
 
-        src = prev.fetchurl {
-          url = "https://github.com/openai/codex/releases/download/${tag}/codex-x86_64-unknown-linux-musl.tar.gz";
-          hash = "sha256-wJ7m7G8e71iCS96hTvsQre5U4OPFzL+k4/862bDd3IM=";
+        src = builtins.fetchTarball {
+          url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-x86_64-unknown-linux-musl.tar.gz";
+          sha256 = hash;
         };
 
         dontConfigure = true;
         dontBuild = true;
-        dontUnpack = true;
 
         installPhase = ''
-          tar -xzf $src
-          install -Dm755 codex-x86_64-unknown-linux-musl $out/bin/codex
+          install -Dm755 $src/codex-x86_64-unknown-linux-musl $out/bin/codex
         '';
 
         meta = with prev.lib; {

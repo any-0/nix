@@ -55,10 +55,6 @@ fi
 export EDITOR=nvim
 
 
-hf() {
-    history | grep "$1" | sed 's/^[[:space:]]*[0-9]\+[[:space:]]*//' | fzf | y
-}
-
 # opencode
 export PATH=/home/julian/.opencode/bin:$PATH
 
@@ -101,33 +97,6 @@ gd=38;2;139;0;0"
 
 
 
-get() {
-  local dest="$PWD"
-  local base="${GET_BASE:-$HOME}"
-
-  # get <path> form: copy that path into current dir
-  if [[ $# -ge 1 ]]; then
-    # If they passed a dir, copy the dir as a dir (flat-tree is ambiguous/collisions)
-    rsync -av --progress -- "$1" "$dest"/
-    return $?
-  fi
-
-  # get form: interactive pick from base, copy selections flat into current dir
-  local -a rel abs
-  mapfile -d '' -t rel < <(
-    cd "$base" && fd -0 -t f -t d . | fzf --read0 --print0 -m
-  ) || return
-
-  ((${#rel[@]})) || return
-
-  abs=()
-  local p
-  for p in "${rel[@]}"; do
-    abs+=("$base/$p")
-  done
-
-  rsync -av --progress -- "${abs[@]}" "$dest"/
-}
 
 alias tma='tmux attach'
 alias tmd='tmux detach-client'
@@ -147,9 +116,6 @@ tmux_auto() {
 
 bind -x '"\C-t": tmux_auto'
 
-view() {
-    nohup evince "$1" > /dev/null 2>&1 &
-}
 # Auto-start tmux: each terminal gets own session, destroyed on terminal close
 if [[ $- == *i* ]] && [[ -z "$TMUX" ]] && [[ "$TERM" != "dumb" ]] && command -v tmux &>/dev/null; then
     __ses=0; while tmux has-session -t "$__ses" 2>/dev/null; do ((__ses++)); done
