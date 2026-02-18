@@ -35,14 +35,8 @@ in
   programs.direnv.enable = true;
   programs.direnv.nix-direnv.enable = true;
 
-  programs.bash.enable = true;
-  programs.bash.profileExtra = ''
-    # Load .bashrc for interactive shells
-    if [[ $- == *i* ]] && [ -f ~/.bashrc ]; then
-      source ~/.bashrc
-    fi
-  '';
-  programs.bash.bashrcExtra = builtins.readFile ../dotfiles/.bashrc;
+  programs.zsh.enable = true;
+  programs.zsh.initExtra = builtins.readFile ../dotfiles/.zshrc;
 
   xdg.configFile."nvim".source = ../dotfiles/.config/nvim;
   home.file.".wezterm.lua".source = ../dotfiles/.wezterm.lua;

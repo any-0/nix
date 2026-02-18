@@ -16,9 +16,11 @@
   networking.networkmanager.enable = true;
 
   system.stateVersion = "25.11"; # never change
+  programs.zsh.enable = true;
   users.users.julian = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" "seat" "video" "input" "docker" ];
+    shell = pkgs.zsh;
   };
   environment.systemPackages = with  pkgs; [
     cifs-utils
