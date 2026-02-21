@@ -25,7 +25,11 @@ in
 {
   home.stateVersion = "25.11";
 
-  programs.git.enable = true;
+  programs.git = {
+    enable = true;
+    settings.user.name = "Julian";
+    settings.user.email = "julianorlich1@gmail.com";
+  };
 
   programs.neovim = {
     enable = true;
@@ -36,7 +40,7 @@ in
   programs.direnv.nix-direnv.enable = true;
 
   programs.zsh.enable = true;
-  programs.zsh.initExtra = builtins.readFile ../dotfiles/.zshrc;
+  programs.zsh.initContent = builtins.readFile ../dotfiles/.zshrc;
 
   xdg.configFile."nvim".source = ../dotfiles/.config/nvim;
   home.file.".wezterm.lua".source = ../dotfiles/.wezterm.lua;
