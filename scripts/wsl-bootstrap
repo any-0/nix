@@ -8,11 +8,20 @@ BACKUP_EXT="${HM_BACKUP_EXT:-hm-bak}"
 EXPERIMENTAL_FEATURES_LINE="experimental-features = nix-command flakes"
 
 if ! command -v nix >/dev/null 2>&1; then
-  echo "nix not found in PATH."
-  echo "Install Nix first, then re-run this script."
-  echo "Example:"
-  echo "  sh <(curl -L https://nixos.org/nix/install) --daemon"
-  exit 1
+  echo "nix not found in PATH. Installing Nix..."
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "curl is required to install Nix. Install curl, then re-run this script."
+    exit 1
+  fi
+  sh <(curl -L https://nixos.org/nix/install) --daemon
+  if [[ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  fi
+  if ! command -v nix >/dev/null 2>&1; then
+    echo "Nix installation finished, but nix is still not on PATH."
+    echo "Open a new shell and re-run this script."
+    exit 1
+  fi
 fi
 
 if [[ -z "${WSL_DISTRO_NAME:-}" ]] && ! grep -qi microsoft /proc/version 2>/dev/null; then
