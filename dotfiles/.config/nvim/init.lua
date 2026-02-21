@@ -88,30 +88,6 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
     {
-        "nvim-treesitter/nvim-treesitter",
-        build = ":TSUpdate",
-        lazy = false,
-        config = function()
-            local languages = {
-                "python", "cpp", "lua", "bash", "json",
-                "yaml", "javascript", "typescript", "tsx",
-                "html", "css", "latex", "rust"
-            }
-
-            local ts = require("nvim-treesitter")
-            ts.setup({ install_dir = vim.fn.stdpath("data") .. "/site" })
-            pcall(ts.install, languages)
-
-            vim.api.nvim_create_autocmd("FileType", {
-                pattern = languages,
-                callback = function(ev)
-                    pcall(vim.treesitter.start, ev.buf)
-                    vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-                end,
-            })
-        end
-    },
-    {
         "nvim-lualine/lualine.nvim",
         dependencies = { "nvim-tree/nvim-web-devicons" },
         config = function()
@@ -123,36 +99,8 @@ require("lazy").setup({
             })
         end,
     },
-
-    -- LSP
-    {
-        "williamboman/mason.nvim",
-        build = ":MasonUpdate",
-        config = function()
-            require("mason").setup()
-        end,
-    },
-    {
-        "williamboman/mason-lspconfig.nvim",
-        dependencies = { "mason.nvim", "neovim/nvim-lspconfig" },
-        config = function()
-            require("mason-lspconfig").setup({
-                ensure_installed = {
-                    "pyright",
-                    "clangd",
-                    "ts_ls",
-                    "rust_analyzer",
-                    "dockerls",
-                    "docker_compose_language_service",
-                    "bashls",
-                },
-                automatic_installation = true,
-            })
-        end,
-    },
     {
         "neovim/nvim-lspconfig",
-        dependencies = { "mason-lspconfig.nvim" },
         config = function()
             vim.diagnostic.config({
                 virtual_text = false,
@@ -173,6 +121,7 @@ require("lazy").setup({
 
             vim.lsp.config("pyright", {
                 capabilities = capabilities,
+                cmd = { "pyright-langserver", "--stdio" },
                 settings = {
                     python = {
                         analysis = {
@@ -189,12 +138,30 @@ require("lazy").setup({
                 },
             })
 
-            vim.lsp.config("clangd", { capabilities = capabilities })
-            vim.lsp.config("ts_ls", { capabilities = capabilities })
-            vim.lsp.config("rust_analyzer", { capabilities = capabilities })
-            vim.lsp.config("dockerls", { capabilities = capabilities })
-            vim.lsp.config("docker_compose_language_service", { capabilities = capabilities })
-            vim.lsp.config("bashls", { capabilities = capabilities })
+            vim.lsp.config("clangd", {
+                capabilities = capabilities,
+                cmd = { "clangd" },
+            })
+            vim.lsp.config("ts_ls", {
+                capabilities = capabilities,
+                cmd = { "typescript-language-server", "--stdio" },
+            })
+            vim.lsp.config("rust_analyzer", {
+                capabilities = capabilities,
+                cmd = { "rust-analyzer" },
+            })
+            vim.lsp.config("dockerls", {
+                capabilities = capabilities,
+                cmd = { "docker-langserver", "--stdio" },
+            })
+            vim.lsp.config("docker_compose_language_service", {
+                capabilities = capabilities,
+                cmd = { "docker-compose-langserver", "--stdio" },
+            })
+            vim.lsp.config("bashls", {
+                capabilities = capabilities,
+                cmd = { "bash-language-server", "start" },
+            })
 
             vim.lsp.enable("pyright")
             vim.lsp.enable("clangd")
@@ -259,6 +226,20 @@ require("lazy").setup({
         end,
     },
 }, { lockfile = vim.fn.stdpath("data") .. "/lazy/lazy-lock.json", })
+
+local ts_languages = {
+    "python", "cpp", "lua", "bash", "json",
+    "yaml", "javascript", "typescript", "tsx",
+    "html", "css", "latex", "rust"
+}
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = ts_languages,
+    callback = function(ev)
+        pcall(vim.treesitter.start, ev.buf)
+        vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+    end,
+})
 
 vim.keymap.set('n', '<End>', function()
   local cmd = os.getenv("RUN_CMD")

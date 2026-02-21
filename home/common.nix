@@ -23,6 +23,10 @@ let
   '';
 in
 {
+  imports = [
+    ./neovim-tools.nix
+  ];
+
   home.stateVersion = "25.11";
 
   programs.git = {
@@ -55,10 +59,6 @@ in
     curl
     unzip
     python3
-    tree-sitter
-    stylua
-    lua-language-server
-    nil
     gcc
     gnumake
     codex
