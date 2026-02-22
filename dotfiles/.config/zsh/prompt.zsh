@@ -1,3 +1,28 @@
+autoload -Uz add-zsh-hook
+
+typeset -g __prompt_spacing_ran_command=0
+
+_prompt_spacing_precmd() {
+  if (( __prompt_spacing_ran_command )); then
+    print ""
+    __prompt_spacing_ran_command=0
+  fi
+}
+
+_prompt_spacing_preexec() {
+  case "$1" in
+    clear|clear\ *|reset|reset\ *)
+      __prompt_spacing_ran_command=0
+      return
+      ;;
+  esac
+  __prompt_spacing_ran_command=1
+  print ""
+}
+
+add-zsh-hook precmd _prompt_spacing_precmd
+add-zsh-hook preexec _prompt_spacing_preexec
+
 git_prompt() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
 

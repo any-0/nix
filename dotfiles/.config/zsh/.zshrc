@@ -48,14 +48,6 @@ zle-line-finish() {
 }
 zle -N zle-line-finish
 
-if [[ -o interactive ]]; then
-    autoload -Uz add-zsh-hook
-    _cmd_spacing_preexec() {
-        printf '\n'
-    }
-    add-zsh-hook preexec _cmd_spacing_preexec
-fi
-
 # zoxide
 if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh --cmd cd)"
