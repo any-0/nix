@@ -65,6 +65,7 @@ function zz() {
 
 # Aliases
 alias ls='eza -l --icons'
+compdef _files eza
 alias v='nvim'
 alias dc='cd'
 alias c='cd'
