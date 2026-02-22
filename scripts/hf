@@ -1,1 +1,17 @@
-history | grep "$1" | sed 's/^[[:space:]]*[0-9]\+[[:space:]]*//' | fzf | y
+#!/usr/bin/env bash
+set -euo pipefail
+
+query="${1-}"
+histfile="${HISTFILE:-${XDG_CACHE_HOME:-$HOME/.cache}/zsh/history}"
+
+if [[ ! -f "$histfile" ]]; then
+  echo "history file not found: $histfile" >&2
+  exit 1
+fi
+
+# Handle both plain zsh history and EXTENDED_HISTORY lines.
+if [[ -n "$query" ]]; then
+  grep -F -- "$query" "$histfile"
+else
+  cat "$histfile"
+fi | sed -E 's/^: [0-9]+:[0-9]+;//' | fzf | yank

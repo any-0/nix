@@ -1,22 +1,21 @@
 # Completion
 autoload -Uz compinit
-compinit
+_ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+mkdir -p "${_ZSH_CACHE_DIR}"
+compinit -d "${_ZSH_CACHE_DIR}/zcompdump-${ZSH_VERSION}"
 
 setopt extendedglob globdots MENU_COMPLETE
 zstyle ':completion:*' matcher-list 'r:|.=*' 'r:|.=* l:|=.'
 
 # History
-HISTSIZE=10000
-SAVEHIST=100000
-HISTFILE=~/.zsh_history
+HISTSIZE=50000
+SAVEHIST=50000
+HISTFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/history"
+mkdir -p "${HISTFILE:h}"
 setopt HIST_IGNORE_DUPS APPEND_HISTORY SHARE_HISTORY
 
 # Prompt
-pwdn() {
-  pwd | awk -F/ '{if (NF >= 2) print $(NF-1) "/" $NF; else print $NF;}'
-}
-setopt PROMPT_SUBST
-PS1='▶ [$(pwdn)] $ '
+source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/prompt.zsh"
 
 # Zsh vi mode (line editor, not the vim app)
 bindkey -v
@@ -69,6 +68,7 @@ alias c='cd'
 alias :q='exit'
 alias :q!='exit'
 alias p='python3'
+alias python='python3'
 alias shit='shutdown now'
 alias fb="fileBrowser >/dev/null 2>&1 & disown; exit"
 

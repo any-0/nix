@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 let
   tmuxClipboardCommand = pkgs.writeShellScript "tmux-clipboard" ''
@@ -43,8 +43,13 @@ in
   programs.direnv.enable = true;
   programs.direnv.nix-direnv.enable = true;
 
-  programs.zsh.enable = true;
-  programs.zsh.initContent = builtins.readFile ../dotfiles/.zshrc;
+  programs.zsh = {
+    enable = true;
+    dotDir = "${config.xdg.configHome}/zsh";
+    initContent = builtins.readFile ../dotfiles/.config/zsh/.zshrc;
+  };
+
+  xdg.configFile."zsh/prompt.zsh".source = ../dotfiles/.config/zsh/prompt.zsh;
 
   xdg.configFile."nvim".source = ../dotfiles/.config/nvim;
   home.file.".wezterm.lua".source = ../dotfiles/.wezterm.lua;
