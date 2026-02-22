@@ -84,6 +84,9 @@ alias tmks='tmux kill-server'
 # Environment
 export EDITOR=nvim
 export PATH=/home/julian/.opencode/bin:$PATH
+if [[ -d "$HOME/nix/scripts" ]] && [[ ":$PATH:" != *":$HOME/nix/scripts:"* ]]; then
+    export PATH="$HOME/nix/scripts:$PATH"
+fi
 export QSYS_ROOTDIR="/opt/intelquartus/quartus/sopc_builder/bin"
 export SALT_LICENSE_FILE="$SALT_LICENSE_FILE;/home/julian/.altera.quartus/questa_lic.dat"
 source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/eza-colors.zsh"
