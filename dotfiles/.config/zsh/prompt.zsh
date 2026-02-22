@@ -4,7 +4,6 @@ git_prompt() {
   local changes numstat line x y add del
   local staged=0 unstaged=0 untracked=0
   local added=0 removed=0
-  local line_seg=""
   local -a segments
 
   changes="$(git status --porcelain 2>/dev/null)"
@@ -32,19 +31,10 @@ git_prompt() {
     [[ "$y" != " " ]] && ((unstaged++))
   done <<< "$changes"
 
-  if ((added > 0)); then
-    line_seg+="+${added}"
-  fi
-  if ((removed > 0)); then
-    [[ -n "$line_seg" ]] && line_seg+=" "
-    line_seg+="-${removed}"
-  fi
-  [[ -n "$line_seg" ]] && segments+=("$line_seg")
+  segments+=("+${added} -${removed}")
   ((staged > 0)) && segments+=("S:${staged}")
   ((unstaged > 0)) && segments+=("M:${unstaged}")
   ((untracked > 0)) && segments+=("U:${untracked}")
-
-  (( ${#segments[@]} == 0 )) && return
   printf '  [%s]' "${(j: :)segments}"
 }
 

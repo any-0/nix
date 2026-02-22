@@ -1,8 +1,12 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
+let
+  dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
+  dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
+in
 {
-  xdg.configFile."niri".source = ../dotfiles/.config/niri;
-  xdg.configFile."waybar".source = ../dotfiles/.config/waybar;
+  xdg.configFile."niri".source = dot ".config/niri";
+  xdg.configFile."waybar".source = dot ".config/waybar";
 
   systemd.user.services.waybar = {
     Unit = {

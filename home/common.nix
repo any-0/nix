@@ -1,6 +1,9 @@
 { config, pkgs, ... }:
 
 let
+  dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
+  dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
+
   tmuxClipboardCommand = pkgs.writeShellScript "tmux-clipboard" ''
     if command -v clip.exe >/dev/null 2>&1; then
       exec clip.exe
@@ -46,13 +49,17 @@ in
   programs.zsh = {
     enable = true;
     dotDir = "${config.xdg.configHome}/zsh";
-    initContent = builtins.readFile ../dotfiles/.config/zsh/.zshrc;
+    initContent = ''
+      source "${dotfilesDir}/.config/zsh/.zshrc"
+    '';
   };
 
-  xdg.configFile."zsh/prompt.zsh".source = ../dotfiles/.config/zsh/prompt.zsh;
+  xdg.configFile."zsh/prompt.zsh".source = dot ".config/zsh/prompt.zsh";
+  xdg.configFile."zsh/eza-colors.zsh".source = dot ".config/zsh/eza-colors.zsh";
+  xdg.configFile."eza/theme.yml".source = dot ".config/eza/theme.yml";
 
-  xdg.configFile."nvim".source = ../dotfiles/.config/nvim;
-  home.file.".wezterm.lua".source = ../dotfiles/.wezterm.lua;
+  xdg.configFile."nvim".source = dot ".config/nvim";
+  home.file.".wezterm.lua".source = dot ".wezterm.lua";
 
   home.sessionVariables.DOCKER_CLI_PLUGIN_EXTRA_DIRS = "${pkgs.docker-compose}/libexec/docker/cli-plugins";
 

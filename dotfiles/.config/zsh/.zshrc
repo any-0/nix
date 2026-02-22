@@ -5,7 +5,10 @@ mkdir -p "${_ZSH_CACHE_DIR}"
 compinit -d "${_ZSH_CACHE_DIR}/zcompdump-${ZSH_VERSION}"
 
 setopt extendedglob globdots MENU_COMPLETE
-zstyle ':completion:*' matcher-list 'r:|.=*' 'r:|.=* l:|=.'
+zstyle ':completion:*' matcher-list \
+  'm:{a-z}={A-Z}' \
+  'r:|.=*' \
+  'r:|.=* l:|=.'
 
 # History
 HISTSIZE=50000
@@ -45,6 +48,14 @@ zle-line-finish() {
 }
 zle -N zle-line-finish
 
+if [[ -o interactive ]]; then
+    autoload -Uz add-zsh-hook
+    _cmd_spacing_preexec() {
+        printf '\n'
+    }
+    add-zsh-hook preexec _cmd_spacing_preexec
+fi
+
 # zoxide
 if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh --cmd cd)"
@@ -77,49 +88,13 @@ alias tmd='tmux detach-client'
 alias tmls='tmux ls'
 alias tmks='tmux kill-server'
 
-# Clipboard (WSL vs Linux)
-if grep -qEi "(microsoft|wsl)" /proc/version &> /dev/null; then
-    alias y='clip.exe'
-elif command -v wl-copy &> /dev/null; then
-    alias y='wl-copy'
-fi
-
 # Environment
 export EDITOR=nvim
 export PATH=/home/julian/.opencode/bin:$PATH
 export PATH="$HOME/nix/scripts:$PATH"
 export QSYS_ROOTDIR="/opt/intelquartus/quartus/sopc_builder/bin"
 export SALT_LICENSE_FILE="$SALT_LICENSE_FILE;/home/julian/.altera.quartus/questa_lic.dat"
-
-export EZA_COLORS="\
-reset:\
-*.lua=38;2;0;0;0:\
-di=1;38;2;0;147;147:\
-ex=1;38;2;0;136;0:\
-ln=38;2;0;116;177:\
-or=1;38;2;139;0;0:\
-fi=38;2;0;0;0:\
-sn=38;2;0;0;0:\
-sb=38;2;136;136;136:\
-uu=38;2;0;0;0:\
-gu=38;2;136;136;136:\
-un=38;2;136;136;136:\
-gn=38;2;136;136;136:\
-ur=38;2;0;136;0:\
-uw=38;2;139;0;0:\
-ux=38;2;0;147;147:\
-gr=38;2;0;136;0:\
-gw=38;2;139;0;0:\
-gx=38;2;0;147;147:\
-tr=38;2;0;136;0:\
-tw=38;2;139;0;0:\
-tx=38;2;0;147;147:\
-da=38;2;136;136;136:\
-xx=38;2;176;176;176:\
-hd=1;4;38;2;0;147;147:\
-ga=38;2;0;136;0:\
-gm=38;2;0;116;177:\
-gd=38;2;139;0;0"
+source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/eza-colors.zsh"
 
 # Tmux
 tmux_auto() {
