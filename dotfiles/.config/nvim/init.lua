@@ -23,6 +23,7 @@ vim.opt.smartcase = true
 vim.opt.list = true
 vim.opt.listchars = { trail = "·" }
 vim.opt.sidescrolloff = 8
+vim.opt.scrolloff = 8000
 vim.opt.statuscolumn = " %l  │  "
 vim.cmd.colorscheme("anyscheme")
 vim.opt.pumheight = 5
