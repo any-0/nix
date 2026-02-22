@@ -1,4 +1,18 @@
 #!/usr/bin/env bash
-nix flake init -t "path:/home/julian/nix/templates#${1}" &&
-nix flake lock &&
-direnv allow
+set -euo pipefail
+
+if [[ $# -lt 1 ]]; then
+  echo "usage: template <name>" >&2
+  exit 1
+fi
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+TEMPLATE_NAME="$1"
+
+nix flake init -t "path:${REPO_DIR}/templates#${TEMPLATE_NAME}"
+nix flake lock
+
+if command -v direnv >/dev/null 2>&1; then
+  direnv allow
+fi

@@ -64,23 +64,12 @@
     };
 
     homeConfigurations = {
-      julian = mkHome {
-        inherit system username homeDirectory;
-        modules = desktopModules;
-      };
-
       "julian-desktop" = mkHome {
         inherit system username homeDirectory;
         modules = desktopModules;
       };
 
       "julian-cli" = mkHome {
-        inherit system username homeDirectory;
-        modules = wslModules;
-      };
-
-      # Backward-compatible alias.
-      "julian-wsl" = mkHome {
         inherit system username homeDirectory;
         modules = wslModules;
       };

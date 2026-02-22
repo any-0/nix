@@ -1,1 +1,10 @@
-nix run github:nix-community/home-manager -- switch -b hm-bak --flake /home/julian/nix#julian-cli
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+PROFILE="${1:-julian-cli}"
+BACKUP_EXT="${HM_BACKUP_EXT:-hm-bak}"
+
+nix run github:nix-community/home-manager -- \
+  switch -b "${BACKUP_EXT}" --flake "${REPO_DIR}#${PROFILE}"

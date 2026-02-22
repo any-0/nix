@@ -12,11 +12,4 @@
       fi
     '';
   };
-
-  # Auto-start tmux only for interactive WSL zsh sessions.
-  programs.zsh.loginExtra = ''
-    if [[ -n "''${WSL_DISTRO_NAME:-}" ]] && [[ -o interactive ]] && [[ -z "''${TMUX:-}" ]] && [[ "''${TERM:-}" != "dumb" ]] && command -v tmux >/dev/null 2>&1; then
-      tmux attach -t main 2>/dev/null || exec tmux new -s main
-    fi
-  '';
 }

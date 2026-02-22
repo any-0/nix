@@ -1,23 +1,23 @@
-local dest="$PWD"
-local base="${GET_BASE:-$HOME}"
+#!/usr/bin/env bash
+set -euo pipefail
 
-# get <path> form: copy that path into current dir
+dest="$PWD"
+base="${GET_BASE:-$HOME}"
+
+# get <path>... form: copy passed paths into current dir
 if [[ $# -ge 1 ]]; then
-  # If they passed a dir, copy the dir as a dir (flat-tree is ambiguous/collisions)
-  rsync -av --progress -- "$1" "$dest"/
-  return $?
+  rsync -av --progress -- "$@" "$dest"/
+  exit 0
 fi
 
-# get form: interactive pick from base, copy selections flat into current dir
-local -a rel abs
+# get form: interactive pick from base, copy selections into current dir
 mapfile -d '' -t rel < <(
   cd "$base" && fd -0 -t f -t d . | fzf --read0 --print0 -m
-) || return
+) || exit 0
 
-((${#rel[@]})) || return
+((${#rel[@]})) || exit 0
 
 abs=()
-local p
 for p in "${rel[@]}"; do
   abs+=("$base/$p")
 done

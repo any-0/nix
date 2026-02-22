@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
@@ -12,8 +12,30 @@ if ! command -v git >/dev/null 2>&1; then
   exit 1
 fi
 
-git diff
-git add -A
+echo "Current working tree:"
+git status --short
+
+has_unstaged=0
+if ! git diff --quiet || [[ -n "$(git ls-files --others --exclude-standard)" ]]; then
+  has_unstaged=1
+fi
+
+if [[ "$has_unstaged" -eq 1 ]]; then
+  read -r -p "Stage all unstaged/untracked changes before rebuild? [y/N] " stage_all
+  case "$stage_all" in
+    y|Y|yes|YES)
+      git add -A
+      ;;
+    *)
+      echo "Leaving working tree unchanged. Use pre-staged changes only."
+      ;;
+  esac
+fi
+
+if git diff --cached --quiet; then
+  echo "No staged changes to commit. Stage files first or rerun and choose to stage all."
+  exit 1
+fi
 
 echo "Rebuilding host 'vm' from '${REPO_DIR}'..."
 sudo nixos-rebuild switch --flake "${REPO_DIR}#vm"

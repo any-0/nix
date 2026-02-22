@@ -2,6 +2,7 @@
 
 let
   dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
+  scriptsDir = "${config.home.homeDirectory}/nix/scripts";
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
 
   tmuxClipboardCommand = pkgs.writeShellScript "tmux-clipboard" ''
@@ -62,6 +63,7 @@ in
   home.file.".wezterm.lua".source = dot ".wezterm.lua";
 
   home.sessionVariables.DOCKER_CLI_PLUGIN_EXTRA_DIRS = "${pkgs.docker-compose}/libexec/docker/cli-plugins";
+  home.sessionPath = [ scriptsDir ];
 
   home.packages = with pkgs; [
     ripgrep
@@ -102,7 +104,8 @@ in
 
     extraConfig = ''
       set -g default-terminal "tmux-256color"
-      set -ag terminal-overrides ",xterm-256color:RGB,*:Smulx=\\E[4::%p1%dm,*:Setulc=\\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m"
+      set -as terminal-features ',*:cstyle'
+      set -ag terminal-overrides ",xterm-256color:RGB,*:Ss=\\E[%p1%d q:Se=\\E[2 q,*:Smulx=\\E[4::%p1%dm,*:Setulc=\\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m"
 
       # Better split shortcuts
       bind | split-window -h

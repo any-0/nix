@@ -4,6 +4,10 @@
 
 { config, lib, pkgs, ... }:
 
+let
+  smbCredentials = "${config.users.users.julian.home}/nix/secrets/smb-nas.cred";
+in
+
 {
   imports =
     [
@@ -87,7 +91,7 @@ nix.gc = {
     device = "//192.168.0.227/home";
     fsType = "cifs";
     options = [
-      "credentials=/home/julian/nix/secrets/smb-nas.cred"
+      "credentials=${smbCredentials}"
       "uid=1000"
       "gid=100"
       "iocharset=utf8"
@@ -101,7 +105,7 @@ nix.gc = {
     device = "//192.168.0.227/home2";
     fsType = "cifs";
     options = [
-      "credentials=/home/julian/nix/secrets/smb-nas.cred"
+      "credentials=${smbCredentials}"
       "uid=1000"
       "gid=100"
       "iocharset=utf8"
