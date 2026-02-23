@@ -7,9 +7,9 @@
     stylua
     lua-language-server
     nil
-    clang-tools
-    rust-analyzer
-    cargo
+    # clang-tools
+    # rust-analyzer
+    # cargo
     pyright
     typescript
     typescript-language-server

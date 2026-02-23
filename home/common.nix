@@ -73,7 +73,7 @@ in
     curl
     unzip
     python3
-    gcc
+    # gcc
     gnumake
     codex
     zoxide
