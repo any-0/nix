@@ -20,33 +20,8 @@ setopt HIST_IGNORE_DUPS APPEND_HISTORY SHARE_HISTORY
 # Prompt
 source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/prompt.zsh"
 
-# Zsh vi mode (line editor, not the vim app)
-bindkey -v
-export KEYTIMEOUT=10
-
-_zsh_set_cursor() {
-    local tty_device="${TTY:-/dev/tty}"
-    if [[ "${KEYMAP}" == vicmd ]]; then
-        printf '\e[2 q' > "${tty_device}"  # steady block
-    else
-        printf '\e[6 q' > "${tty_device}"  # steady bar
-    fi
-}
-
-zle-keymap-select() { _zsh_set_cursor; }
-zle -N zle-keymap-select
-
-zle-line-init() {
-    zle -K viins
-    _zsh_set_cursor
-}
-zle -N zle-line-init
-
-zle-line-finish() {
-    local tty_device="${TTY:-/dev/tty}"
-    printf '\e[6 q' > "${tty_device}"
-}
-zle -N zle-line-finish
+# Cursor: always beam
+printf '\e[6 q'
 
 # zoxide
 if command -v zoxide >/dev/null 2>&1; then
