@@ -28,6 +28,7 @@ vim.opt.statuscolumn = " %l  │  "
 vim.cmd.colorscheme("anyscheme")
 vim.opt.pumheight = 5
 vim.opt.pumwidth = 30
+vim.opt.iskeyword:remove("_")
 
 vim.cmd([[
   cabbrev Wq wq
@@ -228,6 +229,16 @@ require("lazy").setup({
             })
         end,
     },
+    {
+        "windwp/nvim-autopairs",
+        event = "InsertEnter",
+        config = function()
+            require("nvim-autopairs").setup()
+            local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+            local cmp = require("cmp")
+            cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
+        end,
+    },
 }, { lockfile = vim.fn.stdpath("data") .. "/lazy/lazy-lock.json", })
 
 local ts_languages = {
@@ -278,3 +289,19 @@ vim.keymap.set('n', '<End>', function()
 end, { desc = "Run RUN_CMD in popup" })
 
 -- require("word_anchors").setup()
+
+-- Rename tmux window to current file
+if os.getenv("TMUX") then
+    vim.api.nvim_create_autocmd("BufEnter", {
+        callback = function()
+            local name = vim.fn.expand("%:t")
+            if name == "" then name = "[nvim]" end
+            vim.fn.system("tmux rename-window " .. vim.fn.shellescape(name))
+        end,
+    })
+    vim.api.nvim_create_autocmd("VimLeave", {
+        callback = function()
+            vim.fn.system("tmux set-window-option automatic-rename on")
+        end,
+    })
+end
