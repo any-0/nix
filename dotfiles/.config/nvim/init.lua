@@ -23,7 +23,7 @@ vim.opt.smartcase = true
 vim.opt.list = true
 vim.opt.listchars = { trail = "·" }
 vim.opt.sidescrolloff = 8
-vim.opt.scrolloff = 8000
+vim.opt.scrolloff = 10
 vim.opt.statuscolumn = " %l  │  "
 vim.cmd.colorscheme("anyscheme")
 vim.opt.pumheight = 5
@@ -74,6 +74,14 @@ vim.keymap.set("i", "<C-Space>", "<C-x><C-n>")
 vim.keymap.set("n", "<Home>", function()
     vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end)
+
+
+
+vim.keymap.set({ "n", "v", "o" }, "<Up>", "<Nop>")
+vim.keymap.set({ "n", "v", "o" }, "<Down>", "<Nop>")
+vim.keymap.set({ "n", "v", "o" }, "<Left>", "<Nop>")
+vim.keymap.set({ "n", "v", "o" }, "<Right>", "<Nop>")
+
 
 -- Lazy
 
@@ -185,6 +193,7 @@ require("lazy").setup({
                     vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
                     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
                     vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+                    vim.keymap.set("n", "gs", "<cmd>LspClangdSwitchSourceHeader<CR>", opts)
                 end,
             })
         end,

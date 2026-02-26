@@ -20,7 +20,8 @@ setopt HIST_IGNORE_DUPS APPEND_HISTORY SHARE_HISTORY
 # Prompt
 source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/prompt.zsh"
 
-# Cursor: always beam
+# Emacs keymap (no vi mode) + beam cursor
+bindkey -e
 printf '\e[6 q'
 
 # zoxide

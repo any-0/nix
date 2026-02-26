@@ -15,7 +15,7 @@ build:
 	@mkdir -p $(BUILD_DIR)
 
 $(TARGET): $(OBJ) | build
-	@$(CC) $(CFLAGS) -o $@ $^
+	@$(CC) $(CFLAGS) -o $@ $^ -lm
 	@chmod +x $@
 
 run: $(TARGET)
