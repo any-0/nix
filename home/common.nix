@@ -47,19 +47,13 @@ in
   programs.direnv.enable = true;
   programs.direnv.nix-direnv.enable = true;
 
-  programs.zsh = {
-    enable = true;
-    dotDir = "${config.xdg.configHome}/zsh";
-    initContent = ''
-      source "${dotfilesDir}/.config/zsh/.zshrc"
-    '';
-  };
-
+  xdg.configFile."zsh/.zshrc".source = dot ".config/zsh/.zshrc";
   xdg.configFile."zsh/prompt.zsh".source = dot ".config/zsh/prompt.zsh";
   xdg.configFile."zsh/eza-colors.zsh".source = dot ".config/zsh/eza-colors.zsh";
   xdg.configFile."eza/theme.yml".source = dot ".config/eza/theme.yml";
 
   xdg.configFile."nvim".source = dot ".config/nvim";
+  home.file.".zshenv".source = dot ".zshenv";
   home.file.".wezterm.lua".source = dot ".wezterm.lua";
 
   home.sessionVariables.DOCKER_CLI_PLUGIN_EXTRA_DIRS = "${pkgs.docker-compose}/libexec/docker/cli-plugins";

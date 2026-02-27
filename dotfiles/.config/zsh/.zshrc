@@ -1,3 +1,13 @@
+# Make Nix profile completions available when Home Manager's zsh wrapper is disabled.
+typeset -U path cdpath fpath manpath
+for profile in ${(z)NIX_PROFILES}; do
+  fpath+=(
+    "$profile/share/zsh/site-functions"
+    "$profile/share/zsh/$ZSH_VERSION/functions"
+    "$profile/share/zsh/vendor-completions"
+  )
+done
+
 # Completion
 autoload -Uz compinit
 _ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
@@ -23,6 +33,8 @@ source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/prompt.zsh"
 # Emacs keymap (no vi mode) + beam cursor
 bindkey -e
 printf '\e[6 q'
+
+PROMPT_EOL_MARK=''
 
 # zoxide
 if command -v zoxide >/dev/null 2>&1; then
