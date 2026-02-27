@@ -109,3 +109,8 @@ if [[ -o interactive ]] && [[ -z "$TMUX" ]] && [[ "$TERM" != "dumb" ]] && comman
     trap "tmux kill-session -t '$__ses' 2>/dev/null" HUP
     tmux attach -t "$__ses" && exit
 fi
+
+#Edit command in nvim
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey '^X^E' edit-command-line
