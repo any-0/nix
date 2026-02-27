@@ -4,11 +4,15 @@
   outputs = { self }: {
     templates.c = {
       path = ./c;
-      description = "C project (gcc + make + gdb + clang-format)";
+      description = "C project";
     };
     templates.python = {
       path = ./python;
-      description = "Python project (direnv + uv/ruff/pyright)";
+      description = "Python project";
+    };
+    templates.pyts = {
+      path = ./pyts;
+      description = "TypeScript + Python project";
     };
   };
 }

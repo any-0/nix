@@ -1,5 +1,5 @@
 {
-  description = "Python project";
+  description = "TypeScript + Python project";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -10,8 +10,12 @@
   in {
     devShells.${system}.default = pkgs.mkShell {
       packages = with pkgs; [
-        python312
+        # ts_ls needs the TypeScript SDK (tsserver)
+        typescript
+        typescript-language-server
+        pyright
         ruff
+        prettier
       ];
     };
   };

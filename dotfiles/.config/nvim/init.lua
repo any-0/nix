@@ -264,6 +264,8 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
+require("python_ruff_format").setup()
+
 vim.keymap.set('n', '<End>', function()
   local cmd = os.getenv("RUN_CMD")
   if not cmd then

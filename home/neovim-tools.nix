@@ -11,6 +11,7 @@
     # rust-analyzer
     # cargo
     pyright
+    ruff
     typescript
     typescript-language-server
     bash-language-server

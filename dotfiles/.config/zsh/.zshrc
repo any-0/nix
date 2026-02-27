@@ -64,6 +64,14 @@ alias python='python3'
 alias shit='shutdown now'
 alias fb="fileBrowser >/dev/null 2>&1 & disown; exit"
 
+format() {
+    if [[ -z "${FORMAT_CMD:-}" ]]; then
+        echo "FORMAT_CMD is not set for this directory" >&2
+        return 1
+    fi
+    eval "$FORMAT_CMD"
+}
+
 alias tma='tmux attach'
 alias tmd='tmux detach-client'
 alias tmls='tmux ls'
