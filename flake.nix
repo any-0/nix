@@ -45,6 +45,7 @@
     wslModules = [
       ./home/common.nix
       ./home/wsl.nix
+      ./home/root.nix
     ];
   in
   {
