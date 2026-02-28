@@ -36,7 +36,6 @@ vim.cmd([[
   cabbrev Q  q
 ]])
 
-
 -- Persistent undo
 
 vim.opt.undofile   = true
@@ -44,7 +43,6 @@ vim.opt.undolevels = 1000
 vim.opt.undoreload = 1000
 local undo_root = vim.fn.stdpath('state') .. '/undo'
 vim.opt.undodir = undo_root .. '//'
-
 
 -- Keymaps
 
@@ -75,8 +73,6 @@ vim.keymap.set("n", "<Home>", function()
     vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end)
 
-
-
 vim.keymap.set({ "n", "v", "o" }, "<Up>", "<Nop>")
 vim.keymap.set({ "n", "v", "o" }, "<Down>", "<Nop>")
 vim.keymap.set({ "n", "v", "o" }, "<Left>", "<Nop>")
@@ -94,7 +90,6 @@ if not vim.loop.fs_stat(lazypath) then
     })
 end
 vim.opt.rtp:prepend(lazypath)
-
 
 -- Lazy plugins
 
@@ -129,10 +124,7 @@ require("lazy").setup({
             vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo", { undercurl = true, sp = "LightBlue" })
             vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint", { undercurl = true, sp = "LightGrey" })
 
-            local capabilities = vim.lsp.protocol.make_client_capabilities()
-
             vim.lsp.config("pyright", {
-                capabilities = capabilities,
                 cmd = { "pyright-langserver", "--stdio" },
                 settings = {
                     python = {
@@ -151,27 +143,21 @@ require("lazy").setup({
             })
 
             vim.lsp.config("clangd", {
-                capabilities = capabilities,
                 cmd = { "clangd" },
             })
             vim.lsp.config("ts_ls", {
-                capabilities = capabilities,
                 cmd = { "typescript-language-server", "--stdio" },
             })
             vim.lsp.config("rust_analyzer", {
-                capabilities = capabilities,
                 cmd = { "rust-analyzer" },
             })
             vim.lsp.config("dockerls", {
-                capabilities = capabilities,
                 cmd = { "docker-langserver", "--stdio" },
             })
             vim.lsp.config("docker_compose_language_service", {
-                capabilities = capabilities,
                 cmd = { "docker-compose-langserver", "--stdio" },
             })
             vim.lsp.config("bashls", {
-                capabilities = capabilities,
                 cmd = { "bash-language-server", "start" },
             })
 
@@ -299,7 +285,7 @@ vim.keymap.set('n', '<End>', function()
   vim.keymap.set("t", "<Esc>", "<C-\\><C-n>:close<CR>", { buffer = buf })
 end, { desc = "Run RUN_CMD in popup" })
 
--- require("word_anchors").setup()
+require("word_anchors").setup()
 
 -- Rename tmux window to current file
 if os.getenv("TMUX") then
