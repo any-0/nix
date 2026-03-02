@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Copy gopass password to clipboard
+# Usage: gpp <entry>
+# Supports tab completion via: complete -o default -C 'gopass ls --flat' gpp
+
+if [[ $# -lt 1 ]]; then
+  echo "usage: gpp <entry>" >&2
+  exit 1
+fi
+
+gopass show -c "$1"

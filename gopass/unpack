@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+STORE_DIR="$HOME/nix/gopass/store"
+ARCHIVE="$HOME/nix/gopass/store.tar.gpg"
+
+if [[ ! -f "$ARCHIVE" ]]; then
+  echo "Encrypted archive not found at $ARCHIVE" >&2
+  exit 1
+fi
+
+mkdir -p "$HOME/nix/gopass"
+gpg --decrypt "$ARCHIVE" | tar -xf - -C "$HOME/nix/gopass"
+echo "Unpacked gopass store → $STORE_DIR"

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Copy gopass username to clipboard
+# Usage: gpu <entry>
+# Supports tab completion via: complete -o default -C 'gopass ls --flat' gpu
+
+if [[ $# -lt 1 ]]; then
+  echo "usage: gpu <entry>" >&2
+  exit 1
+fi
+
+gopass show -c "$1" username

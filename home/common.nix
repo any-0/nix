@@ -1,8 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
   scriptsDir = "${config.home.homeDirectory}/nix/scripts";
+  gopassStoreDir = "${config.home.homeDirectory}/nix/gopass/store";
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
 in
 {
@@ -36,8 +37,17 @@ in
   home.file.".zshenv".source = dot ".zshenv";
   home.file.".wezterm.lua".source = dot ".wezterm.lua";
 
-  home.sessionVariables.DOCKER_CLI_PLUGIN_EXTRA_DIRS = "${pkgs.docker-compose}/libexec/docker/cli-plugins";
+  home.sessionVariables = {
+    DOCKER_CLI_PLUGIN_EXTRA_DIRS = "${pkgs.docker-compose}/libexec/docker/cli-plugins";
+    PASSWORD_STORE_DIR = gopassStoreDir;
+  };
   home.sessionPath = [ scriptsDir ];
+
+  home.activation.gopassStoreSetup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    store_dir="${gopassStoreDir}"
+    $DRY_RUN_CMD mkdir -p "$store_dir"
+    $DRY_RUN_CMD ${pkgs.gopass}/bin/gopass config mounts.path "$store_dir"
+  '';
 
   home.packages = with pkgs; [
     ripgrep
@@ -49,6 +59,7 @@ in
     python3
     # gcc
     gnumake
+    gopass
     claude-code
     codex
     zoxide

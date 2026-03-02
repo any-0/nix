@@ -62,6 +62,7 @@ alias c='cd'
 alias :q='exit'
 alias :q!='exit'
 alias p='python3'
+compdef '_arguments "1:entry:($( gopass ls --flat ))"' gpp gpu
 alias python='python3'
 alias shit='shutdown now'
 alias fb="fileBrowser >/dev/null 2>&1 & disown; exit"

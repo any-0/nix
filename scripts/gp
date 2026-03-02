@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Decrypt one entry to cache the passphrase in the GPG agent
+entry="$(gopass ls --flat | head -1)"
+gopass show "$entry" > /dev/null
+echo "Gopass unlocked."
