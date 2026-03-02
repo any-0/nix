@@ -113,10 +113,10 @@ done
 
 # Auto-start tmux
 if [[ -o interactive ]] && [[ -z "$TMUX" ]] && [[ "$TERM" != "dumb" ]] && command -v tmux &>/dev/null; then
-    if tmux has-session -t main 2>/dev/null; then
-        tmux attach -t main
+    if tmux has-session -t Main 2>/dev/null; then
+        tmux attach -t Main
     else
-        tmux new-session -s main
+        tmux new-session -s Main
     fi
 fi
 
