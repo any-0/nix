@@ -52,6 +52,7 @@ in
     python3
     # gcc
     gnumake
+    claude-code
     codex
     zoxide
     eza

@@ -14,11 +14,16 @@
     username = "julian";
     homeDirectory = "/home/julian";
     codexOverlay = import ./overlays/codex.nix;
+    claudeCodeOverlay = import ./overlays/claude-code.nix;
 
     mkPkgs = system:
       import nixpkgs {
         inherit system;
-        overlays = [ codexOverlay ];
+        overlays = [ codexOverlay claudeCodeOverlay ];
+        config.allowUnfreePredicate = pkg:
+          builtins.elem (nixpkgs.lib.getName pkg) [
+            "claude-code"
+          ];
       };
 
     mkHome = {
