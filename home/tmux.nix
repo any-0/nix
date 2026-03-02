@@ -47,12 +47,6 @@ in
 
       bind -n M-t new-window
       bind -n M-T new-session
-      # Manual detach: mark the session so it is kept.
-      bind-key d set-option @manual_detach 1 \; detach-client
-      bind-key C-d set-option @manual_detach 1 \; detach-client
-      # If the last client disappears and session was not manually detached,
-      # treat it as terminal/app close and kill the session.
-      set-hook -g client-detached 'run-shell "if [ \"#{session_attached}\" -eq 0 ]; then if [ \"$(tmux show-options -v -t \"#{hook_session_name}\" @manual_detach 2>/dev/null)\" = \"1\" ]; then tmux set-option -u -t \"#{hook_session_name}\" @manual_detach; else tmux kill-session -t \"#{hook_session_name}\"; fi; fi"'
 
       set-option -g status-position top
 

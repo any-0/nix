@@ -15,6 +15,8 @@ mkdir -p "${_ZSH_CACHE_DIR}"
 compinit -d "${_ZSH_CACHE_DIR}/zcompdump-${ZSH_VERSION}"
 
 setopt extendedglob globdots MENU_COMPLETE
+# Disable terminal EOF on Ctrl-D so it cannot close shells/panes.
+stty eof undef 2>/dev/null || true
 zstyle ':completion:*' matcher-list \
   'm:{a-z}={A-Z}' \
   'r:|.=*' \
@@ -110,15 +112,23 @@ done
 
 # Auto-start tmux
 if [[ -o interactive ]] && [[ -z "$TMUX" ]] && [[ "$TERM" != "dumb" ]] && command -v tmux &>/dev/null; then
-    __ses=0; while tmux has-session -t "$__ses" 2>/dev/null; do ((__ses++)); done
-    tmux new-session -d -s "$__ses"
-    tmux attach -t "$__ses"
+    if tmux has-session -t main 2>/dev/null; then
+        tmux attach -t main
+    else
+        tmux new-session -s main
+    fi
 fi
 
 #Edit command in nvim
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^X^E' edit-command-line
+
+# Make Ctrl-D a no-op in interactive editing.
+ctrl_d_noop() { : }
+zle -N ctrl_d_noop
+bindkey -M emacs '^D' ctrl_d_noop
+bindkey -M viins '^D' ctrl_d_noop
 
 # Force Ctrl-T mapping last, in case other scripts override it.
 bindkey -s -M emacs '^T' '^Utmux_auto\n'
