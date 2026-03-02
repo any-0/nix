@@ -97,10 +97,8 @@ tmux_auto() {
     fi
 }
 
-# Ctrl-T for tmux (zsh widget)
-zle -N tmux_auto_widget
-tmux_auto_widget() { tmux_auto }
-bindkey '^T' tmux_auto_widget
+# Ctrl-T for tmux
+bindkey -s '^T' '^Utmux_auto\n'
 
 # Word-jump navigation (Ctrl + Left/Right)
 for km in emacs viins; do
@@ -114,11 +112,14 @@ done
 if [[ -o interactive ]] && [[ -z "$TMUX" ]] && [[ "$TERM" != "dumb" ]] && command -v tmux &>/dev/null; then
     __ses=0; while tmux has-session -t "$__ses" 2>/dev/null; do ((__ses++)); done
     tmux new-session -d -s "$__ses"
-    trap "tmux kill-session -t '$__ses' 2>/dev/null" HUP
-    tmux attach -t "$__ses" && exit
+    tmux attach -t "$__ses"
 fi
 
 #Edit command in nvim
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^X^E' edit-command-line
+
+# Force Ctrl-T mapping last, in case other scripts override it.
+bindkey -s -M emacs '^T' '^Utmux_auto\n'
+bindkey -s -M viins '^T' '^Utmux_auto\n'
