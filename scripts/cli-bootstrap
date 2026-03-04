@@ -25,7 +25,7 @@ if ! command -v nix >/dev/null 2>&1; then
 fi
 
 if [[ -z "${WSL_DISTRO_NAME:-}" ]] && ! grep -qi microsoft /proc/version 2>/dev/null; then
-  echo "Warning: this does not look like WSL."
+  echo "Warning: CLI environment marker was not detected."
   echo "Continuing anyway."
 fi
 

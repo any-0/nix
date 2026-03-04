@@ -47,9 +47,9 @@
       ./home/desktop.nix
     ];
 
-    wslModules = [
+    cliModules = [
       ./home/common.nix
-      ./home/wsl.nix
+      ./home/cli.nix
       ./home/root.nix
     ];
   in
@@ -77,7 +77,7 @@
 
       "julian-cli" = mkHome {
         inherit system username homeDirectory;
-        modules = wslModules;
+        modules = cliModules;
       };
     };
   };
