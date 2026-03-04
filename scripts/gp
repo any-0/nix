@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Refresh the GPG agent's TTY so pinentry-tty can prompt here
+export GPG_TTY=$(tty)
+gpg-connect-agent updatestartuptty /bye > /dev/null
+
 # Decrypt one entry to cache the passphrase in the GPG agent
-entry="$(gopass ls --flat | head -1)"
-gopass show "$entry" > /dev/null
+mapfile -t entries < <(gopass ls --flat)
+gopass show "${entries[0]}" > /dev/null
 echo "Gopass unlocked."

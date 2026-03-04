@@ -2,8 +2,8 @@ final: prev:
 let
   system = prev.stdenv.hostPlatform.system;
   # Run ./update-codex.sh to update
-  version = "0.106.0";
-  hash = "sha256:0vwlps4pi0anr3vqyrfpk1rwf7ihwns6lf3k5xyipjjzisknld73";
+  version = "0.107.0";
+  hash = "sha256:1jvmf6k58kk2z9scyld296c1m0yxc9ra6mxihc6a0v5vsxa91rix";
 in
 {
   codex =

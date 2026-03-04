@@ -81,6 +81,7 @@ alias tmls='tmux ls'
 alias tmks='tmux kill-server'
 
 # Environment
+export GPG_TTY=$(tty)
 export EDITOR=nvim
 export PATH=/home/julian/.opencode/bin:$PATH
 if [[ -d "$HOME/nix/scripts" ]] && [[ ":$PATH:" != *":$HOME/nix/scripts:"* ]]; then
