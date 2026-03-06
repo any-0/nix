@@ -7,7 +7,7 @@
   programs.bash = {
     enable = true;
     initExtra = ''
-      if [[ -n "''${WSL_DISTRO_NAME:-}" ]] && [[ $- == *i* ]] && command -v zsh >/dev/null 2>&1; then
+      if [[ $- == *i* ]] && command -v zsh >/dev/null 2>&1; then
         exec zsh -l
       fi
     '';

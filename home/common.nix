@@ -50,11 +50,13 @@ in
   '';
 
   home.packages = with pkgs; [
+    zsh
     ripgrep
     fd
     fzf
     wget
     curl
+    jq
     unzip
     python3
     # gcc
