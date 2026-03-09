@@ -281,9 +281,9 @@ layout {
 // which may be more convenient to use.
 // See the binds section below for more spawn examples.
 
-// This line starts waybar, a commonly used bar for Wayland compositors.
+// Start the custom Niri bar.
 spawn-at-startup "swaybg" "-i" "/home/julian/Pictures/Wallpapers/pexels-lum3n-44775-167699.jpg" "-m" "fill"
-spawn-at-startup "waybar"
+spawn-at-startup "/home/julian/bar/target/release/bar"
 spawn-at-startup "xwayland-satellite"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
