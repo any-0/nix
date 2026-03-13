@@ -73,11 +73,6 @@ vim.keymap.set("n", "<Home>", function()
     vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end)
 
-vim.keymap.set({ "n", "v", "o" }, "<Up>", "<Nop>")
-vim.keymap.set({ "n", "v", "o" }, "<Down>", "<Nop>")
-vim.keymap.set({ "n", "v", "o" }, "<Left>", "<Nop>")
-vim.keymap.set({ "n", "v", "o" }, "<Right>", "<Nop>")
-
 
 -- Lazy
 

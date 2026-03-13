@@ -45,8 +45,10 @@ in
       set -g prefix M-a
       bind M-a send-prefix
 
+      bind s choose-tree -Zs -K '#{e|+|:#{line},1}'
       bind -n M-t new-window
       bind -n M-T new-session
+      bind -n M-s choose-tree -Zs -K '#{e|+|:#{line},1}'
 
       set-option -g status-position top
 
