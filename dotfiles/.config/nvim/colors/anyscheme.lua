@@ -24,6 +24,11 @@ local c = {
 
     error       = "#8B0000",
     warn        = "#664400",
+
+    diff_add    = "#9BE7A7",
+    diff_delete = "#F2A6A6",
+    diff_change = "#F2DEA0",
+    diff_text   = "#E0C46C",
 }
 
 vim.g.eucalyptus_lualine_theme = {
@@ -97,6 +102,18 @@ local highlights = {
     Underlined   = { underline = true },
     Error        = { fg = c.error, bold = true },
     Todo         = { fg = "#FFFFFF", bg = c.teal_deep, bold = true },
+    DiffAdd      = { fg = c.fg, bg = c.diff_add },
+    DiffDelete   = { fg = c.error, bg = c.diff_delete },
+    DiffChange   = { fg = c.fg, bg = c.diff_change },
+    DiffText     = { fg = c.fg, bg = c.diff_text },
+    diffAdded    = { fg = c.emerald },
+    diffRemoved  = { fg = c.error },
+    diffChanged  = { fg = c.warn },
+    diffFile     = { fg = c.cyan_ink },
+    diffNewFile  = { fg = c.emerald },
+    diffOldFile  = { fg = c.error },
+    diffLine     = { fg = c.teal_deep },
+    diffIndexLine = { fg = c.aqua_dark },
 
     ["@variable"]          = { fg = c.fg },
     ["@variable.builtin"]  = { fg = c.teal_deep, italic = true },

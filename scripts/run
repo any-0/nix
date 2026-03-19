@@ -6,4 +6,12 @@ if [[ -z "${RUN_CMD:-}" ]]; then
   exit 1
 fi
 
+if [[ -z "${DIRENV_DIR:-}" ]]; then
+  echo "DIRENV_DIR is not set. Are you in a direnv-managed directory?" >&2
+  exit 1
+fi
+
+direnv_root="${DIRENV_DIR#-}"
+cd "$direnv_root"
+
 exec $RUN_CMD "$@"
