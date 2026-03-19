@@ -1,7 +1,3 @@
--- Leader (must be before lazy)
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
-
 -- Opts
 
 vim.opt.number = true
@@ -92,8 +88,7 @@ require("lazy").setup({
     {
         "easymotion/vim-easymotion",
         init = function()
-            vim.g.EasyMotion_leader_key = "<Leader>"
-            vim.keymap.set({ "n", "x", "o" }, "m", "<Plug>(easymotion-s)", { remap = true })
+            vim.keymap.set({ "n", "x", "o" }, "<Space>", "<Plug>(easymotion-s)", { remap = true })
         end,
     },
     {
@@ -179,8 +174,6 @@ require("lazy").setup({
                     vim.keymap.set("n", "gl", vim.diagnostic.open_float, opts)
                     vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
                     vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
-                    vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-                    vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
                     vim.keymap.set("n", "gs", "<cmd>LspClangdSwitchSourceHeader<CR>", opts)
                 end,
             })
