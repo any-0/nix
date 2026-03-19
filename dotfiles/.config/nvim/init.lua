@@ -90,6 +90,13 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
     {
+        "easymotion/vim-easymotion",
+        init = function()
+            vim.g.EasyMotion_leader_key = "<Leader>"
+            vim.keymap.set({ "n", "x", "o" }, "m", "<Plug>(easymotion-s)", { remap = true })
+        end,
+    },
+    {
         "nvim-lualine/lualine.nvim",
         dependencies = { "nvim-tree/nvim-web-devicons" },
         config = function()

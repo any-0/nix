@@ -8,7 +8,7 @@ vim.o.termguicolors = true
 vim.g.colors_name = "anyscheme"
 
 local c = {
-    bg          = "#FFFFFF",
+    bg          = "#fcf9f0",
     fg          = "#000000",
 
     teal_deep   = "#009393",

@@ -38,6 +38,14 @@ printf '\e[6 q'
 
 PROMPT_EOL_MARK=''
 
+# Cycle completion backwards with Shift-Tab.
+if [[ -n "${terminfo[kcbt]:-}" ]]; then
+    bindkey -M emacs "${terminfo[kcbt]}" reverse-menu-complete
+    bindkey -M viins "${terminfo[kcbt]}" reverse-menu-complete
+fi
+bindkey -M emacs '^[[Z' reverse-menu-complete
+bindkey -M viins '^[[Z' reverse-menu-complete
+
 # zoxide
 if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh --cmd cd)"

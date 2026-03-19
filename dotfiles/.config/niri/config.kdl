@@ -283,7 +283,7 @@ layout {
 
 // Start the custom Niri bar.
 spawn-at-startup "swaybg" "-i" "/home/julian/Pictures/Wallpapers/pexels-lum3n-44775-167699.jpg" "-m" "fill"
-spawn-at-startup "/home/julian/bar/target/release/bar"
+spawn-at-startup "/home/julian/000-projects/bar/target/release/bar"
 spawn-at-startup "xwayland-satellite"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
