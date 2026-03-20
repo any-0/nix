@@ -26,6 +26,9 @@ in
   };
 
   programs.direnv.enable = true;
+  programs.direnv.config = {
+    hide_env_diff = true;
+  };
   programs.direnv.nix-direnv.enable = true;
 
   xdg.configFile."zsh/.zshrc".source = dot ".config/zsh/.zshrc";
