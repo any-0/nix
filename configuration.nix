@@ -5,7 +5,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  smbCredentials = "${config.users.users.julian.home}/nix/secrets/smb-nas.cred";
+  smbCredentials = "/home/julian/nix/secrets/smb-nas.cred";
   hasSmbCredentials = builtins.pathExists smbCredentials;
   smbMountOptions = [
     "credentials=${smbCredentials}"
@@ -97,7 +97,7 @@ in
   warnings = lib.optional (!hasSmbCredentials)
     "SMB credentials not found at ${smbCredentials}; skipping /mnt/home1 and /mnt/home2 mounts.";
 
-  fileSystems = lib.optionalAttrs hasSmbCredentials {
+  fileSystems = lib.mkIf hasSmbCredentials {
     "/mnt/home1" = {
       device = "//192.168.0.227/home";
       fsType = "cifs";

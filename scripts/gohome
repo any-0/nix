@@ -7,4 +7,4 @@ PROFILE="${1:-julian-cli}"
 BACKUP_EXT="${HM_BACKUP_EXT:-hm-bak}"
 
 nix run github:nix-community/home-manager -- \
-  switch -b "${BACKUP_EXT}" --flake "${REPO_DIR}#${PROFILE}"
+  switch -b "${BACKUP_EXT}" --flake "path:${REPO_DIR}#${PROFILE}"

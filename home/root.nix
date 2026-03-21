@@ -13,8 +13,8 @@ let
   };
 
   linkCommands = lib.concatStringsSep "\n" (lib.mapAttrsToList (dest: src: ''
-    /usr/bin/sudo mkdir -p "$(dirname '${dest}')"
-    /usr/bin/sudo ln -sfn '${dotfilesDir}/${src}' '${dest}'
+    /run/wrappers/bin/sudo mkdir -p "$(dirname '${dest}')"
+    /run/wrappers/bin/sudo ln -sfn '${dotfilesDir}/${src}' '${dest}'
   '') links);
 in
 {
