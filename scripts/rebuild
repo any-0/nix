@@ -37,8 +37,10 @@ if git diff --cached --quiet; then
   exit 1
 fi
 
-echo "Rebuilding host 'vm' from '${REPO_DIR}'..."
-sudo nixos-rebuild switch --flake "${REPO_DIR}#vm"
+HOSTNAME=$(hostnamectl --static 2>/dev/null || hostname)
+
+echo "Rebuilding host '${HOSTNAME}' from '${REPO_DIR}'..."
+sudo nixos-rebuild switch --flake "${REPO_DIR}#${HOSTNAME}"
 
 gen=$(nixos-rebuild list-generations | grep -m1 ' True$')
 git commit -m "Nix rebuild #$gen"

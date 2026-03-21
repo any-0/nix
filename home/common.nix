@@ -38,7 +38,6 @@ in
 
   xdg.configFile."nvim".source = dot ".config/nvim";
   home.file.".zshenv".source = dot ".zshenv";
-  home.file.".wezterm.lua".source = dot ".wezterm.lua";
   home.file.".codex/AGENTS.md".source = dot ".codex/AGENTS.md";
 
   home.sessionVariables = {

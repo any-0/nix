@@ -6,23 +6,32 @@
 
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    barSource = {
+      url = "git+https://gl.any-0.com/bar?ref=main";
+      flake = false;
+    };
   };
 
-  outputs = { nixpkgs, home-manager, ... }:
+  outputs = { nixpkgs, home-manager, barSource, ... }:
   let
     system = "x86_64-linux";
+    hostname = "pc";
     username = "julian";
     homeDirectory = "/home/julian";
     codexOverlay = import ./overlays/codex.nix;
     claudeCodeOverlay = import ./overlays/claude-code.nix;
+    barOverlay = import ./overlays/bar.nix { inherit barSource; };
 
     mkPkgs = system:
       import nixpkgs {
         inherit system;
-        overlays = [ codexOverlay claudeCodeOverlay ];
+        overlays = [ codexOverlay claudeCodeOverlay barOverlay ];
         config.allowUnfreePredicate = pkg:
           builtins.elem (nixpkgs.lib.getName pkg) [
             "claude-code"
+            "steam"
+            "steam-unwrapped"
           ];
       };
 
@@ -54,13 +63,21 @@
     ];
   in
   {
-    nixosConfigurations.vm = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
       inherit system;
       modules = [
         ./configuration.nix
         home-manager.nixosModules.home-manager
         {
-          nixpkgs.overlays = [ codexOverlay ];
+          networking.hostName = hostname;
+
+          nixpkgs.overlays = [ codexOverlay claudeCodeOverlay barOverlay ];
+          nixpkgs.config.allowUnfreePredicate = pkg:
+            builtins.elem (nixpkgs.lib.getName pkg) [
+              "claude-code"
+              "steam"
+              "steam-unwrapped"
+            ];
 
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
@@ -80,5 +97,7 @@
         modules = cliModules;
       };
     };
+
+    packages.${system}.julian-bar = (mkPkgs system).julian-bar;
   };
 }

@@ -283,7 +283,7 @@ layout {
 
 // Start the custom Niri bar.
 spawn-at-startup "swaybg" "-i" "/home/julian/Pictures/Wallpapers/pexels-lum3n-44775-167699.jpg" "-m" "fill"
-spawn-at-startup "/home/julian/000-projects/bar/target/release/bar"
+spawn-at-startup "bar"
 spawn-at-startup "xwayland-satellite"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
@@ -400,9 +400,9 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     // Programs
-    Mod+C hotkey-overlay-title="Open a Terminal: kitty" { spawn "/usr/bin/kitty"; }
+    Mod+C hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
     Mod+R hotkey-overlay-title="Run an Application: rofi" { spawn-sh "rofi -show run"; }
-    Mod+E hotkey-overlay-title="Open File Manager" { spawn "fileBrowser"; }
+    Mod+E hotkey-overlay-title="Open File Manager" { spawn "dolphin"; }
     Mod+Y hotkey-overlay-title="Open Browser: zen-browser" { spawn "zen-browser"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
 

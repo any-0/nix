@@ -6,16 +6,26 @@
 
 let
   smbCredentials = "${config.users.users.julian.home}/nix/secrets/smb-nas.cred";
+  hasSmbCredentials = builtins.pathExists smbCredentials;
+  smbMountOptions = [
+    "credentials=${smbCredentials}"
+    "uid=1000"
+    "gid=100"
+    "iocharset=utf8"
+    "x-systemd.automount"
+    "nofail"
+    "x-systemd.idle-timeout=60"
+  ];
 in
 
 {
-  imports =
-    [
-      ./hardware-configuration.nix
-    ];
+  imports = [
+    ./hardware-configuration.nix
+    ./home/games.nix
+  ];
 
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/vda"; # or "nodev" for efi only
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
 
   networking.networkmanager.enable = true;
 
@@ -34,24 +44,23 @@ in
   ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  services.getty.autologinUser = "julian";
   fonts.packages = with pkgs; [
     jetbrains-mono
+    nerd-fonts.iosevka-term-slab
   ];
 
-programs.bash.loginShellInit = ''
-  if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" = 1 ] && [ "$(tty)" = /dev/tty1 ]; then
-    export XDG_CURRENT_DESKTOP=niri
-    export XDG_SESSION_TYPE=wayland
-    export XDG_SESSION_DESKTOP=niri
-    exec niri
-  fi
-'';
-
-
   programs.niri.enable = true;
+  services.greetd = {
+    enable = true;
+    useTextGreeter = true;
+    settings.default_session.command =
+      "${lib.getExe pkgs.tuigreet} --time --remember --remember-user-session --asterisks --cmd ${config.programs.niri.package}/bin/niri-session";
+  };
   services.dbus.enable = true;
   hardware.graphics.enable = true;
+  hardware.enableRedistributableFirmware = true;
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = true;
   services.seatd.enable = true;
   services.pipewire = {
     enable = true;
@@ -60,6 +69,7 @@ programs.bash.loginShellInit = ''
     alsa.support32Bit = true;
   };
   security.rtkit.enable = true;
+  services.upower.enable = true;
   xdg.portal = {
     enable = true;
     wlr.enable = true;
@@ -69,49 +79,35 @@ programs.bash.loginShellInit = ''
   };
 
   console.keyMap = "de";
-  services.xserver.videoDrivers = [ "virtio" ];
-  services.spice-vdagentd.enable = true;
+  services.xserver.videoDrivers = [ "amdgpu" ];
   services.openssh.enable = true;
   services.openssh.settings.PasswordAuthentication = true;
 
-
-nix.gc = {
-  automatic = true;
-  dates = "weekly";
-  options = "--delete-older-than 7d";
-};
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
 
   virtualisation.docker.enable = true;
   virtualisation.containerd.enable = true;
 
   #SMB
   boot.supportedFilesystems = [ "cifs" ];
+  warnings = lib.optional (!hasSmbCredentials)
+    "SMB credentials not found at ${smbCredentials}; skipping /mnt/home1 and /mnt/home2 mounts.";
 
-  fileSystems."/mnt/home1" = {
-    device = "//192.168.0.227/home";
-    fsType = "cifs";
-    options = [
-      "credentials=${smbCredentials}"
-      "uid=1000"
-      "gid=100"
-      "iocharset=utf8"
-      "x-systemd.automount"
-      "nofail"
-      "x-systemd.idle-timeout=60"
-    ];
-  };
+  fileSystems = lib.optionalAttrs hasSmbCredentials {
+    "/mnt/home1" = {
+      device = "//192.168.0.227/home";
+      fsType = "cifs";
+      options = smbMountOptions;
+    };
 
-  fileSystems."/mnt/home2" = {
-    device = "//192.168.0.227/home2";
-    fsType = "cifs";
-    options = [
-      "credentials=${smbCredentials}"
-      "uid=1000"
-      "gid=100"
-      "iocharset=utf8"
-      "x-systemd.automount"
-      "nofail"
-      "x-systemd.idle-timeout=60"
-    ];
+    "/mnt/home2" = {
+      device = "//192.168.0.227/home2";
+      fsType = "cifs";
+      options = smbMountOptions;
+    };
   };
 }

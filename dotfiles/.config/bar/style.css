@@ -1,0 +1,223 @@
+* {
+  border: none;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  font-family: "JetBrainsMono Nerd Font Mono";
+  font-size: 14px;
+  font-weight: 600;
+}
+
+window,
+#bar-window {
+  background: transparent;
+}
+
+#bar-root {
+  background: transparent;
+}
+
+.pill {
+  background: #f4f5f7;
+  border: 1px solid #ffffff;
+  border-radius: 17px;
+  padding: 0 10px;
+  min-height: 30px;
+}
+
+.workspace-pill {
+  padding: 0 10px;
+}
+
+.module {
+  color: #303030;
+  padding: 0 4px;
+}
+
+.module-label {
+  color: #303030;
+  padding: 0 4px;
+}
+
+.audio-menu {
+  background: #f4f5f7;
+  border: 1px solid #ffffff;
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
+  box-shadow: none;
+}
+
+.audio-menu {
+  padding: 6px 10px 7px 10px;
+}
+
+.calendar-menu {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 8px 10px 10px 10px;
+}
+
+#popup-panel-window {
+  background: transparent;
+}
+
+.calendar-popup-frame {
+  background: #f4f5f7;
+  border: 1px solid #ffffff;
+  border-radius: 12px;
+}
+
+#popup-overlay-window,
+#popup-overlay-hitbox {
+  background: transparent;
+}
+
+#audio-slider {
+  background: transparent;
+  min-width: 21px;
+}
+
+.calendar-header {
+  padding: 0 0 8px 0;
+}
+
+.calendar-title {
+  color: #303030;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.calendar-nav {
+  background: rgba(48, 48, 48, 0.06);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  box-shadow: none;
+  color: #303030;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+}
+
+.calendar-nav:hover,
+.calendar-nav:focus,
+.calendar-nav:active {
+  background: rgba(48, 48, 48, 0.12);
+  border-color: rgba(48, 48, 48, 0.08);
+  box-shadow: none;
+  outline: none;
+}
+
+.calendar-weekday {
+  color: rgba(48, 48, 48, 0.58);
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 28px;
+  min-height: 18px;
+}
+
+.calendar-day {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: #303030;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+}
+
+.calendar-day.empty {
+  color: transparent;
+}
+
+.calendar-day.today {
+  background: rgba(48, 48, 48, 0.12);
+  border-color: rgba(48, 48, 48, 0.22);
+  font-weight: 700;
+}
+
+.module.muted .module-label,
+.module.low .module-label,
+.module.disconnected .module-label,
+.workspace-button.urgent {
+  color: #e06c75;
+}
+
+.workspace-button {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: #303030;
+  padding: 0 12px 0 11px;
+  min-height: 26px;
+}
+
+.workspace-content {
+  padding: 0;
+}
+
+.workspace-name {
+  color: #303030;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.workspace-icons {
+  padding: 0;
+}
+
+.workspace-icon-button {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.workspace-icon-button:hover {
+  background: transparent;
+}
+
+.workspace-icon {
+  padding: 0;
+  margin: 0;
+  opacity: 0.96;
+}
+
+.workspace-icon-slot {
+  min-width: 18px;
+  min-height: 18px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0 1px;
+}
+
+.workspace-icon-slot.selected {
+  background: rgba(48, 48, 48, 0.08);
+  border-color: rgba(48, 48, 48, 0.22);
+}
+
+.workspace-button.focused .workspace-icon-slot.selected {
+  background: rgba(48, 48, 48, 0.12);
+  border-color: rgba(48, 48, 48, 0.3);
+}
+
+.workspace-overflow {
+  color: #303030;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.workspace-button:hover {
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.workspace-button.focused {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ffffff;
+}
