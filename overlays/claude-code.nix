@@ -2,8 +2,8 @@ final: prev:
 let
   system = prev.stdenv.hostPlatform.system;
   # Run ./update-claude-code.sh to update
-  version = "2.1.63";
-  hash = "sha256:1ldh75fn0hqb2n6vx16xx0b3qnn32ribp0znspzz14mvc7j4fi3k";
+  version = "2.1.81";
+  hash = "sha256:10f2iz0s5gbzbmg9izl03kgyic1mqfd7464mvl48n8ynj5akyzh4";
   baseUrl = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases";
 in
 {
