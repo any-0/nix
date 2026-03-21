@@ -26,6 +26,9 @@ in
   };
 
   programs.direnv.enable = true;
+  programs.direnv.config = {
+    hide_env_diff = true;
+  };
   programs.direnv.nix-direnv.enable = true;
 
   xdg.configFile."zsh/.zshrc".source = dot ".config/zsh/.zshrc";
@@ -36,6 +39,7 @@ in
   xdg.configFile."nvim".source = dot ".config/nvim";
   home.file.".zshenv".source = dot ".zshenv";
   home.file.".wezterm.lua".source = dot ".wezterm.lua";
+  home.file.".codex/AGENTS.md".source = dot ".codex/AGENTS.md";
 
   home.sessionVariables = {
     DOCKER_CLI_PLUGIN_EXTRA_DIRS = "${pkgs.docker-compose}/libexec/docker/cli-plugins";
