@@ -186,12 +186,13 @@ window,
 }
 
 .workspace-icon-button {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.08);
   border: 0;
   box-shadow: none;
   padding: 0;
-  min-width: 0;
-  min-height: 0;
+  min-width: 18px;
+  min-height: 18px;
+  border-radius: 6px;
 }
 
 .workspace-icon-button:hover {
@@ -205,7 +206,7 @@ window,
 }
 
 .workspace-icon-slot {
-  background: rgba(255, 255, 255, 0.08);
+  background: transparent;
   min-width: 18px;
   min-height: 18px;
   border: 1px solid transparent;
@@ -236,27 +237,27 @@ window,
   border: 0;
 }
 
-.workspace-icon-slot.workspace-cycle-1 {
+.workspace-icon-button.workspace-cycle-1 {
   background: @pride-1;
 }
 
-.workspace-icon-slot.workspace-cycle-2 {
+.workspace-icon-button.workspace-cycle-2 {
   background: @pride-2;
 }
 
-.workspace-icon-slot.workspace-cycle-3 {
+.workspace-icon-button.workspace-cycle-3 {
   background: @pride-3;
 }
 
-.workspace-icon-slot.workspace-cycle-4 {
+.workspace-icon-button.workspace-cycle-4 {
   background: @pride-4;
 }
 
-.workspace-icon-slot.workspace-cycle-5 {
+.workspace-icon-button.workspace-cycle-5 {
   background: @pride-5;
 }
 
-.workspace-icon-slot.workspace-cycle-6 {
+.workspace-icon-button.workspace-cycle-6 {
   background: @pride-6;
 }
 
@@ -264,15 +265,15 @@ window,
   color: #ffffff;
 }
 
-.workspace-button.focused .workspace-icon-slot {
+.workspace-button.focused .workspace-icon-button {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
 }
 
-.workspace-icon-slot.workspace-cycle-1.selected,
-.workspace-icon-slot.workspace-cycle-2.selected,
-.workspace-icon-slot.workspace-cycle-3.selected,
-.workspace-icon-slot.workspace-cycle-4.selected,
-.workspace-icon-slot.workspace-cycle-5.selected,
-.workspace-icon-slot.workspace-cycle-6.selected {
+.workspace-icon-button.workspace-cycle-1.selected,
+.workspace-icon-button.workspace-cycle-2.selected,
+.workspace-icon-button.workspace-cycle-3.selected,
+.workspace-icon-button.workspace-cycle-4.selected,
+.workspace-icon-button.workspace-cycle-5.selected,
+.workspace-icon-button.workspace-cycle-6.selected {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 }
