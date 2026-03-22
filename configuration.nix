@@ -61,6 +61,10 @@ in
     enable = true;
     restart = true;
     settings = {
+      default_session = {
+        user = "julian";
+        command = "${config.programs.niri.package}/bin/niri-session";
+      };
       initial_session = {
         user = "julian";
         command = "${config.programs.niri.package}/bin/niri-session";
