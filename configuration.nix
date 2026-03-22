@@ -6,7 +6,6 @@
 
 let
   smbCredentials = "/home/julian/nix/secrets/smb-nas.cred";
-  hasSmbCredentials = builtins.pathExists smbCredentials;
   smbMountOptions = [
     "credentials=${smbCredentials}"
     "uid=1000"
@@ -31,6 +30,9 @@ in
     device = "nodev";
   };
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.extraModprobeConfig = ''
+    options btusb enable_autosuspend=n
+  '';
 
   networking.networkmanager.enable = true;
 
@@ -103,10 +105,7 @@ in
 
   #SMB
   boot.supportedFilesystems = [ "cifs" ];
-  warnings = lib.optional (!hasSmbCredentials)
-    "SMB credentials not found at ${smbCredentials}; skipping /mnt/home1 and /mnt/home2 mounts.";
-
-  fileSystems = lib.mkIf hasSmbCredentials {
+  fileSystems = {
     "/mnt/home1" = {
       device = "//192.168.0.227/home";
       fsType = "cifs";
