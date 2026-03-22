@@ -24,7 +24,12 @@ in
     ./home/games.nix
   ];
 
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.enable = false;
+  boot.loader.grub = {
+    enable = true;
+    efiSupport = true;
+    device = "nodev";
+  };
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking.networkmanager.enable = true;
@@ -52,9 +57,13 @@ in
   programs.niri.enable = true;
   services.greetd = {
     enable = true;
-    useTextGreeter = true;
-    settings.default_session.command =
-      "${lib.getExe pkgs.tuigreet} --time --remember --remember-user-session --asterisks --cmd ${config.programs.niri.package}/bin/niri-session";
+    restart = true;
+    settings = {
+      initial_session = {
+        user = "julian";
+        command = "${config.programs.niri.package}/bin/niri-session";
+      };
+    };
   };
   services.dbus.enable = true;
   hardware.graphics.enable = true;
