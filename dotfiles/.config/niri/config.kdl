@@ -281,8 +281,8 @@ layout {
 // which may be more convenient to use.
 // See the binds section below for more spawn examples.
 
-// Start the custom Niri bar.
-spawn-at-startup "swaybg" "-i" "/home/julian/Pictures/Wallpapers/pexels-lum3n-44775-167699.jpg" "-m" "fill"
+// Pick one wallpaper at startup and use it for swaybg.
+spawn-sh-at-startup "exec swaybg -i \"$(find /home/julian/Pictures/Wallpapers -maxdepth 1 -type f | shuf -n 1)\" -m fill"
 spawn-at-startup "bar"
 spawn-at-startup "xwayland-satellite"
 
