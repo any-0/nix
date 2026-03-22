@@ -5,6 +5,15 @@ let
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
 in
 {
+  programs.firefox = {
+    enable = true;
+    package = pkgs.zen-browser;
+
+    profiles.default.settings = {
+      "zen.window-sync.enabled" = false;
+    };
+  };
+
   home.pointerCursor = {
     gtk.enable = true;
     x11.enable = true;
@@ -39,7 +48,6 @@ in
     rofi
     swaylock
     xwayland-satellite
-    zen-browser
   ] ++ [
     pkgs.kdePackages.dolphin
   ];
