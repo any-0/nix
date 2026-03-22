@@ -588,7 +588,8 @@ binds {
     Mod+Shift+R { switch-preset-column-width; }
     Mod+Ctrl+R { reset-window-height; }
     Mod+F { fullscreen-window; }
-    Mod+Shift+F { maximize-column; }
+    Mod+Shift+F { spawn "/home/julian/nix/scripts/screenshot"; }
+    Mod+Shift+M { maximize-column; }
 
     // Expand the focused column to space not taken up by other fully visible columns.
     // Makes the column "fill the rest of the space".
@@ -637,7 +638,7 @@ binds {
     Print { screenshot; }
     Ctrl+Print { screenshot-screen; }
     Alt+Print { screenshot-window; }
-    Mod+Print { spawn-sh "grim -g \"$(slurp)\" ~/Pictures/Screenshots/$(date +%F_%T).png && wl-copy < ~/Pictures/Screenshots/$(date +%F_%T).png && notify-send \"Region shot saved & copied\""; }
+    Mod+Print { spawn "/home/julian/nix/scripts/screenshot"; }
 
     // Applications such as remote-desktop clients and software KVM switches may
     // request that niri stops processing the keyboard shortcuts defined here

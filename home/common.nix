@@ -25,6 +25,8 @@ in
     defaultEditor = true;
   };
 
+  programs.gpg.enable = true;
+
   programs.direnv.enable = true;
   programs.direnv.config = {
     hide_env_diff = true;
@@ -52,6 +54,12 @@ in
     $DRY_RUN_CMD ${pkgs.gopass}/bin/gopass config mounts.path "$store_dir"
   '';
 
+  services.gpg-agent = {
+    enable = true;
+    enableZshIntegration = true;
+    pinentry.package = pkgs.pinentry-tty;
+  };
+
   home.packages = with pkgs; [
     zsh
     ripgrep
@@ -62,6 +70,7 @@ in
     jq
     unzip
     python3
+    gnupg
     # gcc
     gnumake
     gopass

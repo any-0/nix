@@ -35,6 +35,7 @@ in
   '';
 
   networking.networkmanager.enable = true;
+  time.timeZone = "Europe/Berlin";
 
   system.stateVersion = "25.11"; # never change
   programs.zsh.enable = true;
@@ -48,6 +49,7 @@ in
     docker
     docker-compose
     home-manager
+    inkscape
   ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 

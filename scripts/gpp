@@ -10,4 +10,7 @@ if [[ $# -lt 1 ]]; then
   exit 1
 fi
 
+export GPG_TTY=$(tty)
+gpg-connect-agent updatestartuptty /bye > /dev/null
+
 gopass show -c "$1"

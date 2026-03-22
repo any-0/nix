@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+dir="${HOME}/Pictures/Screenshots"
+timestamp="$(date +%F_%H-%M-%S)"
+path="${dir}/${timestamp}.png"
+
+mkdir -p "$dir"
+
+region="$(slurp)"
+[[ -n "$region" ]]
+
+grim -g "$region" "$path"
+wl-copy <"$path"
+notify-send "Screenshot saved" "$path"

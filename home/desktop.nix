@@ -29,6 +29,7 @@ in
     fuzzel
     swaybg
     mako
+    libnotify
     grim
     slurp
     polkit_gnome
