@@ -32,9 +32,10 @@ if [[ "$has_unstaged" -eq 1 ]]; then
   esac
 fi
 
+has_staged=1
 if git diff --cached --quiet; then
-  echo "No staged changes to commit. Stage files first or rerun and choose to stage all."
-  exit 1
+  has_staged=0
+  echo "No staged changes to commit. Proceeding with rebuild without creating a git commit."
 fi
 
 HOSTNAME=$(hostnamectl --static 2>/dev/null || hostname)
@@ -43,6 +44,10 @@ echo "Rebuilding host '${HOSTNAME}' from '${REPO_DIR}'..."
 sudo nixos-rebuild switch --flake "${REPO_DIR}#${HOSTNAME}"
 
 gen=$(nixos-rebuild list-generations | grep -m1 ' True$')
-git commit -m "Nix rebuild #$gen"
+if [[ "$has_staged" -eq 1 ]]; then
+  git commit -m "Nix rebuild #$gen"
+else
+  echo "Skipped git commit for generation #$gen because nothing is staged."
+fi
 
 echo "Rebuild complete!"
