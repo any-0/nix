@@ -162,12 +162,13 @@ window,
 }
 
 .workspace-button {
-  background: @surface-elevated;
-  border: 1px solid @surface-border;
-  border-radius: 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   color: @text-primary;
-  padding: 0 12px 0 11px;
-  min-height: 26px;
+  padding: 0 2px;
+  min-height: 0;
 }
 
 .workspace-content {
@@ -227,12 +228,12 @@ window,
 }
 
 .workspace-button:hover {
-  background: @surface-hover;
+  background: transparent;
 }
 
 .workspace-button.focused {
-  background: @surface-hover;
-  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: transparent;
+  border: 0;
 }
 
 .workspace-icon-slot.workspace-cycle-1 {
@@ -257,6 +258,14 @@ window,
 
 .workspace-icon-slot.workspace-cycle-6 {
   background: @pride-6;
+}
+
+.workspace-button.focused .workspace-name {
+  color: #ffffff;
+}
+
+.workspace-button.focused .workspace-icon-slot {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
 }
 
 .workspace-icon-slot.workspace-cycle-1.selected,
