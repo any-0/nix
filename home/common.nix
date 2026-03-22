@@ -3,6 +3,7 @@
 let
   dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
   scriptsDir = "${config.home.homeDirectory}/nix/scripts";
+  localBinDir = "${config.home.homeDirectory}/.local/bin";
   gopassStoreDir = "${config.home.homeDirectory}/nix/gopass/store";
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
 in
@@ -46,7 +47,10 @@ in
     DOCKER_CLI_PLUGIN_EXTRA_DIRS = "${pkgs.docker-compose}/libexec/docker/cli-plugins";
     PASSWORD_STORE_DIR = gopassStoreDir;
   };
-  home.sessionPath = [ scriptsDir ];
+  home.sessionPath = [
+    scriptsDir
+    localBinDir
+  ];
 
   home.activation.gopassStoreSetup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     store_dir="${gopassStoreDir}"

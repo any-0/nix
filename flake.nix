@@ -11,14 +11,9 @@
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    barSource = {
-      url = "git+https://gl.any-0.com/bar?ref=main";
-      flake = false;
-    };
   };
 
-  outputs = { nixpkgs, home-manager, zen-browser, barSource, ... }:
+  outputs = { nixpkgs, home-manager, zen-browser, ... }:
   let
     system = "x86_64-linux";
     hostname = "pc";
@@ -26,13 +21,12 @@
     homeDirectory = "/home/julian";
     codexOverlay = import ./overlays/codex.nix;
     claudeCodeOverlay = import ./overlays/claude-code.nix;
-    barOverlay = import ./overlays/bar.nix { inherit barSource; };
     zenBrowserOverlay = import ./overlays/zen-browser.nix { inherit zen-browser; };
 
     mkPkgs = system:
       import nixpkgs {
         inherit system;
-        overlays = [ codexOverlay claudeCodeOverlay barOverlay zenBrowserOverlay ];
+        overlays = [ codexOverlay claudeCodeOverlay zenBrowserOverlay ];
         config.allowUnfreePredicate = pkg:
           builtins.elem (nixpkgs.lib.getName pkg) [
             "claude-code"
@@ -77,7 +71,7 @@
         {
           networking.hostName = hostname;
 
-          nixpkgs.overlays = [ codexOverlay claudeCodeOverlay barOverlay zenBrowserOverlay ];
+          nixpkgs.overlays = [ codexOverlay claudeCodeOverlay zenBrowserOverlay ];
           nixpkgs.config.allowUnfreePredicate = pkg:
             builtins.elem (nixpkgs.lib.getName pkg) [
               "claude-code"
@@ -103,7 +97,5 @@
         modules = cliModules;
       };
     };
-
-    packages.${system}.julian-bar = (mkPkgs system).julian-bar;
   };
 }

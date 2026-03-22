@@ -22,10 +22,9 @@ in
   xdg.configFile."bar/bar.toml".source = dot ".config/bar/bar.toml";
   xdg.configFile."bar/style.css".source = dot ".config/bar/style.css";
   xdg.configFile."niri".source = dot ".config/niri";
-  xdg.configFile."kitty".source = dot ".config/kitty";
+  xdg.configFile."kitty/kitty.conf".source = dot ".config/kitty/kitty.conf";
 
   home.packages = with pkgs; [
-    julian-bar
     fuzzel
     swaybg
     mako

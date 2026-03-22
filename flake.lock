@@ -1,22 +1,5 @@
 {
   "nodes": {
-    "barSource": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1774099288,
-        "narHash": "sha256-Xuc5fS4IKc4oH0EVuJWi3KrH18lQWWCnHL7tNoUg8R8=",
-        "ref": "main",
-        "rev": "0b43112dfb35cc5018ca571dd82430dbd9129825",
-        "revCount": 9,
-        "type": "git",
-        "url": "https://gl.any-0.com/bar"
-      },
-      "original": {
-        "ref": "main",
-        "type": "git",
-        "url": "https://gl.any-0.com/bar"
-      }
-    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -55,7 +38,6 @@
     },
     "root": {
       "inputs": {
-        "barSource": "barSource",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
         "zen-browser": "zen-browser"
