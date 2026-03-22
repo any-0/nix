@@ -2,3 +2,4 @@ gopass/*
 !gopass/pack
 !gopass/unpack
 !gopass/store.tar.gpg
+secrets/
