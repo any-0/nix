@@ -1,5 +1,14 @@
 { barSource }:
 final: prev:
+let
+  runtimeInputs = with prev; [
+    bluez
+    iproute2
+    niri
+    upower
+    wireplumber
+  ];
+in
 {
   julian-bar = prev.rustPlatform.buildRustPackage {
     pname = "julian-bar";
@@ -12,6 +21,7 @@ final: prev:
     };
 
     nativeBuildInputs = with prev; [
+      makeWrapper
       pkg-config
       wrapGAppsHook3
     ];
@@ -29,6 +39,11 @@ final: prev:
     postInstall = ''
       mkdir -p $out/share/bar
       cp -r assets $out/share/bar/assets
+    '';
+
+    postFixup = ''
+      wrapProgram $out/bin/bar \
+        --prefix PATH : ${prev.lib.makeBinPath runtimeInputs}
     '';
 
     meta = with prev.lib; {

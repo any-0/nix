@@ -403,7 +403,7 @@ binds {
     Mod+C hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
     Mod+R hotkey-overlay-title="Run an Application: rofi" { spawn-sh "rofi -show run"; }
     Mod+E hotkey-overlay-title="Open File Manager" { spawn "dolphin"; }
-    Mod+Y hotkey-overlay-title="Open Browser: zen-browser" { spawn "zen-browser"; }
+    Mod+Y hotkey-overlay-title="Open Browser: zen-browser" { spawn "zen"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
 
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
