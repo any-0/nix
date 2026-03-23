@@ -5,15 +5,6 @@ let
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
 in
 {
-  programs.firefox = {
-    enable = true;
-    package = pkgs.zen-browser;
-
-    profiles.default.settings = {
-      "zen.window-sync.enabled" = false;
-    };
-  };
-
   home.pointerCursor = {
     gtk.enable = true;
     x11.enable = true;
@@ -32,8 +23,12 @@ in
   xdg.configFile."bar/style.css".source = dot ".config/bar/style.css";
   xdg.configFile."niri".source = dot ".config/niri";
   xdg.configFile."kitty/kitty.conf".source = dot ".config/kitty/kitty.conf";
+  xdg.configFile."zen/odpbn0jp.Default Profile/user.js".text = ''
+    user_pref("zen.window-sync.enabled", false);
+  '';
 
   home.packages = with pkgs; [
+    evince
     fuzzel
     swaybg
     mako
@@ -48,6 +43,7 @@ in
     rofi
     swaylock
     xwayland-satellite
+    zen-browser
   ] ++ [
     pkgs.kdePackages.dolphin
   ];

@@ -11,7 +11,6 @@ REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 TEMPLATE_NAME="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
 
 nix flake init -t "path:${REPO_DIR}/templates#${TEMPLATE_NAME}"
-nix flake lock
 
 if command -v direnv >/dev/null 2>&1; then
   direnv allow
