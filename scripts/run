@@ -14,4 +14,4 @@ fi
 direnv_root="${DIRENV_DIR#-}"
 cd "$direnv_root"
 
-exec $RUN_CMD "$@"
+exec bash -c "$RUN_CMD" bash "$@"

@@ -13,5 +13,8 @@ light = "#ffffff"
 [icons.overrides]
 "steam" = "assets/icons/steam-mono.svg"
 "steam_app_2225070" = "assets/icons/trackmania-mono.svg"
+"steam_app_1422450" = "assets/icons/deadlock-mono.svg"
 "kitty" = "assets/icons/terminal-mono.svg"
+"org.kde.dolphin" = "assets/icons/dolphin-mono.svg"
+"org.gnome.Evince" = "assets/icons/evince-mono.svg"
 "zen" = "assets/icons/zen-mono.svg"
