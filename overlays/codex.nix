@@ -14,8 +14,6 @@ in
         pname = "codex";
         inherit version;
 
-        nativeBuildInputs = [ prev.makeBinaryWrapper ];
-
         src = builtins.fetchTarball {
           url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-x86_64-unknown-linux-musl.tar.gz";
           sha256 = hash;
@@ -25,19 +23,7 @@ in
         dontBuild = true;
 
         installPhase = ''
-          install -Dm755 $src/codex-x86_64-unknown-linux-musl $out/libexec/codex
-          makeBinaryWrapper $out/libexec/codex $out/bin/codex \
-            --add-flags '--search' \
-            --add-flags '-c' \
-            --add-flags 'model_provider="openai-http"' \
-            --add-flags '-c' \
-            --add-flags 'model_providers.openai-http.name="OpenAI"' \
-            --add-flags '-c' \
-            --add-flags 'model_providers.openai-http.wire_api="responses"' \
-            --add-flags '-c' \
-            --add-flags 'model_providers.openai-http.requires_openai_auth=true' \
-            --add-flags '-c' \
-            --add-flags 'model_providers.openai-http.supports_websockets=false'
+          install -Dm755 $src/codex-x86_64-unknown-linux-musl $out/bin/codex
         '';
 
         meta = with prev.lib; {
