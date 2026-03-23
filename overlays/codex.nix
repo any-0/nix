@@ -27,6 +27,7 @@ in
         installPhase = ''
           install -Dm755 $src/codex-x86_64-unknown-linux-musl $out/libexec/codex
           makeBinaryWrapper $out/libexec/codex $out/bin/codex \
+            --add-flags '--search' \
             --add-flags '-c' \
             --add-flags 'model_provider="openai-http"' \
             --add-flags '-c' \
