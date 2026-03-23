@@ -11,5 +11,5 @@ region="$(slurp)"
 [[ -n "$region" ]]
 
 grim -g "$region" "$path"
-wl-copy <"$path"
+wl-copy --foreground <"$path" &
 notify-send "Screenshot saved" "$path"

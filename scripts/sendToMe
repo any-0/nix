@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+API_URL="https://mail-api.any-0.com/send"
+API_KEY_FILE="${HOME}/nix/secrets/sendtome_key"
+DEFAULT_TO="julianorlich1@gmail.com"
+
+die() { echo "Error: $*" >&2; exit 1; }
+
+usage() {
+    echo "Usage: sendToMe <file|dir> [--mail=<email>]" >&2
+    exit 1
+}
+
+[[ $# -lt 1 ]] && usage
+
+TARGET="$1"
+TO="$DEFAULT_TO"
+
+for arg in "${@:2}"; do
+    case "$arg" in
+        --mail=*) TO="${arg#--mail=}" ;;
+        *) die "Unknown argument: $arg" ;;
+    esac
+done
+
+[[ ! -e "$TARGET" ]] && die "'$TARGET' not found"
+[[ ! -f "$API_KEY_FILE" ]] && die "API key not found at $API_KEY_FILE"
+
+API_KEY="$(cat "$API_KEY_FILE")"
+FILENAME="$(basename "$TARGET")"
+TMPZIP=""
+
+cleanup() { [[ -n "$TMPZIP" ]] && rm -f "$TMPZIP"; }
+trap cleanup EXIT
+
+UPLOAD_PATH="$TARGET"
+
+if [[ -d "$TARGET" ]]; then
+    TMPZIP="$(mktemp /tmp/sendtome_XXXXXX.zip)"
+    echo "Zipping '$FILENAME'..."
+    (cd "$(dirname "$(realpath "$TARGET")")" && zip -qr "$TMPZIP" "$FILENAME")
+    FILENAME="${FILENAME}.zip"
+    UPLOAD_PATH="$TMPZIP"
+fi
+
+echo "Sending '$FILENAME' to $TO..."
+
+RESP_FILE="$(mktemp /tmp/sendtome_resp_XXXXXX)"
+HTTP_STATUS=$(curl -sSw "%{http_code}" -o "$RESP_FILE" \
+    -H "X-API-Key: $API_KEY" \
+    -F "file=@${UPLOAD_PATH};filename=${FILENAME}" \
+    -F "to=${TO}" \
+    "$API_URL")
+
+BODY="$(cat "$RESP_FILE")"
+rm -f "$RESP_FILE"
+
+if [[ "$HTTP_STATUS" == "200" ]]; then
+    echo "Sent."
+else
+    die "API returned HTTP $HTTP_STATUS: $BODY"
+fi

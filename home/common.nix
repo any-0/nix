@@ -73,6 +73,7 @@ in
     curl
     jq
     unzip
+    zip
     python3
     gnupg
     # gcc
