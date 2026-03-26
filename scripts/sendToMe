@@ -16,10 +16,12 @@ usage() {
 
 TARGET="$1"
 TO="$DEFAULT_TO"
+SUBJECT=""
 
 for arg in "${@:2}"; do
     case "$arg" in
-        --mail=*) TO="${arg#--mail=}" ;;
+        --mail=*)    TO="${arg#--mail=}" ;;
+        --subject=*) SUBJECT="${arg#--subject=}" ;;
         *) die "Unknown argument: $arg" ;;
     esac
 done
@@ -37,7 +39,7 @@ trap cleanup EXIT
 UPLOAD_PATH="$TARGET"
 
 if [[ -d "$TARGET" ]]; then
-    TMPZIP="$(mktemp /tmp/sendtome_XXXXXX.zip)"
+    TMPZIP="$(mktemp -u /tmp/sendtome_XXXXXX.zip)"
     echo "Zipping '$FILENAME'..."
     (cd "$(dirname "$(realpath "$TARGET")")" && zip -qr "$TMPZIP" "$FILENAME")
     FILENAME="${FILENAME}.zip"
@@ -51,6 +53,7 @@ HTTP_STATUS=$(curl -sSw "%{http_code}" -o "$RESP_FILE" \
     -H "X-API-Key: $API_KEY" \
     -F "file=@${UPLOAD_PATH};filename=${FILENAME}" \
     -F "to=${TO}" \
+    ${SUBJECT:+-F "subject=${SUBJECT}"} \
     "$API_URL")
 
 BODY="$(cat "$RESP_FILE")"

@@ -87,6 +87,7 @@ in
     bc
     lazygit
     xclip
+    gh
   ];
 
 }
