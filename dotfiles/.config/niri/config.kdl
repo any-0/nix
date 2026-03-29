@@ -283,7 +283,7 @@ layout {
 
 // Pick one wallpaper at startup and use it for swaybg.
 spawn-sh-at-startup "exec swaybg -i \"$(find /home/julian/Pictures/Wallpapers -maxdepth 1 -type f | shuf -n 1)\" -m fill"
-spawn-at-startup "bar"
+spawn-at-startup "/home/julian/bar/target/release/bar"
 spawn-at-startup "xwayland-satellite"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
