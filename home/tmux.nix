@@ -23,6 +23,7 @@ in
 {
   programs.tmux = {
     enable = true;
+    clock24 = true;
 
     # Plugins via Nix (no TPM)
     plugins = with pkgs.tmuxPlugins; [
