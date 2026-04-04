@@ -3,9 +3,26 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
-PROFILE="${1:-julian-cli}"
 BACKUP_EXT="${HM_BACKUP_EXT:-hm-bak}"
 EXPERIMENTAL_FEATURES_LINE="experimental-features = nix-command flakes"
+platform="$(uname -s)"
+
+if [[ $# -ge 1 ]]; then
+  PROFILE="$1"
+else
+  case "$platform" in
+    Darwin)
+      PROFILE="julian-mac"
+      ;;
+    Linux)
+      PROFILE="julian-cli"
+      ;;
+    *)
+      echo "unsupported platform: $platform" >&2
+      exit 1
+      ;;
+  esac
+fi
 
 if ! command -v nix >/dev/null 2>&1; then
   echo "nix not found in PATH. Installing Nix..."
@@ -24,7 +41,7 @@ if ! command -v nix >/dev/null 2>&1; then
   fi
 fi
 
-if [[ -z "${WSL_DISTRO_NAME:-}" ]] && ! grep -qi microsoft /proc/version 2>/dev/null; then
+if [[ "$platform" == "Linux" ]] && [[ -z "${WSL_DISTRO_NAME:-}" ]] && ! grep -qi microsoft /proc/version 2>/dev/null; then
   echo "Warning: CLI environment marker was not detected."
   echo "Continuing anyway."
 fi

@@ -9,19 +9,34 @@ version=${tag#rust-v}
 
 echo "Latest version: $version"
 
-# Get hash (need to manually unpack to a directory since the tarball contains a single file)
-url="https://github.com/openai/codex/releases/download/${tag}/codex-x86_64-unknown-linux-musl.tar.gz"
-echo "Fetching hash for $url"
-tmpdir=$(mktemp -d)
-curl -sL "$url" | tar -xz -C "$tmpdir"
-sri_hash=$(nix hash path "$tmpdir")
-hash=$(nix hash convert --to nix32 "$sri_hash")
-rm -rf "$tmpdir"
+# Get hashes (need to manually unpack to a directory since the tarball contains a single file)
+hash_for_url() {
+  local url="$1"
+  echo "Fetching hash for $url" >&2
+  nix-prefetch-url --type sha256 "$url" | tail -n 1
+}
 
-echo "Hash: $hash"
+replace_in_file() {
+  local file="$1"
+  local expr="$2"
+  local tmp
+  tmp="$(mktemp)"
+  sed "$expr" "$file" > "$tmp"
+  mv "$tmp" "$file"
+}
+
+linux_url="https://github.com/openai/codex/releases/download/${tag}/codex-x86_64-unknown-linux-musl.tar.gz"
+darwin_aarch64_url="https://github.com/openai/codex/releases/download/${tag}/codex-aarch64-apple-darwin.tar.gz"
+
+linux_hash=$(hash_for_url "$linux_url")
+darwin_aarch64_hash=$(hash_for_url "$darwin_aarch64_url")
+
+echo "Linux hash: $linux_hash"
+echo "Darwin aarch64 hash: $darwin_aarch64_hash"
 
 # Update codex.nix
-sed -i "s|version = \".*\";|version = \"$version\";|" codex.nix
-sed -i "s|hash = \".*\";|hash = \"sha256:$hash\";|" codex.nix
+replace_in_file codex.nix "s|version = \".*\";|version = \"$version\";|"
+replace_in_file codex.nix "s|linuxHash = \".*\";|linuxHash = \"sha256:$linux_hash\";|"
+replace_in_file codex.nix "s|darwinAarch64Hash = \".*\";|darwinAarch64Hash = \"sha256:$darwin_aarch64_hash\";|"
 
 echo "Updated codex.nix to version $version"

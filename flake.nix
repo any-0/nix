@@ -23,10 +23,13 @@
     claudeCodeOverlay = import ./overlays/claude-code.nix;
     zenBrowserOverlay = import ./overlays/zen-browser.nix { inherit zen-browser; };
 
-    mkPkgs = system:
+    mkPkgs = system: let
+	isLinux = builtins.match ".*-linux" system != null;
+    in
       import nixpkgs {
         inherit system;
-        overlays = [ codexOverlay claudeCodeOverlay zenBrowserOverlay ];
+        overlays = [ codexOverlay claudeCodeOverlay ]
+	    ++ nixpkgs.lib.optionals isLinux [ zenBrowserOverlay ];
         config.allowUnfreePredicate = pkg:
           builtins.elem (nixpkgs.lib.getName pkg) [
             "claude-code"
@@ -53,13 +56,21 @@
 
     desktopModules = [
       ./home/common.nix
+      ./home/linux.nix
       ./home/desktop.nix
     ];
 
     cliModules = [
       ./home/common.nix
+      ./home/linux.nix
       ./home/cli.nix
       ./home/root.nix
+    ];
+
+    darwinModules = [
+      ./home/common.nix
+      ./home/darwin.nix
+      ./home/cli.nix
     ];
   in
   {
@@ -95,6 +106,12 @@
       "julian-cli" = mkHome {
         inherit system username homeDirectory;
         modules = cliModules;
+      };
+      "julian-mac" = mkHome {
+        system = "aarch64-darwin";
+        username = "julian";
+        homeDirectory = "/Users/julian";
+        modules = darwinModules;
       };
     };
   };

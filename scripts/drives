@@ -2,6 +2,10 @@
 import json, subprocess, os, sys, re, shutil
 from collections import OrderedDict
 
+if sys.platform != "linux":
+    print("drives is only supported on Linux", file=sys.stderr)
+    sys.exit(1)
+
 # ── ANSI ──────────────────────────────────────────────────────────────────────
 
 class C:

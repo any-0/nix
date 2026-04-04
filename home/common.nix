@@ -44,7 +44,6 @@ in
   home.file.".codex/AGENTS.md".source = dot ".codex/AGENTS.md";
 
   home.sessionVariables = {
-    DOCKER_CLI_PLUGIN_EXTRA_DIRS = "${pkgs.docker-compose}/libexec/docker/cli-plugins";
     PASSWORD_STORE_DIR = gopassStoreDir;
   };
   home.sessionPath = [
@@ -61,7 +60,6 @@ in
   services.gpg-agent = {
     enable = true;
     enableZshIntegration = true;
-    pinentry.package = pkgs.pinentry-tty;
   };
 
   home.packages = with pkgs; [
@@ -83,10 +81,8 @@ in
     codex
     zoxide
     eza
-    procps
     bc
     lazygit
-    xclip
     gh
   ];
 

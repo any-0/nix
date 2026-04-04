@@ -3,8 +3,24 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
-PROFILE="${1:-julian-cli}"
 BACKUP_EXT="${HM_BACKUP_EXT:-hm-bak}"
+
+if [[ $# -ge 1 ]]; then
+  PROFILE="$1"
+else
+  case "$(uname -s)" in
+    Darwin)
+      PROFILE="julian-mac"
+      ;;
+    Linux)
+      PROFILE="julian-cli"
+      ;;
+    *)
+      echo "unsupported platform: $(uname -s)" >&2
+      exit 1
+      ;;
+  esac
+fi
 
 nix run github:nix-community/home-manager -- \
   switch -b "${BACKUP_EXT}" --flake "path:${REPO_DIR}#${PROFILE}"
