@@ -3,7 +3,7 @@ let
   system = prev.stdenv.hostPlatform.system;
   # Run ./update-codex.sh to update
   version = "0.118.0";
-  linuxHash = "sha256:193b07087a5j2qxnb6zbj2mg0clf38vqzp2q1l2ahahhrp9bsbhn";
+  linuxHash = "sha256-5wfqZde7vEagSv5zG/PBSlt3UiEAzr+LuTz/uVz0YQs=";
   darwinAarch64Hash = "sha256:1k1i1laxndjmcj6wglg6857cm2zb9dda2lkgrhd79a5sxnsyshcq";
   srcInfo =
     if system == "x86_64-linux" then {
@@ -26,16 +26,18 @@ in
         pname = "codex";
         inherit version;
 
-        src = builtins.fetchTarball {
+        src = prev.fetchurl {
           url = srcInfo.url;
-          sha256 = srcInfo.hash;
+          hash = srcInfo.hash;
         };
 
+        dontUnpack = true;
         dontConfigure = true;
         dontBuild = true;
 
         installPhase = ''
-          install -Dm755 $src/${srcInfo.binName} $out/bin/codex
+          tar -xzf "$src"
+          install -Dm755 ${srcInfo.binName} $out/bin/codex
         '';
 
         meta = with prev.lib; {

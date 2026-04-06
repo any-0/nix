@@ -9,11 +9,11 @@ version=${tag#rust-v}
 
 echo "Latest version: $version"
 
-# Get hashes (need to manually unpack to a directory since the tarball contains a single file)
+# Get tarball hashes for the release assets used by overlays/codex.nix.
 hash_for_url() {
   local url="$1"
   echo "Fetching hash for $url" >&2
-  nix-prefetch-url --type sha256 "$url" | tail -n 1
+  nix store prefetch-file --json --refresh --hash-type sha256 "$url" | jq -r '.hash'
 }
 
 replace_in_file() {
@@ -36,7 +36,7 @@ echo "Darwin aarch64 hash: $darwin_aarch64_hash"
 
 # Update codex.nix
 replace_in_file codex.nix "s|version = \".*\";|version = \"$version\";|"
-replace_in_file codex.nix "s|linuxHash = \".*\";|linuxHash = \"sha256:$linux_hash\";|"
-replace_in_file codex.nix "s|darwinAarch64Hash = \".*\";|darwinAarch64Hash = \"sha256:$darwin_aarch64_hash\";|"
+replace_in_file codex.nix "s|linuxHash = \".*\";|linuxHash = \"$linux_hash\";|"
+replace_in_file codex.nix "s|darwinAarch64Hash = \".*\";|darwinAarch64Hash = \"$darwin_aarch64_hash\";|"
 
 echo "Updated codex.nix to version $version"
