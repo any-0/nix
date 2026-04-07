@@ -37,6 +37,7 @@ bindkey -e
 printf '\e[6 q'
 
 PROMPT_EOL_MARK=''
+WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 
 # Cycle completion backwards with Shift-Tab.
 if [[ -n "${terminfo[kcbt]:-}" ]]; then
