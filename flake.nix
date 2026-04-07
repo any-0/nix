@@ -64,7 +64,6 @@
       ./home/common.nix
       ./home/linux.nix
       ./home/cli.nix
-      ./home/root.nix
     ];
 
     darwinModules = [
