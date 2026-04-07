@@ -43,6 +43,11 @@ in
 
     extraConfig = ''
       set -g @tmux-clipboard-command "${tmuxClipboardCommand}"
+      set -g clock-mode-style 24
+      set -g @easy-motion-dim-style "fg=#888888"
+      set -g @easy-motion-highlight-style "fg=#0074b1,bold"
+      set -g @easy-motion-highlight-2-first-style "fg=#009393,bold"
+      set -g @easy-motion-highlight-2-second-style "fg=#008080,bold"
     '' + builtins.readFile ../dotfiles/.tmux.conf;
   };
 
