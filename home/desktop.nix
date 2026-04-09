@@ -35,8 +35,10 @@ in
     libnotify
     grim
     slurp
+    obs-studio
     polkit_gnome
     spice-vdagent
+    vlc
     wl-clipboard
     kitty
     playerctl
