@@ -3,10 +3,10 @@ autoload -Uz add-zsh-hook
 typeset -g __prompt_spacing_ran_command=0
 
 prompt_arrow_color() {
-  if [[ -n "$IN_NIX_SHELL" ]]; then
-    print "46"
-  elif [[ -n "$DIRENV_DIR" ]]; then
+  if [[ -n "$DIRENV_DIR" ]]; then
     print "196"
+  elif [[ -n "$IN_NIX_SHELL" ]]; then
+    print "46"
   else
     print "39"
   fi
@@ -16,7 +16,7 @@ update_prompt() {
   local arrow_color git_segment
   arrow_color="$(prompt_arrow_color)"
   git_segment="$(git_prompt)"
-  PS1="%F{245}%n@%m  [%~]${git_segment}%f\n%B%F{${arrow_color}}❯%f%b "
+  PS1="%F{245}%n@%m  [%~]${git_segment}%f"$'\n'"%B%F{${arrow_color}}❯%f%b "
 }
 
 _prompt_spacing_precmd() {
