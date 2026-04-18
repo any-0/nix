@@ -79,16 +79,24 @@ in
 
       update_nix_shell_prompt() {
         local gray='\[\e[38;5;245m\]'
-        local blue='\[\e[38;5;39m\]'
+        local green='\[\e[38;5;46m\]'
         local reset='\[\e[0m\]'
         local bold='\[\e[1m\]'
         local nobold='\[\e[22m\]'
+        local prefix=""
 
-        PS1="''${gray}\u@\h  [\w]\$(git_prompt_bash)''${reset}\n''${bold}''${blue}❯''${reset}''${nobold} "
+        if [[ -n "$__nix_shell_prompt_ready" ]]; then
+          prefix='\n'
+        else
+          __nix_shell_prompt_ready=1
+        fi
+
+        PS1="''${prefix}''${gray}\u@\h  [\w]\$(git_prompt_bash)''${reset}\n''${bold}''${green}❯''${reset}''${nobold} "
       }
 
       if [[ -n "$IN_NIX_SHELL" ]]; then
         export NIX_SHELL_PRESERVE_PROMPT=1
+        PS0=$'\n'
         PROMPT_COMMAND=update_nix_shell_prompt
       fi
 
