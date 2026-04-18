@@ -2,11 +2,29 @@ autoload -Uz add-zsh-hook
 
 typeset -g __prompt_spacing_ran_command=0
 
+prompt_arrow_color() {
+  if [[ -n "$IN_NIX_SHELL" ]]; then
+    print "46"
+  elif [[ -n "$DIRENV_DIR" ]]; then
+    print "196"
+  else
+    print "39"
+  fi
+}
+
+update_prompt() {
+  local arrow_color git_segment
+  arrow_color="$(prompt_arrow_color)"
+  git_segment="$(git_prompt)"
+  PS1="%F{245}%n@%m  [%~]${git_segment}%f\n%B%F{${arrow_color}}❯%f%b "
+}
+
 _prompt_spacing_precmd() {
   if (( __prompt_spacing_ran_command )); then
     print ""
     __prompt_spacing_ran_command=0
   fi
+  update_prompt
 }
 
 _prompt_spacing_preexec() {
@@ -64,4 +82,4 @@ git_prompt() {
 }
 
 setopt PROMPT_SUBST
-PS1=$'%F{245}%n@%m  [%~]$(git_prompt)%f\n%B%F{39}❯%f%b '
+update_prompt
