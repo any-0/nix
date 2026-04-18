@@ -24,12 +24,12 @@
     zenBrowserOverlay = import ./overlays/zen-browser.nix { inherit zen-browser; };
 
     mkPkgs = system: let
-	isLinux = builtins.match ".*-linux" system != null;
+    isLinux = builtins.match ".*-linux" system != null;
     in
       import nixpkgs {
         inherit system;
         overlays = [ codexOverlay claudeCodeOverlay ]
-	    ++ nixpkgs.lib.optionals isLinux [ zenBrowserOverlay ];
+        ++ nixpkgs.lib.optionals isLinux [ zenBrowserOverlay ];
         config.allowUnfreePredicate = pkg:
           builtins.elem (nixpkgs.lib.getName pkg) [
             "claude-code"

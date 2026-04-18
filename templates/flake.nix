@@ -18,6 +18,10 @@
       path = ./pyts;
       description = "TypeScript + Python project";
     };
+    templates.rust = {
+      path = ./rust;
+      description = "Rust project";
+    };
     templates.tex = {
       path = ./latex;
       description = "LaTeX project";
