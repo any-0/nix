@@ -36,6 +36,62 @@ in
   programs.bash = {
     enable = true;
     initExtra = ''
+      git_prompt_bash() {
+        git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
+
+        local changes numstat line x y add del
+        local staged=0 unstaged=0 untracked=0
+        local added=0 removed=0
+        local segments=()
+
+        changes="$(git status --porcelain 2>/dev/null)"
+        numstat="$(
+          git diff --numstat 2>/dev/null
+          git diff --cached --numstat 2>/dev/null
+        )"
+
+        while IFS=$'\t' read -r add del _; do
+          [[ "$add" =~ ^[0-9]+$ ]] && ((added += add))
+          [[ "$del" =~ ^[0-9]+$ ]] && ((removed += del))
+        done <<< "$numstat"
+
+        while IFS= read -r line; do
+          [[ -z "$line" ]] && continue
+
+          if [[ "$line" == '?? '* ]]; then
+            ((untracked++))
+            continue
+          fi
+
+          x="''${line:0:1}"
+          y="''${line:1:1}"
+          [[ "$x" != " " ]] && ((staged++))
+          [[ "$y" != " " ]] && ((unstaged++))
+        done <<< "$changes"
+
+        segments=("+''${added} -''${removed}")
+        ((staged > 0)) && segments+=("S:''${staged}")
+        ((unstaged > 0)) && segments+=("M:''${unstaged}")
+        ((untracked > 0)) && segments+=("U:''${untracked}")
+
+        printf '  [%s]' "''${segments[*]}"
+      }
+
+      update_nix_shell_prompt() {
+        local gray='\[\e[38;5;245m\]'
+        local blue='\[\e[38;5;39m\]'
+        local reset='\[\e[0m\]'
+        local bold='\[\e[1m\]'
+        local nobold='\[\e[22m\]'
+
+        PS1="''${gray}\u@\h  [\w]\$(git_prompt_bash)''${reset}\n''${bold}''${blue}❯''${reset}''${nobold} "
+      }
+
+      if [[ -n "$IN_NIX_SHELL" ]]; then
+        export NIX_SHELL_PRESERVE_PROMPT=1
+        PROMPT_COMMAND=update_nix_shell_prompt
+      fi
+
       if [[ $- == *i* ]] && [[ -z "$IN_NIX_SHELL" ]] && command -v zsh >/dev/null 2>&1; then
         exec zsh -l
       fi
