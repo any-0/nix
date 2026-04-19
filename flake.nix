@@ -33,6 +33,7 @@
         config.allowUnfreePredicate = pkg:
           builtins.elem (nixpkgs.lib.getName pkg) [
             "claude-code"
+            "discord"
             "steam"
             "steam-unwrapped"
           ];
@@ -85,6 +86,7 @@
           nixpkgs.config.allowUnfreePredicate = pkg:
             builtins.elem (nixpkgs.lib.getName pkg) [
               "claude-code"
+              "discord"
               "steam"
               "steam-unwrapped"
             ];
