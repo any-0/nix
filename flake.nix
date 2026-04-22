@@ -17,8 +17,8 @@
   let
     system = "x86_64-linux";
     hostname = "pc";
-    username = "julian";
-    homeDirectory = "/home/julian";
+    username = "orli_ju";
+    homeDirectory = "/home/orli_ju";
     codexOverlay = import ./overlays/codex.nix;
     claudeCodeOverlay = import ./overlays/claude-code.nix;
     zenBrowserOverlay = import ./overlays/zen-browser.nix { inherit zen-browser; };
@@ -41,8 +41,8 @@
     mkHome = {
       modules,
       system ? "x86_64-linux",
-      username ? "julian",
-      homeDirectory ? "/home/julian",
+      username ? "orli_ju",
+      homeDirectory ? "/home/orli_ju",
     }:
       home-manager.lib.homeManagerConfiguration {
         pkgs = mkPkgs system;

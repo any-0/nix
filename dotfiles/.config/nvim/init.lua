@@ -280,7 +280,7 @@ vim.keymap.set('n', '<End>', function()
   vim.keymap.set("t", "<Esc>", "<C-\\><C-n>:close<CR>", { buffer = buf })
 end, { desc = "Run RUN_CMD in popup" })
 
-require("word_anchors").setup()
+-- require("word_anchors").setup()
 
 -- Rename tmux window to current file
 if os.getenv("TMUX") then
