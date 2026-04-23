@@ -7,9 +7,9 @@ let
     ++ prev.lib.optionals isLinux [ prev.procps prev.bubblewrap prev.socat ]
   );
   # Run ./update-claude-code.sh to update
-  version = "2.1.91";
-  linuxHash = "sha256:1rlnfbyirq31daz62f3bkvyzfcmz01p2yvajnd00jcz308dlxdq1";
-  darwinAarch64Hash = "sha256:0xnkdz368pddd0qi2a7jk6cxi0flyc2pl7g282ij7ln57rnxfcvl";
+  version = "2.1.118";
+  linuxHash = "sha256:0ijf1wvhzsl7zgl2j4yvkbawbfz03zhy5v5qsk920wd420j3ndms";
+  darwinAarch64Hash = "sha256:0r9nmlk0shqaca7p8l8y5mk6r42j9na40x7l8rh9rf09a7vd7ral";
   baseUrl = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases";
   srcInfo =
     if system == "x86_64-linux" then {

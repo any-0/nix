@@ -42,7 +42,6 @@ in
     wl-clipboard
     kitty
     playerctl
-    rofi
     swaylock
     xwayland-satellite
     zen-browser
