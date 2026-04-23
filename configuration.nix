@@ -30,6 +30,7 @@ in
     device = "nodev";
   };
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.plymouth.enable = true;
   boot.extraModprobeConfig = ''
     options btusb enable_autosuspend=n
   '';
