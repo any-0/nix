@@ -2,9 +2,9 @@ final: prev:
 let
   system = prev.stdenv.hostPlatform.system;
   # Run ./update-codex.sh to update
-  version = "0.123.0";
-  linuxHash = "sha256-SxJ/o89pRDxtLmiBqIMBi2c3tIi5nQHYEuOGKPV90sY=";
-  darwinAarch64Hash = "sha256-A1dYuCSTq+O2Ko1WOxfYNZiJgsg/asbrRRvcuNxtOW4=";
+  version = "0.124.0";
+  linuxHash = "sha256-cJSMuqjXMY5SbaQw+7rRFAzXvQi6eK+ygjkqEee8rPU=";
+  darwinAarch64Hash = "sha256-ceh0SUR5HKi+IrmlGx8RFK+bBdbc0pkW5T85YevlKc4=";
   srcInfo =
     if system == "x86_64-linux" then {
       url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-x86_64-unknown-linux-musl.tar.gz";
