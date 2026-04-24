@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+usage: envDiff [--current]
+
+Compare this project's .dev/flake.nix, .dev/flake.lock, and .envrc with the
+template files they came from.
+
+  -c, --current   compare against the current nix repo HEAD instead of the
+                  template-rev recorded in .dev/flake.nix
+EOF
+}
+
+USE_CURRENT=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -c|--current)
+      USE_CURRENT=1
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+
+TEMPLATE_NAME="$(sed -n 's/^# template: //p' .dev/flake.nix | head -n 1)"
+TEMPLATE_REV="$(sed -n 's/^# template-rev: //p' .dev/flake.nix | head -n 1)"
+
+if [[ -z "$TEMPLATE_NAME" ]]; then
+  echo "envDiff: missing '# template:' header in .dev/flake.nix" >&2
+  exit 1
+fi
+
+if [[ "$USE_CURRENT" -eq 1 ]]; then
+  BASE_REV="$(git -C "$REPO_DIR" rev-parse HEAD)"
+else
+  if [[ -z "$TEMPLATE_REV" ]]; then
+    echo "envDiff: missing '# template-rev:' header in .dev/flake.nix" >&2
+    exit 1
+  fi
+  BASE_REV="$TEMPLATE_REV"
+fi
+
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$TMP_DIR"' EXIT
+
+mkdir -p "$TMP_DIR/template/.dev" "$TMP_DIR/current/.dev"
+
+git -C "$REPO_DIR" show "$BASE_REV:templates/$TEMPLATE_NAME/.dev/flake.nix" > "$TMP_DIR/template/.dev/flake.nix"
+git -C "$REPO_DIR" show "$BASE_REV:templates/$TEMPLATE_NAME/.dev/flake.lock" > "$TMP_DIR/template/.dev/flake.lock"
+git -C "$REPO_DIR" show "$BASE_REV:templates/$TEMPLATE_NAME/.envrc" > "$TMP_DIR/template/.envrc"
+
+sed '/^# template: /d; /^# template-rev: /d' .dev/flake.nix > "$TMP_DIR/current/.dev/flake.nix"
+cp .dev/flake.lock "$TMP_DIR/current/.dev/flake.lock"
+cp .envrc "$TMP_DIR/current/.envrc"
+
+DIFF_STATUS=0
+for file in .dev/flake.nix .dev/flake.lock .envrc; do
+  if ! diff -u \
+    --label "template:$TEMPLATE_NAME@$BASE_REV/$file" \
+    --label "current-env/$file" \
+    "$TMP_DIR/template/$file" "$TMP_DIR/current/$file"; then
+    DIFF_STATUS=1
+  fi
+done
+
+exit "$DIFF_STATUS"
