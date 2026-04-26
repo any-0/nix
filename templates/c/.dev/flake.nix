@@ -5,16 +5,27 @@
 
   outputs = { self, nixpkgs }:
   let
-    system = "x86_64-linux";
-    pkgs = import nixpkgs { inherit system; };
+    systems = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "aarch64-darwin"
+    ];
+    forAllSystems = nixpkgs.lib.genAttrs systems;
   in {
-    devShells.${system}.default = pkgs.mkShell {
-      packages = with pkgs; [
-        gcc
-        gnumake
-        gdb
-        clang-tools
-      ];
-    };
+    devShells = forAllSystems (system:
+      let
+        pkgs = import nixpkgs { inherit system; };
+      in {
+        default = pkgs.mkShell {
+          packages = with pkgs; [
+            stdenv.cc
+            gnumake
+            clang-tools
+          ] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+            gdb
+          ];
+        };
+      });
   };
 }

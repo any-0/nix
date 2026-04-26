@@ -28,10 +28,11 @@ in
     enable = true;
     efiSupport = true;
     device = "nodev";
-    timeout = 0;
   };
+  boot.loader.timeout = 0;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.plymouth.enable = true;
+  boot.tmp.cleanOnBoot = true;
   boot.initrd.verbose = false;
   boot.consoleLogLevel = 3;
   boot.kernelParams = [

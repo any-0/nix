@@ -3,13 +3,25 @@ autoload -Uz add-zsh-hook
 typeset -g __prompt_spacing_ran_command=0
 
 prompt_arrow_color() {
-  if [[ -n "$DIRENV_DIR" ]]; then
+  if direnv_active; then
     print "196"
   elif [[ -n "$IN_NIX_SHELL" ]]; then
     print "46"
   else
     print "39"
   fi
+}
+
+direnv_active() {
+  [[ -n "$DIRENV_DIR" ]] || return 1
+
+  direnv status --json 2>/dev/null | jq -e '
+    .state.foundRC != null
+    and .state.loadedRC != null
+    and .state.foundRC.path == .state.loadedRC.path
+    and .state.foundRC.allowed == 0
+    and .state.loadedRC.allowed == 0
+  ' >/dev/null
 }
 
 update_prompt() {

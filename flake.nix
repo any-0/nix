@@ -22,21 +22,26 @@
     codexOverlay = import ./overlays/codex.nix;
     claudeCodeOverlay = import ./overlays/claude-code.nix;
     zenBrowserOverlay = import ./overlays/zen-browser.nix { inherit zen-browser; };
+    commonOverlays = [ codexOverlay claudeCodeOverlay ];
+    unfreePackageNames = [
+      "claude-code"
+      "discord"
+      "steam"
+      "steam-unwrapped"
+    ];
+    allowUnfreePredicate = pkg:
+      builtins.elem (nixpkgs.lib.getName pkg) unfreePackageNames;
+    overlaysFor = system:
+      let
+        isLinux = builtins.match ".*-linux" system != null;
+      in
+        commonOverlays ++ nixpkgs.lib.optionals isLinux [ zenBrowserOverlay ];
 
-    mkPkgs = system: let
-    isLinux = builtins.match ".*-linux" system != null;
-    in
+    mkPkgs = system:
       import nixpkgs {
         inherit system;
-        overlays = [ codexOverlay claudeCodeOverlay ]
-        ++ nixpkgs.lib.optionals isLinux [ zenBrowserOverlay ];
-        config.allowUnfreePredicate = pkg:
-          builtins.elem (nixpkgs.lib.getName pkg) [
-            "claude-code"
-            "discord"
-            "steam"
-            "steam-unwrapped"
-          ];
+        overlays = overlaysFor system;
+        config.allowUnfreePredicate = allowUnfreePredicate;
       };
 
     mkHome = {
@@ -82,14 +87,8 @@
         {
           networking.hostName = hostname;
 
-          nixpkgs.overlays = [ codexOverlay claudeCodeOverlay zenBrowserOverlay ];
-          nixpkgs.config.allowUnfreePredicate = pkg:
-            builtins.elem (nixpkgs.lib.getName pkg) [
-              "claude-code"
-              "discord"
-              "steam"
-              "steam-unwrapped"
-            ];
+          nixpkgs.overlays = overlaysFor system;
+          nixpkgs.config.allowUnfreePredicate = allowUnfreePredicate;
 
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;

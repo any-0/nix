@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat >&2 <<'EOF'
-usage: envDiff [--current]
+usage: envdiff [--current]
 
 Compare this project's .dev/flake.nix, .dev/flake.lock, and .envrc with the
 template files they came from.
@@ -38,7 +38,7 @@ TEMPLATE_NAME="$(sed -n 's/^# template: //p' .dev/flake.nix | head -n 1)"
 TEMPLATE_REV="$(sed -n 's/^# template-rev: //p' .dev/flake.nix | head -n 1)"
 
 if [[ -z "$TEMPLATE_NAME" ]]; then
-  echo "envDiff: missing '# template:' header in .dev/flake.nix" >&2
+  echo "envdiff: missing '# template:' header in .dev/flake.nix" >&2
   exit 1
 fi
 
@@ -46,7 +46,7 @@ if [[ "$USE_CURRENT" -eq 1 ]]; then
   BASE_REV="$(git -C "$REPO_DIR" rev-parse HEAD)"
 else
   if [[ -z "$TEMPLATE_REV" ]]; then
-    echo "envDiff: missing '# template-rev:' header in .dev/flake.nix" >&2
+    echo "envdiff: missing '# template-rev:' header in .dev/flake.nix" >&2
     exit 1
   fi
   BASE_REV="$TEMPLATE_REV"
@@ -68,6 +68,7 @@ cp .envrc "$TMP_DIR/current/.envrc"
 DIFF_STATUS=0
 for file in .dev/flake.nix .dev/flake.lock .envrc; do
   if ! diff -u \
+    --color=always \
     --label "template:$TEMPLATE_NAME@$BASE_REV/$file" \
     --label "current-env/$file" \
     "$TMP_DIR/template/$file" "$TMP_DIR/current/$file"; then
