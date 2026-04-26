@@ -92,10 +92,13 @@ alias tmks='tmux kill-server'
 # Environment
 export GPG_TTY=$(tty)
 export EDITOR=nvim
-export PATH=/home/julian/.opencode/bin:$PATH
-if [[ -d "$HOME/nix/scripts" ]] && [[ ":$PATH:" != *":$HOME/nix/scripts:"* ]]; then
-    export PATH="$HOME/nix/scripts:$PATH"
-fi
+_user_path() {
+    path=("$HOME/nix/scripts" "$HOME/.opencode/bin" $path)
+}
+_user_path
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _user_path
+add-zsh-hook chpwd _user_path
 export QSYS_ROOTDIR="/opt/intelquartus/quartus/sopc_builder/bin"
 export SALT_LICENSE_FILE="$SALT_LICENSE_FILE;/home/julian/.altera.quartus/questa_lic.dat"
 source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/eza-colors.zsh"

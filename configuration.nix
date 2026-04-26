@@ -49,6 +49,7 @@ in
   '';
 
   networking.networkmanager.enable = true;
+  networking.interfaces.enp5s0.wakeOnLan.enable = true;
   time.timeZone = "Europe/Berlin";
 
   system.stateVersion = "25.11"; # never change
