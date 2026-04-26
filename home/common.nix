@@ -110,6 +110,7 @@ in
   xdg.configFile."zsh/prompt.zsh".source = dot ".config/zsh/prompt.zsh";
   xdg.configFile."zsh/eza-colors.zsh".source = dot ".config/zsh/eza-colors.zsh";
   xdg.configFile."eza/theme.yml".source = dot ".config/eza/theme.yml";
+  xdg.configFile."kitty/kitty.conf".source = dot ".config/kitty/kitty.conf";
 
   xdg.configFile."nvim".source = dot ".config/nvim";
   home.file.".zshenv".source = dot ".zshenv";

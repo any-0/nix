@@ -4,7 +4,7 @@ let
   # Run ./update-codex.sh to update
   version = "0.118.0";
   linuxHash = "sha256-5wfqZde7vEagSv5zG/PBSlt3UiEAzr+LuTz/uVz0YQs=";
-  darwinAarch64Hash = "sha256:1k1i1laxndjmcj6wglg6857cm2zb9dda2lkgrhd79a5sxnsyshcq";
+  darwinAarch64Hash = "sha256-utPCyDuHS3Z86Gr2T08AW8FN6nny2MrDfPput3cQxxc=";
   srcInfo =
     if system == "x86_64-linux" then {
       url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-x86_64-unknown-linux-musl.tar.gz";
