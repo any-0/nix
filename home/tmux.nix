@@ -48,7 +48,7 @@ in
       set -g @easy-motion-highlight-style "fg=#0074b1,bold"
       set -g @easy-motion-highlight-2-first-style "fg=#009393,bold"
       set -g @easy-motion-highlight-2-second-style "fg=#008080,bold"
-    '' + builtins.readFile ../dotfiles/.tmux.conf;
+    '' + builtins.readFile ../dotfiles/.config/tmux/tmux.conf;
   };
 
   home.file.".tmux.conf".text = ''
