@@ -2,7 +2,6 @@
 
 {
   home.packages = with pkgs; [
-    nodejs
     tree-sitter
     stylua
     lua-language-server

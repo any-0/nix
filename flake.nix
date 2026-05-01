@@ -19,12 +19,8 @@
     hostname = "pc";
     username = "julian";
     homeDirectory = "/home/julian";
-    codexOverlay = import ./overlays/codex.nix;
-    claudeCodeOverlay = import ./overlays/claude-code.nix;
     zenBrowserOverlay = import ./overlays/zen-browser.nix { inherit zen-browser; };
-    commonOverlays = [ codexOverlay claudeCodeOverlay ];
     unfreePackageNames = [
-      "claude-code"
       "discord"
       "steam"
       "steam-unwrapped"
@@ -35,7 +31,7 @@
       let
         isLinux = builtins.match ".*-linux" system != null;
       in
-        commonOverlays ++ nixpkgs.lib.optionals isLinux [ zenBrowserOverlay ];
+        nixpkgs.lib.optionals isLinux [ zenBrowserOverlay ];
 
     mkPkgs = system:
       import nixpkgs {
