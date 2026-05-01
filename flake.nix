@@ -19,7 +19,9 @@
     hostname = "pc";
     username = "julian";
     homeDirectory = "/home/julian";
-    zenBrowserOverlay = import ./overlays/zen-browser.nix { inherit zen-browser; };
+    zenBrowserOverlay = final: prev: {
+      zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
+    };
     unfreePackageNames = [
       "discord"
       "steam"
