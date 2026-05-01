@@ -157,6 +157,7 @@ in
     bc
     lazygit
     gh
+    pi-coding-agent
   ];
 
 }
