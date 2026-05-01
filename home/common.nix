@@ -4,12 +4,12 @@ let
   dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
   scriptsDir = "${config.home.homeDirectory}/nix/scripts";
   localBinDir = "${config.home.homeDirectory}/.local/bin";
-  npmGlobalDir = "${config.home.homeDirectory}/.local/share/npm-global";
   gopassStoreDir = "${config.home.homeDirectory}/nix/gopass/store";
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
 in
 {
   imports = [
+    ./npm-tools.nix
     ./neovim-tools.nix
     ./tmux.nix
   ];
@@ -119,24 +119,11 @@ in
 
   home.sessionVariables = {
     PASSWORD_STORE_DIR = gopassStoreDir;
-    NPM_CONFIG_PREFIX = npmGlobalDir;
   };
   home.sessionPath = [
     scriptsDir
     localBinDir
-    "${npmGlobalDir}/bin"
   ];
-
-  home.activation.npmGlobalPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    npm_prefix="${npmGlobalDir}"
-    npm_next="$npm_prefix.next"
-
-    $DRY_RUN_CMD rm -rf "$npm_next"
-    $DRY_RUN_CMD mkdir -p "$npm_next"
-    $DRY_RUN_CMD env PATH="${pkgs.nodejs}/bin:$PATH" ${pkgs.nodejs}/bin/npm install --global --prefix "$npm_next" --no-audit --no-fund @anthropic-ai/claude-code@latest @openai/codex@latest
-    $DRY_RUN_CMD rm -rf "$npm_prefix"
-    $DRY_RUN_CMD mv "$npm_next" "$npm_prefix"
-  '';
 
   home.activation.gopassStoreSetup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     store_dir="${gopassStoreDir}"
@@ -157,7 +144,6 @@ in
     wget
     curl
     jq
-    nodejs
     unzip
     zip
     python3
