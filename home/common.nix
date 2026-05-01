@@ -107,15 +107,15 @@ in
     '';
   };
 
-  xdg.configFile."zsh/.zshrc".source = dot ".config/zsh/.zshrc";
-  xdg.configFile."zsh/prompt.zsh".source = dot ".config/zsh/prompt.zsh";
-  xdg.configFile."zsh/eza-colors.zsh".source = dot ".config/zsh/eza-colors.zsh";
-  xdg.configFile."eza/theme.yml".source = dot ".config/eza/theme.yml";
-  xdg.configFile."kitty/kitty.conf".source = dot ".config/kitty/kitty.conf";
+  xdg.configFile."zsh/.zshrc".source = dot "zsh/.zshrc";
+  xdg.configFile."zsh/prompt.zsh".source = dot "zsh/prompt.zsh";
+  xdg.configFile."zsh/eza-colors.zsh".source = dot "zsh/eza-colors.zsh";
+  xdg.configFile."eza/theme.yml".source = dot "eza/theme.yml";
+  xdg.configFile."kitty/kitty.conf".source = dot "kitty/kitty.conf";
 
-  xdg.configFile."nvim".source = dot ".config/nvim";
+  xdg.configFile."nvim".source = dot "nvim";
   home.file.".zshenv".source = dot ".zshenv";
-  home.file.".codex/AGENTS.md".source = dot ".codex/AGENTS.md";
+  home.file.".codex/AGENTS.md".source = dot "codex/AGENTS.md";
 
   home.sessionVariables = {
     PASSWORD_STORE_DIR = gopassStoreDir;

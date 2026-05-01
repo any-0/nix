@@ -19,9 +19,9 @@ in
     NIXOS_OZONE_WL = "1";
   };
 
-  xdg.configFile."bar/bar.toml".source = dot ".config/bar/bar.toml";
-  xdg.configFile."bar/style.css".source = dot ".config/bar/style.css";
-  xdg.configFile."niri".source = dot ".config/niri";
+  xdg.configFile."bar/bar.toml".source = dot "bar/bar.toml";
+  xdg.configFile."bar/style.css".source = dot "bar/style.css";
+  xdg.configFile."niri".source = dot "niri";
   xdg.configFile."zen/odpbn0jp.Default Profile/user.js".text = ''
     user_pref("zen.window-sync.enabled", false);
   '';
