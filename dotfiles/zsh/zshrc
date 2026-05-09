@@ -59,7 +59,7 @@ fi
 
 # zoxide fzf picker
 function zz() {
-    z "$(zoxide query -l | fzf)"
+    cd "$(zoxide query -l | fzf)"
 }
 
 # Aliases
