@@ -32,9 +32,9 @@ setopt HIST_IGNORE_DUPS APPEND_HISTORY SHARE_HISTORY
 # Prompt
 source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/prompt.zsh"
 
-# Emacs keymap (no vi mode) + beam cursor
+# Emacs keymap (no vi mode) + steady block cursor
 bindkey -e
-printf '\e[6 q'
+printf '\e[2 q'
 
 PROMPT_EOL_MARK=''
 WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'

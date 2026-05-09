@@ -90,6 +90,7 @@ in
     bc
     lazygit
     gh
+    jujutsu
   ];
 
 }
