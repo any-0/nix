@@ -38,14 +38,14 @@ vim.g.eucalyptus_lualine_theme = {
         c = { fg = "#FFFFFF", bg = c.teal_deep },
     },
     insert = {
-        a = { fg = "#FFFFFF", bg = c.cyan_ink },
-        b = { fg = "#FFFFFF", bg = c.cyan_ink },
-        c = { fg = "#FFFFFF", bg = c.ui_gray },
+        a = { fg = "#FFFFFF", bg = c.ui_gray },
+        b = { fg = "#FFFFFF", bg = c.ui_gray },
+        c = { fg = "#FFFFFF", bg = c.emerald },
     },
     visual = {
-        a = { fg = "#000000", bg = c.ui_gray },
-        b = { fg = c.fg, bg = c.ui_gray },
-        c = { fg = c.fg, bg = c.bg },
+        a = { fg = "#FFFFFF", bg = c.ui_gray },
+        b = { fg = "#FFFFFF", bg = c.ui_gray },
+        c = { fg = "#FFFFFF", bg = c.cyan_ink },
     },
     replace = {
         a = { fg = "#FFFFFF", bg = c.ui_gray },
@@ -54,8 +54,8 @@ vim.g.eucalyptus_lualine_theme = {
     },
     command = {
         a = { fg = "#FFFFFF", bg = c.ui_gray },
-        b = { fg = c.fg, bg = c.ui_gray },
-        c = { fg = "#FFFFFF", bg = c.emerald },
+        b = { fg = "#FFFFFF", bg = c.ui_gray },
+        c = { fg = c.fg, bg = c.bg },
     },
 }
 
