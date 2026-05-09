@@ -108,6 +108,7 @@ in
   };
 
   xdg.configFile."zsh/.zshrc".source = dot "zsh/.zshrc";
+  xdg.configFile."zsh/.zshenv".source = dot ".zshenv";
   xdg.configFile."zsh/prompt.zsh".source = dot "zsh/prompt.zsh";
   xdg.configFile."zsh/eza-colors.zsh".source = dot "zsh/eza-colors.zsh";
   xdg.configFile."eza/theme.yml".source = dot "eza/theme.yml";

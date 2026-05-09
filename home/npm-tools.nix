@@ -43,7 +43,7 @@ in
 
     $DRY_RUN_CMD rm -rf "$npm_next"
     $DRY_RUN_CMD mkdir -p "$npm_next"
-    $DRY_RUN_CMD env PATH="${pkgs.nodejs}/bin:$PATH" ${pkgs.nodejs}/bin/npm install --global --prefix "$npm_next" --no-audit --no-fund @mariozechner/pi-coding-agent@latest @openai/codex@latest
+    $DRY_RUN_CMD env PATH="${pkgs.nodejs}/bin:$PATH" ${pkgs.nodejs}/bin/npm install --global --prefix "$npm_next" --no-audit --no-fund @earendil-works/pi-coding-agent@latest @openai/codex@latest
     $DRY_RUN_CMD rm -rf "$npm_prefix"
     $DRY_RUN_CMD mv "$npm_next" "$npm_prefix"
   '';
