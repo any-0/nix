@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 
 let
+  dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
+  dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
   scriptsDir = "${config.home.homeDirectory}/nix/scripts";
   tmuxClipboardCommand = pkgs.writeShellScript "tmux-clipboard" ''
     exec "${scriptsDir}/yank"
@@ -48,8 +50,11 @@ in
       set -g @easy-motion-highlight-style "fg=#0074b1,bold"
       set -g @easy-motion-highlight-2-first-style "fg=#009393,bold"
       set -g @easy-motion-highlight-2-second-style "fg=#008080,bold"
-    '' + builtins.readFile ../dotfiles/.tmux.conf;
+      source-file "${config.xdg.configHome}/tmux/dotfiles.conf"
+    '';
   };
+
+  xdg.configFile."tmux/dotfiles.conf".source = dot "tmux/tmux.conf";
 
   home.file.".tmux.conf".text = ''
     source-file "${config.xdg.configHome}/tmux/tmux.conf"

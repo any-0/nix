@@ -115,6 +115,12 @@ local highlights = {
     diffLine     = { fg = c.teal_deep },
     diffIndexLine = { fg = c.aqua_dark },
 
+    GitSignsAdd          = { fg = c.emerald, bold = true },
+    GitSignsChange       = { fg = c.warn, bold = true },
+    GitSignsDelete       = { fg = c.error, bold = true },
+    GitSignsTopdelete    = { fg = c.error, bold = true },
+    GitSignsChangedelete = { fg = c.warn, bold = true },
+
     ["@variable"]          = { fg = c.fg },
     ["@variable.builtin"]  = { fg = c.teal_deep, italic = true },
     ["@function"]          = { link = "Function" },

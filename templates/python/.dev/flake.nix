@@ -5,18 +5,28 @@
 
   outputs = { self, nixpkgs }:
   let
-    system = "x86_64-linux";
-    pkgs = import nixpkgs { inherit system; };
+    systems = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "aarch64-darwin"
+    ];
+    forAllSystems = nixpkgs.lib.genAttrs systems;
   in {
-    devShells.${system}.default = pkgs.mkShell {
-      packages = with pkgs; [
-        (python312.withPackages (ps: [ ps.tkinter ]))
-        ruff
-      ];
+    devShells = forAllSystems (system:
+      let
+        pkgs = import nixpkgs { inherit system; };
+      in {
+        default = pkgs.mkShell {
+          packages = with pkgs; [
+            (python312.withPackages (ps: [ ps.tkinter ]))
+            ruff
+          ];
 
-      LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
-        pkgs.stdenv.cc.cc.lib
-      ];
-    };
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
+            pkgs.stdenv.cc.cc.lib
+          ];
+        };
+      });
   };
 }
