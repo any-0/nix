@@ -26,5 +26,9 @@
       path = ./latex;
       description = "LaTeX project";
     };
+    templates.arduino = {
+      path = ./arduino;
+      description = "Arduino project";
+    };
   };
 }
