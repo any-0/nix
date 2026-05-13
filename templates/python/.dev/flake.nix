@@ -20,6 +20,7 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             (python312.withPackages (ps: [ ps.tkinter ]))
+            pyright
             ruff
           ];
 
