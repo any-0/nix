@@ -61,9 +61,9 @@ git_prompt() {
   local added=0 removed=0
   local -a segments
 
-  if command -v jj >/dev/null 2>&1 && jj root >/dev/null 2>&1; then
-    branch="$(jj log -r 'heads(::@ & bookmarks())' --no-graph -T 'bookmarks.join(" ")' 2>/dev/null)"
-    [[ -n "$branch" ]] || branch="$(jj log -r @ --no-graph -T 'change_id.short()' 2>/dev/null)"
+  if command -v jj >/dev/null 2>&1 && jj --ignore-working-copy root >/dev/null 2>&1; then
+    branch="$(jj --ignore-working-copy log -r 'latest(first_ancestors(@) & bookmarks(), 1)' --no-graph -T 'local_bookmarks.filter(|b| !b.conflict()).map(|b| b.name()).join(" ")' 2>/dev/null)"
+    [[ -n "$branch" ]] || branch="jj"
   fi
   [[ -n "$branch" ]] || branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null)"
   branch="${branch//\%/%%}"
