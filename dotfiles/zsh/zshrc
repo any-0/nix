@@ -63,7 +63,7 @@ function zz() {
 }
 
 # Aliases
-alias ls='eza -l --icons'
+alias ls='eza -l --icons --sort ext'
 compdef _files eza
 alias v='nvim'
 alias dc='cd'
