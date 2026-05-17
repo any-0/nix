@@ -12,10 +12,10 @@ if [[ $# -ge 1 ]]; then
 else
   case "$platform" in
     Darwin)
-      PROFILE="julian-mac"
+      PROFILE="mac"
       ;;
     Linux)
-      PROFILE="julian-cli"
+      PROFILE="cli"
       ;;
     *)
       echo "unsupported platform: $platform" >&2
@@ -46,11 +46,6 @@ if [[ "$platform" == "Linux" ]] && [[ -z "${WSL_DISTRO_NAME:-}" ]] && ! grep -qi
   echo "Continuing anyway."
 fi
 
-if [[ "$(id -un)" != "julian" ]]; then
-  echo "Warning: current user is '$(id -un)', but flake profile is configured for user 'julian'."
-  echo "If switch fails, update username/homeDirectory in flake.nix."
-fi
-
 NIX_CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/nix"
 NIX_CONF_FILE="${NIX_CONF_DIR}/nix.conf"
 mkdir -p "${NIX_CONF_DIR}"
@@ -68,6 +63,6 @@ fi
 echo "Applying Home Manager profile '${PROFILE}' from '${REPO_DIR}'..."
 nix --extra-experimental-features "nix-command flakes" \
   run github:nix-community/home-manager -- \
-  switch -b "${BACKUP_EXT}" --flake "${REPO_DIR}#${PROFILE}"
+  --impure switch -b "${BACKUP_EXT}" --flake "path:${REPO_DIR}#${PROFILE}"
 
 echo "Done."

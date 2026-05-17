@@ -17,8 +17,20 @@
   let
     system = "x86_64-linux";
     hostname = "pc";
+
     username = "julian";
-    homeDirectory = "/home/julian";
+    homeDirectory = "/home/${username}";
+
+    envOr = name: fallback:
+      let
+        value = builtins.getEnv name;
+      in
+        if value != "" then value else fallback;
+
+    currentUsername = envOr "USER" username;
+    currentLinuxHomeDirectory = envOr "HOME" "/home/${currentUsername}";
+    currentDarwinHomeDirectory = envOr "HOME" "/Users/${currentUsername}";
+
     zenBrowserOverlay = final: prev: {
       zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
     };
@@ -42,12 +54,7 @@
         config.allowUnfreePredicate = allowUnfreePredicate;
       };
 
-    mkHome = {
-      modules,
-      system ? "x86_64-linux",
-      username ? "julian",
-      homeDirectory ? "/home/julian",
-    }:
+    mkHome = { modules, system, username, homeDirectory }:
       home-manager.lib.homeManagerConfiguration {
         pkgs = mkPkgs system;
         modules = modules ++ [
@@ -79,6 +86,9 @@
   {
     nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
       inherit system;
+      specialArgs = {
+        inherit username homeDirectory;
+      };
       modules = [
         ./configuration.nix
         home-manager.nixosModules.home-manager
@@ -96,19 +106,24 @@
     };
 
     homeConfigurations = {
-      "julian-desktop" = mkHome {
-        inherit system username homeDirectory;
+      desktop = mkHome {
+        inherit system;
+        username = currentUsername;
+        homeDirectory = currentLinuxHomeDirectory;
         modules = desktopModules;
       };
 
-      "julian-cli" = mkHome {
-        inherit system username homeDirectory;
+      cli = mkHome {
+        inherit system;
+        username = currentUsername;
+        homeDirectory = currentLinuxHomeDirectory;
         modules = cliModules;
       };
-      "julian-mac" = mkHome {
+
+      mac = mkHome {
         system = "aarch64-darwin";
-        username = "julian";
-        homeDirectory = "/Users/julian";
+        username = currentUsername;
+        homeDirectory = currentDarwinHomeDirectory;
         modules = darwinModules;
       };
     };

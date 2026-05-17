@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   home.packages = with pkgs; [
@@ -22,7 +22,7 @@
       #!/usr/bin/env bash
       set -euo pipefail
 
-      user="''${SMB_USER:-julian}"
+      user="''${SMB_USER:-${config.home.username}}"
       hosts="''${SMB_HOSTS:-192.168.0.227}"
       base="$HOME/mnt"
       server=""
