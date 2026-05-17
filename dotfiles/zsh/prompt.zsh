@@ -56,10 +56,17 @@ add-zsh-hook preexec _prompt_spacing_preexec
 git_prompt() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
 
-  local changes numstat line x y add del
+  local changes numstat line x y add del branch
   local staged=0 unstaged=0 untracked=0
   local added=0 removed=0
   local -a segments
+
+  if command -v jj >/dev/null 2>&1 && jj root >/dev/null 2>&1; then
+    branch="$(jj log -r 'heads(::@ & bookmarks())' --no-graph -T 'bookmarks.join(" ")' 2>/dev/null)"
+    [[ -n "$branch" ]] || branch="$(jj log -r @ --no-graph -T 'change_id.short()' 2>/dev/null)"
+  fi
+  [[ -n "$branch" ]] || branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null)"
+  branch="${branch//\%/%%}"
 
   changes="$(git status --porcelain 2>/dev/null)"
   numstat="$(
@@ -86,6 +93,7 @@ git_prompt() {
     [[ "$y" != " " ]] && ((unstaged++))
   done <<< "$changes"
 
+  [[ -n "$branch" ]] && segments+=("${branch}")
   segments+=("+${added} -${removed}")
   ((staged > 0)) && segments+=("S:${staged}")
   ((unstaged > 0)) && segments+=("M:${unstaged}")
