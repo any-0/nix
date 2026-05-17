@@ -31,16 +31,6 @@ in
     plugins = with pkgs.tmuxPlugins; [
       sensible
       tmuxEasyMotion
-      {
-        plugin = dracula;
-        extraConfig = ''
-          set -g @dracula-colors "custom_bg #AFCCAF"
-          set -g @dracula-show-flags true
-          set -g @dracula-plugins "cpu-usage ram-usage"
-          set -g @dracula-cpu-usage-colors "custom_bg"
-          set -g @dracula-ram-usage-colors "custom_bg"
-        '';
-      }
     ];
 
     extraConfig = ''
