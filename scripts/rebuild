@@ -10,8 +10,18 @@ if [[ "$(uname -s)" != "Linux" ]]; then
 fi
 
 HOSTNAME=$(hostnamectl --static 2>/dev/null || hostname)
+MODE="${1:-switch}"
 
-echo "Rebuilding host '${HOSTNAME}' from '${REPO_DIR}'..."
-sudo nixos-rebuild switch --flake "path:${REPO_DIR}#${HOSTNAME}"
+case "${MODE}" in
+  switch|boot|test|build)
+    ;;
+  *)
+    echo "usage: $(basename "$0") [switch|boot|test|build]" >&2
+    exit 2
+    ;;
+esac
+
+echo "Rebuilding host '${HOSTNAME}' from '${REPO_DIR}' with mode '${MODE}'..."
+sudo nixos-rebuild "${MODE}" --flake "path:${REPO_DIR}#${HOSTNAME}"
 
 echo "Rebuild complete!"
