@@ -282,8 +282,8 @@ layout {
 // See the binds section below for more spawn examples.
 
 // Pick one wallpaper at startup and use it for swaybg.
-spawn-sh-at-startup "exec swaybg -i \"$(find /home/julian/Pictures/Wallpapers -maxdepth 1 -type f | shuf -n 1)\" -m fill"
-spawn-at-startup "/home/julian/.local/bin/bar"
+spawn-sh-at-startup "exec swaybg -i \"$(find \"$HOME/Pictures/Wallpapers\" -maxdepth 1 -type f | shuf -n 1)\" -m fill"
+spawn-sh-at-startup "exec \"$HOME/.local/bin/bar\""
 spawn-at-startup "xwayland-satellite"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
@@ -577,7 +577,7 @@ binds {
     Mod+Shift+R { switch-preset-column-width; }
     Mod+Ctrl+R { reset-window-height; }
     Mod+F { fullscreen-window; }
-    Mod+Shift+F { spawn "/home/julian/nix/scripts/screenshot"; }
+    Mod+Shift+F { spawn "sh" "-c" "exec \"$HOME/nix/scripts/screenshot\""; }
     Mod+Shift+M { maximize-column; }
 
     // Expand the focused column to space not taken up by other fully visible columns.
@@ -627,7 +627,7 @@ binds {
     Print { screenshot; }
     Ctrl+Print { screenshot-screen; }
     Alt+Print { screenshot-window; }
-    Mod+Print { spawn "/home/julian/nix/scripts/screenshot"; }
+    Mod+Print { spawn "sh" "-c" "exec \"$HOME/nix/scripts/screenshot\""; }
 
     // Applications such as remote-desktop clients and software KVM switches may
     // request that niri stops processing the keyboard shortcuts defined here

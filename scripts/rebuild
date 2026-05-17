@@ -12,6 +12,6 @@ fi
 HOSTNAME=$(hostnamectl --static 2>/dev/null || hostname)
 
 echo "Rebuilding host '${HOSTNAME}' from '${REPO_DIR}'..."
-sudo nixos-rebuild switch --flake "${REPO_DIR}#${HOSTNAME}"
+sudo nixos-rebuild switch --flake "path:${REPO_DIR}#${HOSTNAME}"
 
 echo "Rebuild complete!"

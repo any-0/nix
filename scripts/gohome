@@ -10,10 +10,10 @@ if [[ $# -ge 1 ]]; then
 else
   case "$(uname -s)" in
     Darwin)
-      PROFILE="julian-mac"
+      PROFILE="mac"
       ;;
     Linux)
-      PROFILE="julian-cli"
+      PROFILE="cli"
       ;;
     *)
       echo "unsupported platform: $(uname -s)" >&2
@@ -23,4 +23,4 @@ else
 fi
 
 nix run github:nix-community/home-manager -- \
-  switch -b "${BACKUP_EXT}" --flake "path:${REPO_DIR}#${PROFILE}"
+  --impure switch -b "${BACKUP_EXT}" --flake "path:${REPO_DIR}#${PROFILE}"
