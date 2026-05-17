@@ -94,6 +94,7 @@ in
     lazygit
     gh
     jujutsu
+    jjui
   ];
 
 }
