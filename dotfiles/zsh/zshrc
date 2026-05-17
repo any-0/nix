@@ -67,14 +67,13 @@ alias ls='eza -l --icons'
 compdef _files eza
 alias v='nvim'
 alias dc='cd'
-alias c='cd'
 alias :q='exit'
 alias :q!='exit'
 alias p='python3'
 compdef '_arguments "1:entry:($( gopass ls --flat ))"' gpp gpu
 alias python='python3'
 alias shit='shutdown now'
-alias fb="fileBrowser >/dev/null 2>&1 & disown; exit"
+alias kill-server='tmux kill-server'
 
 format() {
     if [[ -z "${FORMAT_CMD:-}" ]]; then
@@ -83,11 +82,6 @@ format() {
     fi
     eval "$FORMAT_CMD"
 }
-
-alias tma='tmux attach'
-alias tmd='tmux detach-client'
-alias tmls='tmux ls'
-alias tmks='tmux kill-server'
 
 # Environment
 export GPG_TTY=$(tty)
