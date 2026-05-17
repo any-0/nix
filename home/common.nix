@@ -116,6 +116,7 @@ in
   xdg.configFile."zsh/eza-colors.zsh".source = dot "zsh/eza-colors.zsh";
   xdg.configFile."eza/theme.yml".source = dot "eza/theme.yml";
   xdg.configFile."kitty/kitty.conf".source = dot "kitty/kitty.conf";
+  xdg.configFile."jj/config.toml".source = dot "jj/config.toml";
 
   xdg.configFile."nvim".source = dot "nvim";
   home.file.".zshenv".source = dot ".zshenv";

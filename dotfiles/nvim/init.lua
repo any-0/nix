@@ -22,8 +22,9 @@ vim.opt.sidescrolloff = 8
 vim.opt.scrolloff = 10
 vim.opt.statuscolumn = " %s %l  │  "
 vim.cmd.colorscheme("anyscheme")
-vim.opt.pumheight = 5
+vim.opt.pumheight = 8
 vim.opt.pumwidth = 30
+vim.opt.completeopt = { "menu", "menuone", "noselect" }
 vim.opt.iskeyword:remove("_")
 
 vim.cmd([[
@@ -64,7 +65,6 @@ vim.keymap.set("n", "U", "<C-r>")
 vim.keymap.set("v", "<", "<gv")
 vim.keymap.set("v", ">", ">gv")
 vim.keymap.set("n", "<Tab>", "<C-i>")
-vim.keymap.set("i", "<C-Space>", "<C-x><C-n>")
 vim.keymap.set("n", "<Home>", function()
     vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end)
@@ -129,7 +129,10 @@ require("lazy").setup({
     },
     {
         "neovim/nvim-lspconfig",
+        dependencies = { "hrsh7th/cmp-nvim-lsp" },
         config = function()
+            local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
             vim.diagnostic.config({
                 virtual_text = false,
                 signs = true,
@@ -147,6 +150,7 @@ require("lazy").setup({
 
             vim.lsp.config("pyright", {
                 cmd = { "pyright-langserver", "--stdio" },
+                capabilities = capabilities,
                 settings = {
                     python = {
                         analysis = {
@@ -165,30 +169,53 @@ require("lazy").setup({
 
             vim.lsp.config("clangd", {
                 cmd = { "clangd" },
+                capabilities = capabilities,
+                filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+            })
+            vim.lsp.config("arduino_language_server", {
+                cmd = {
+                    "arduino-language-server",
+                    "-cli", "arduino-cli",
+                    "-cli-config", os.getenv("ARDUINO_CLI_CONFIG") or (vim.fn.getcwd() .. "/arduino-cli.yaml"),
+                    "-clangd", "clangd",
+                    "-fqbn", os.getenv("ARDUINO_FQBN") or "arduino:avr:uno",
+                },
+                capabilities = capabilities,
             })
             vim.lsp.config("ts_ls", {
                 cmd = { "typescript-language-server", "--stdio" },
+                capabilities = capabilities,
             })
             vim.lsp.config("rust_analyzer", {
                 cmd = { "rust-analyzer" },
+                capabilities = capabilities,
             })
             vim.lsp.config("dockerls", {
                 cmd = { "docker-langserver", "--stdio" },
+                capabilities = capabilities,
             })
             vim.lsp.config("docker_compose_language_service", {
                 cmd = { "docker-compose-langserver", "--stdio" },
+                capabilities = capabilities,
             })
             vim.lsp.config("bashls", {
                 cmd = { "bash-language-server", "start" },
+                capabilities = capabilities,
+            })
+            vim.lsp.config("texlab", {
+                cmd = { "texlab" },
+                capabilities = capabilities,
             })
 
             vim.lsp.enable("pyright")
             vim.lsp.enable("clangd")
+            vim.lsp.enable("arduino_language_server")
             vim.lsp.enable("ts_ls")
             vim.lsp.enable("rust_analyzer")
             vim.lsp.enable("dockerls")
             vim.lsp.enable("docker_compose_language_service")
             vim.lsp.enable("bashls")
+            vim.lsp.enable("texlab")
 
             vim.api.nvim_create_autocmd("LspAttach", {
                 callback = function(ev)
@@ -218,13 +245,19 @@ require("lazy").setup({
                 window = {
                     completion = {
                         side_padding = 0,
+                        scrollbar = false,
+                    },
+                    documentation = {
+                        max_width = 50,
+                        max_height = 12,
                     },
                 },
                 formatting = {
+                    fields = { "abbr" },
                     format = function(_, item)
                         local max = 28
                         if vim.fn.strchars(item.abbr) > max then
-                            item.abbr = vim.fn.strcharpart(item.abbr, 0, max) .. "..."
+                            item.abbr = vim.fn.strcharpart(item.abbr, 0, max - 1) .. "…"
                         end
                         return item
                     end,
@@ -232,8 +265,20 @@ require("lazy").setup({
                 mapping = cmp.mapping.preset.insert({
                     ["<C-Space>"] = cmp.mapping.complete(),
                     ["<CR>"] = cmp.mapping.confirm({ select = false }),
-                    ["<Tab>"] = cmp.mapping.select_next_item(),
-                    ["<S-Tab>"] = cmp.mapping.select_prev_item(),
+                    ["<Tab>"] = cmp.mapping(function(fallback)
+                        if cmp.visible() then
+                            cmp.select_next_item()
+                        else
+                            fallback()
+                        end
+                    end, { "i", "s" }),
+                    ["<S-Tab>"] = cmp.mapping(function(fallback)
+                        if cmp.visible() then
+                            cmp.select_prev_item()
+                        else
+                            fallback()
+                        end
+                    end, { "i", "s" }),
                 }),
                 sources = {
                     { name = "nvim_lsp" },
