@@ -24,11 +24,19 @@ direnv_active() {
   ' >/dev/null
 }
 
+prompt_user() {
+  local user="${USER:-${LOGNAME:-}}"
+  [[ -n "$user" ]] || user="$(command id -un 2>/dev/null)"
+  user="${user//\%/%%}"
+  print -r -- "$user"
+}
+
 update_prompt() {
-  local arrow_color git_segment
+  local arrow_color git_segment user_segment
   arrow_color="$(prompt_arrow_color)"
   git_segment="$(git_prompt)"
-  PS1="%F{245}%n@%m  [%~]${git_segment}%f"$'\n'"%B%F{${arrow_color}}❯%f%b "
+  user_segment="$(prompt_user)"
+  PS1="%F{245}${user_segment}@%m  [%~]${git_segment}%f"$'\n'"%B%F{${arrow_color}}❯%f%b "
 }
 
 _prompt_spacing_precmd() {

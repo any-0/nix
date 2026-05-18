@@ -34,6 +34,7 @@ in
     ];
 
     extraConfig = ''
+      set -g default-shell "${pkgs.zsh}/bin/zsh"
       set -g @tmux-clipboard-command "${tmuxClipboardCommand}"
       set -g clock-mode-style 24
       set -g @easy-motion-dim-style "fg=#888888"
