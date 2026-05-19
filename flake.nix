@@ -21,16 +21,6 @@
     username = "julian";
     homeDirectory = "/home/${username}";
 
-    envOr = name: fallback:
-      let
-        value = builtins.getEnv name;
-      in
-        if value != "" then value else fallback;
-
-    currentUsername = envOr "USER" username;
-    currentLinuxHomeDirectory = envOr "HOME" "/home/${currentUsername}";
-    currentDarwinHomeDirectory = envOr "HOME" "/Users/${currentUsername}";
-
     zenBrowserOverlay = final: prev: {
       zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
     };
@@ -107,23 +97,19 @@
 
     homeConfigurations = {
       desktop = mkHome {
-        inherit system;
-        username = currentUsername;
-        homeDirectory = currentLinuxHomeDirectory;
+        inherit system username homeDirectory;
         modules = desktopModules;
       };
 
       cli = mkHome {
-        inherit system;
-        username = currentUsername;
-        homeDirectory = currentLinuxHomeDirectory;
+        inherit system username homeDirectory;
         modules = cliModules;
       };
 
       mac = mkHome {
         system = "aarch64-darwin";
-        username = currentUsername;
-        homeDirectory = currentDarwinHomeDirectory;
+        inherit username;
+        homeDirectory = "/Users/${username}";
         modules = darwinModules;
       };
     };

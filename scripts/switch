@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+OS="$(uname -s)"
+MODE="${1:-switch}"
+
+case "${MODE}" in
+  switch|boot|test|build) ;;
+  *)
+    echo "usage: $(basename "$0") [switch|boot|test|build]" >&2
+    echo "  macOS:      applies homeConfigurations.mac" >&2
+    echo "  NixOS:      applies nixosConfigurations.<hostname>" >&2
+    echo "  other Linux applies homeConfigurations.cli" >&2
+    exit 2
+    ;;
+esac
+
+common_nix_args=(--no-write-lock-file --option warn-dirty false)
+
+case "${OS}" in
+  Darwin)
+    if [[ "${MODE}" != "switch" && "${MODE}" != "build" ]]; then
+      echo "mode '${MODE}' is not meaningful for Home Manager; use switch or build" >&2
+      exit 2
+    fi
+    nh home "${MODE}" "${REPO_DIR}" -c mac -- "${common_nix_args[@]}"
+    ;;
+  Linux)
+    if [[ -e /etc/NIXOS ]]; then
+      host="$(hostnamectl --static 2>/dev/null || hostname)"
+      nh os "${MODE}" "${REPO_DIR}" -H "${host}" -- "${common_nix_args[@]}"
+    else
+      if [[ "${MODE}" != "switch" && "${MODE}" != "build" ]]; then
+        echo "mode '${MODE}' is not meaningful for Home Manager; use switch or build" >&2
+        exit 2
+      fi
+      nh home "${MODE}" "${REPO_DIR}" -c cli -- "${common_nix_args[@]}"
+    fi
+    ;;
+  *)
+    echo "unsupported OS: ${OS}" >&2
+    exit 1
+    ;;
+esac

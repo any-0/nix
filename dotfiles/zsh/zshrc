@@ -74,6 +74,7 @@ compdef '_arguments "1:entry:($( gopass ls --flat ))"' gpp gpu
 alias python='python3'
 alias shit='shutdown now'
 alias kill-server='tmux kill-server'
+alias hms='switch'
 
 format() {
     if [[ -z "${FORMAT_CMD:-}" ]]; then

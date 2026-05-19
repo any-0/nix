@@ -6,6 +6,10 @@ let
   localBinDir = "${config.home.homeDirectory}/.local/bin";
   gopassStoreDir = "${config.home.homeDirectory}/nix/gopass/store";
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
+  dotFile = path: {
+    source = dot path;
+    force = true;
+  };
 in
 {
   imports = [
@@ -15,6 +19,17 @@ in
   ];
 
   home.stateVersion = "25.11";
+
+  nix = {
+    package = pkgs.nix;
+    settings = {
+      experimental-features = [ "nix-command" "flakes" ];
+      warn-dirty = false;
+    };
+  };
+
+  # Avoid building Home Manager's manual/options docs on every switch.
+  manual.manpages.enable = false;
 
   programs.git = {
     enable = true;
@@ -38,24 +53,24 @@ in
   };
   programs.direnv.nix-direnv.enable = true;
 
-  xdg.configFile."zsh/.zshrc".source = dot "zsh/zshrc";
-  xdg.configFile."zsh/.zshenv".source = dot ".zshenv";
-  xdg.configFile."zsh/prompt.zsh".source = dot "zsh/prompt.zsh";
-  xdg.configFile."zsh/eza-colors.zsh".source = dot "zsh/eza-colors.zsh";
-  xdg.configFile."eza/theme.yml".source = dot "eza/theme.yml";
-  xdg.configFile."kitty/kitty.conf".source = dot "kitty/kitty.conf";
-  xdg.configFile."jj/config.toml".source = dot "jj/config.toml";
+  xdg.configFile."zsh/.zshrc" = dotFile "zsh/zshrc";
+  xdg.configFile."zsh/.zshenv" = dotFile ".zshenv";
+  xdg.configFile."zsh/prompt.zsh" = dotFile "zsh/prompt.zsh";
+  xdg.configFile."zsh/eza-colors.zsh" = dotFile "zsh/eza-colors.zsh";
+  xdg.configFile."eza/theme.yml" = dotFile "eza/theme.yml";
+  xdg.configFile."kitty/kitty.conf" = dotFile "kitty/kitty.conf";
+  xdg.configFile."jj/config.toml" = dotFile "jj/config.toml";
 
-  xdg.configFile."nvim".source = dot "nvim";
-  home.file.".zshenv".source = dot ".zshenv";
-  home.file.".codex/AGENTS.md".source = dot "codex/AGENTS.md";
-  home.file.".pi/agent/settings.json".source = dot "pi/settings.json";
-  home.file.".pi/agent/keybindings.json".source = dot "pi/keybindings.json";
-  home.file.".pi/agent/extensions".source = dot "pi/extensions";
+  xdg.configFile."nvim" = dotFile "nvim";
+  home.file.".zshenv" = dotFile ".zshenv";
+  home.file.".codex/AGENTS.md" = dotFile "codex/AGENTS.md";
+  home.file.".pi/agent/keybindings.json" = dotFile "pi/keybindings.json";
+  home.file.".pi/agent/extensions" = dotFile "pi/extensions";
 
   home.sessionVariables = {
     PASSWORD_STORE_DIR = gopassStoreDir;
     EZA_CONFIG_DIR = "${config.xdg.configHome}/eza";
+    NH_FLAKE = "${config.home.homeDirectory}/nix";
   };
   home.sessionPath = [
     scriptsDir
@@ -95,6 +110,7 @@ in
     gh
     jujutsu
     jjui
+    nh
   ];
 
 }
