@@ -41,7 +41,8 @@ UPLOAD_PATH="$TARGET"
 if [[ -d "$TARGET" ]]; then
     TMPZIP="$(mktemp -u /tmp/sendtome_XXXXXX.zip)"
     echo "Zipping '$FILENAME'..."
-    (cd "$(dirname "$(realpath "$TARGET")")" && zip -qr "$TMPZIP" "$FILENAME")
+    TARGET_DIR="$(cd "$(dirname "$TARGET")" && pwd -P)"
+    (cd "$TARGET_DIR" && zip -qr "$TMPZIP" "$FILENAME")
     FILENAME="${FILENAME}.zip"
     UPLOAD_PATH="$TMPZIP"
 fi
@@ -49,12 +50,18 @@ fi
 echo "Sending '$FILENAME' to $TO..."
 
 RESP_FILE="$(mktemp /tmp/sendtome_resp_XXXXXX)"
-HTTP_STATUS=$(curl -sSw "%{http_code}" -o "$RESP_FILE" \
-    -H "X-API-Key: $API_KEY" \
-    -F "file=@${UPLOAD_PATH};filename=${FILENAME}" \
-    -F "to=${TO}" \
-    ${SUBJECT:+-F "subject=${SUBJECT}"} \
-    "$API_URL")
+curl_args=(
+    -sSw "%{http_code}"
+    -o "$RESP_FILE"
+    -H "X-API-Key: $API_KEY"
+    -F "file=@${UPLOAD_PATH};filename=${FILENAME}"
+    -F "to=${TO}"
+)
+if [[ -n "$SUBJECT" ]]; then
+    curl_args+=(-F "subject=${SUBJECT}")
+fi
+
+HTTP_STATUS=$(curl "${curl_args[@]}" "$API_URL")
 
 BODY="$(cat "$RESP_FILE")"
 rm -f "$RESP_FILE"

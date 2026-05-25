@@ -65,10 +65,14 @@ sed '/^# template: /d; /^# template-rev: /d' .dev/flake.nix > "$TMP_DIR/current/
 cp .dev/flake.lock "$TMP_DIR/current/.dev/flake.lock"
 cp .envrc "$TMP_DIR/current/.envrc"
 
+DIFF_CMD=(diff -u)
+if diff --color=always /dev/null /dev/null >/dev/null 2>&1; then
+  DIFF_CMD+=(--color=always)
+fi
+
 DIFF_STATUS=0
 for file in .dev/flake.nix .dev/flake.lock .envrc; do
-  if ! diff -u \
-    --color=always \
+  if ! "${DIFF_CMD[@]}" \
     --label "template:$TEMPLATE_NAME@$BASE_REV/$file" \
     --label "current-env/$file" \
     "$TMP_DIR/template/$file" "$TMP_DIR/current/$file"; then
