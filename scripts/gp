@@ -13,7 +13,9 @@ fi
 
 entries=()
 if [[ -n ${entries_output} ]]; then
-  mapfile -t entries <<< "${entries_output}"
+  while IFS= read -r entry; do
+    entries+=("$entry")
+  done <<< "${entries_output}"
 fi
 
 if [[ ${#entries[@]} -eq 0 ]]; then

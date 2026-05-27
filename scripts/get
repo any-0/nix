@@ -11,7 +11,10 @@ if [[ $# -ge 1 ]]; then
 fi
 
 # get form: interactive pick from base, copy selections into current dir
-mapfile -d '' -t rel < <(
+rel=()
+while IFS= read -r -d '' p; do
+  rel+=("$p")
+done < <(
   cd "$base" && fd -0 -t f -t d . | fzf --read0 --print0 -m
 ) || exit 0
 
