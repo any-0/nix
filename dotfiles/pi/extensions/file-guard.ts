@@ -1,7 +1,7 @@
 import type { ExtensionAPI, BashOperations } from "@earendil-works/pi-coding-agent";
 import { createBashTool, isToolCallEventType } from "@earendil-works/pi-coding-agent";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, realpathSync, unlinkSync, writeFileSync, appendFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, realpathSync, unlinkSync, writeFileSync, appendFileSync, readdirSync, statSync, closeSync, openSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -406,12 +406,29 @@ function policyTargetForRule(cwd: string, rawPattern: string): { file: string; b
 function modeSummary(effective: EffectivePolicy): string {
 	const denyRead = effective.rules.filter((r) => r.kind === "denyRead").length;
 	const denyWrite = effective.rules.filter((r) => r.kind === "denyWrite").length;
-	const sandbox = canUseMacSandbox() ? "sandbox on" : "sandbox unavailable";
+	const sandbox = canUseMacSandbox() ? "mac sandbox on" : canUseLinuxSandbox() ? "bwrap on" : "sandbox unavailable";
 	return `🔒 guard: ${effective.mode} · read ${denyRead} · write ${denyWrite} · ${sandbox}`;
+}
+
+function findExecutable(name: string): string | undefined {
+	for (const dir of (process.env.PATH ?? "").split(path.delimiter)) {
+		if (!dir) continue;
+		const full = path.join(dir, name);
+		if (existsSync(full)) return full;
+	}
+	return undefined;
 }
 
 function canUseMacSandbox(): boolean {
 	return process.platform === "darwin" && existsSync("/usr/bin/sandbox-exec");
+}
+
+function linuxSandboxExecutable(): string | undefined {
+	return process.platform === "linux" ? findExecutable("bwrap") : undefined;
+}
+
+function canUseLinuxSandbox(): boolean {
+	return !!linuxSandboxExecutable();
 }
 
 function escapeSandboxString(value: string): string {
@@ -536,13 +553,129 @@ function createMacSandboxedBashOps(): BashOperations {
 	};
 }
 
+function collectLinuxDeniedOverlays(effective: EffectivePolicy, cwd: string): Array<{ source: string; target: string }> {
+	const overlays: Array<{ source: string; target: string }> = [];
+	const emptyFile = path.join(os.tmpdir(), `pi-file-guard-empty-file-${process.pid}`);
+	const emptyDir = path.join(os.tmpdir(), `pi-file-guard-empty-dir-${process.pid}`);
+	if (!existsSync(emptyFile)) closeSync(openSync(emptyFile, "w"));
+	mkdirSync(emptyDir, { recursive: true });
+
+	const add = (target: string) => {
+		try {
+			const st = statSync(target);
+			overlays.push({ source: st.isDirectory() ? emptyDir : emptyFile, target });
+		} catch {}
+	};
+
+	const scanForBasename = (root: string, basename: string) => {
+		let visited = 0;
+		const walk = (dir: string) => {
+			if (++visited > 10000) return;
+			let entries: string[];
+			try {
+				entries = readdirSync(dir);
+			} catch {
+				return;
+			}
+			for (const entry of entries) {
+				const full = path.join(dir, entry);
+				if (entry === basename) add(full);
+				if (entry === ".git" || entry === "node_modules" || entry === ".next" || entry === "dist" || entry === "build") continue;
+				try {
+					if (statSync(full).isDirectory()) walk(full);
+				} catch {}
+			}
+		};
+		walk(root);
+	};
+
+	for (const rule of effective.rules) {
+		if (rule.kind !== "denyRead") continue;
+		const abs = absolutePattern(rule);
+		if (!hasGlob(abs)) {
+			add(abs);
+			continue;
+		}
+		const base = path.basename(abs);
+		if (base && !hasGlob(base)) scanForBasename(cwd, base);
+	}
+	return overlays;
+}
+
+function createLinuxSandboxedBashOps(): BashOperations {
+	return {
+		async exec(command, cwd, { onData, signal, timeout }) {
+			const bwrap = linuxSandboxExecutable();
+			if (!bwrap) throw new Error("bubblewrap not found");
+			const effective = loadEffectivePolicy(cwd);
+			const args = [
+				"--die-with-parent",
+				"--new-session",
+				"--proc", "/proc",
+				"--dev", "/dev",
+				"--tmpfs", "/tmp",
+			];
+			const bindIfExists = (flag: "--bind" | "--ro-bind", source: string, target = source) => {
+				if (existsSync(source)) args.push(flag, source, target);
+			};
+			bindIfExists("--ro-bind", "/nix");
+			bindIfExists("--ro-bind", "/etc");
+			bindIfExists("--ro-bind", "/run/current-system");
+			bindIfExists("--bind", HOME);
+			args.push(
+				"--chdir", cwd,
+				"--setenv", "HOME", HOME,
+				"--setenv", "PATH", process.env.PATH ?? "",
+			);
+			for (const overlay of collectLinuxDeniedOverlays(effective, cwd)) {
+				args.push("--ro-bind", overlay.source, overlay.target);
+			}
+			args.push("/bin/bash", "-lc", command);
+
+			return new Promise((resolve, reject) => {
+				const child = spawn(bwrap, args, { cwd, detached: true, stdio: ["ignore", "pipe", "pipe"] });
+				let timedOut = false;
+				let timeoutHandle: NodeJS.Timeout | undefined;
+				if (timeout !== undefined && timeout > 0) {
+					timeoutHandle = setTimeout(() => {
+						timedOut = true;
+						if (child.pid) {
+							try { process.kill(-child.pid, "SIGKILL"); } catch { child.kill("SIGKILL"); }
+						}
+					}, timeout * 1000);
+				}
+				child.stdout?.on("data", onData);
+				child.stderr?.on("data", onData);
+				const onAbort = () => {
+					if (child.pid) {
+						try { process.kill(-child.pid, "SIGKILL"); } catch { child.kill("SIGKILL"); }
+					}
+				};
+				signal?.addEventListener("abort", onAbort, { once: true });
+				child.on("error", (err) => {
+					if (timeoutHandle) clearTimeout(timeoutHandle);
+					signal?.removeEventListener("abort", onAbort);
+					reject(err);
+				});
+				child.on("close", (code) => {
+					if (timeoutHandle) clearTimeout(timeoutHandle);
+					signal?.removeEventListener("abort", onAbort);
+					if (signal?.aborted) reject(new Error("aborted"));
+					else if (timedOut) reject(new Error(`timeout:${timeout}`));
+					else resolve({ exitCode: code });
+				});
+			});
+		},
+	};
+}
+
 function hasSandboxRelevantRules(effective: EffectivePolicy): boolean {
 	return effective.rules.some((r) => r.kind === "denyRead" || r.kind === "denyWrite");
 }
 
 async function shouldAllowUnsandboxedBash(effective: EffectivePolicy, command: string, ctx: any): Promise<boolean> {
 	if (effective.mode === "off" || effective.mode === "warn" || !hasSandboxRelevantRules(effective)) return true;
-	if (canUseMacSandbox()) return true;
+	if (canUseMacSandbox() || canUseLinuxSandbox()) return true;
 	if (effective.mode === "prompt" && ctx.hasUI) {
 		const choice = await ctx.ui.select(
 			`File guard cannot sandbox bash on this platform. Allow unsandboxed command?\n\n${command}`,
@@ -597,9 +730,15 @@ export default function fileGuard(pi: ExtensionAPI) {
 				};
 			}
 
-			if (canUseMacSandbox() && hasSandboxRelevantRules(effective) && effective.mode !== "off" && effective.mode !== "warn") {
-				const sandboxed = createBashTool(process.cwd(), { operations: createMacSandboxedBashOps() });
-				return sandboxed.execute(id, params, signal, onUpdate);
+			if (hasSandboxRelevantRules(effective) && effective.mode !== "off" && effective.mode !== "warn") {
+				if (canUseMacSandbox()) {
+					const sandboxed = createBashTool(process.cwd(), { operations: createMacSandboxedBashOps() });
+					return sandboxed.execute(id, params, signal, onUpdate);
+				}
+				if (canUseLinuxSandbox()) {
+					const sandboxed = createBashTool(process.cwd(), { operations: createLinuxSandboxedBashOps() });
+					return sandboxed.execute(id, params, signal, onUpdate);
+				}
 			}
 
 			return plainBash.execute(id, params, signal, onUpdate);
@@ -618,8 +757,9 @@ export default function fileGuard(pi: ExtensionAPI) {
 				},
 			};
 		}
-		if (canUseMacSandbox() && hasSandboxRelevantRules(effective) && effective.mode !== "off" && effective.mode !== "warn") {
-			return { operations: createMacSandboxedBashOps() };
+		if (hasSandboxRelevantRules(effective) && effective.mode !== "off" && effective.mode !== "warn") {
+			if (canUseMacSandbox()) return { operations: createMacSandboxedBashOps() };
+			if (canUseLinuxSandbox()) return { operations: createLinuxSandboxedBashOps() };
 		}
 		return undefined;
 	});

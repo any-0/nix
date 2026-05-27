@@ -64,13 +64,11 @@
     cliModules = [
       ./home/common.nix
       ./home/linux.nix
-      ./home/cli.nix
     ];
 
     darwinModules = [
       ./home/common.nix
       ./home/darwin.nix
-      ./home/cli.nix
     ];
   in
   {

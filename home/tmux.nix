@@ -1,9 +1,6 @@
-{ config, pkgs, ... }:
+{ config, pkgs, dot, scriptsDir, ... }:
 
 let
-  dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
-  dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
-  scriptsDir = "${config.home.homeDirectory}/nix/scripts";
   tmuxClipboardCommand = pkgs.writeShellScript "tmux-clipboard" ''
     exec "${scriptsDir}/yank"
   '';

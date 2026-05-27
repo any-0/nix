@@ -6,12 +6,10 @@ let
   localBinDir = "${config.home.homeDirectory}/.local/bin";
   gopassStoreDir = "${config.home.homeDirectory}/nix/gopass/store";
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
-  dotFile = path: {
-    source = dot path;
-    force = true;
-  };
+  dotFile = path: { source = dot path; force = true; };
 in
 {
+  _module.args = { inherit dot dotFile scriptsDir; };
   imports = [
     ./npm-tools.nix
     ./neovim-tools.nix
@@ -20,13 +18,7 @@ in
 
   home.stateVersion = "25.11";
 
-  nix = {
-    package = lib.mkDefault pkgs.nix;
-    settings = {
-      experimental-features = [ "nix-command" "flakes" ];
-      warn-dirty = false;
-    };
-  };
+  nix.package = lib.mkDefault pkgs.nix;
 
   # Avoid building Home Manager's manual/options docs on every switch.
   manual.manpages.enable = false;

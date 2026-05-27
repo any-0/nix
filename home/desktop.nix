@@ -1,13 +1,5 @@
-{ config, pkgs, ... }:
+{ pkgs, dot, dotFile, ... }:
 
-let
-  dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
-  dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
-  dotFile = path: {
-    source = dot path;
-    force = true;
-  };
-in
 {
   home.pointerCursor = {
     gtk.enable = true;
