@@ -20,6 +20,11 @@
 
     username = "julian";
     homeDirectory = "/home/${username}";
+    envOr = name: default:
+      let value = builtins.getEnv name;
+      in if value != "" then value else default;
+    cliUsername = envOr "USER" username;
+    cliHomeDirectory = envOr "HOME" homeDirectory;
 
     zenBrowserOverlay = final: prev: {
       zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
@@ -100,7 +105,9 @@
       };
 
       cli = mkHome {
-        inherit system username homeDirectory;
+        inherit system;
+        username = cliUsername;
+        homeDirectory = cliHomeDirectory;
         modules = cliModules;
       };
 

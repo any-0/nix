@@ -5,6 +5,13 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 OS="$(uname -s)"
 MODE="${1:-switch}"
+EXPERIMENTAL_FEATURES_LINE="experimental-features = nix-command flakes"
+
+if [[ -n "${NIX_CONFIG:-}" ]]; then
+  export NIX_CONFIG="${NIX_CONFIG}"$'\n'"${EXPERIMENTAL_FEATURES_LINE}"
+else
+  export NIX_CONFIG="${EXPERIMENTAL_FEATURES_LINE}"
+fi
 
 case "${MODE}" in
   switch|boot|test|build) ;;
@@ -17,7 +24,8 @@ case "${MODE}" in
     ;;
 esac
 
-common_nix_args=(--no-write-lock-file --option warn-dirty false)
+common_nix_args=(--extra-experimental-features "nix-command flakes" --no-write-lock-file --option warn-dirty false)
+home_nix_args=("${common_nix_args[@]}" --impure)
 
 case "${OS}" in
   Darwin)
@@ -25,7 +33,7 @@ case "${OS}" in
       echo "mode '${MODE}' is not meaningful for Home Manager; use switch or build" >&2
       exit 2
     fi
-    nh home "${MODE}" "${REPO_DIR}" -c mac -- "${common_nix_args[@]}"
+    nh home "${MODE}" "${REPO_DIR}" -c mac -- "${home_nix_args[@]}"
     ;;
   Linux)
     if [[ -e /etc/NIXOS ]]; then
@@ -36,7 +44,7 @@ case "${OS}" in
         echo "mode '${MODE}' is not meaningful for Home Manager; use switch or build" >&2
         exit 2
       fi
-      nh home "${MODE}" "${REPO_DIR}" -c cli -- "${common_nix_args[@]}"
+      nh home "${MODE}" "${REPO_DIR}" -c cli -- "${home_nix_args[@]}"
     fi
     ;;
   *)

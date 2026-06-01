@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "usage: $(basename "$0") <name> <path>" >&2
+}
+
+if [[ $# -ne 2 ]]; then
+  usage
+  exit 2
+fi
+
+name="$1"
+path="$2"
+
+if [[ -z "$name" ]]; then
+  echo "workspace name must not be empty" >&2
+  usage
+  exit 2
+fi
+
+if [[ ! -d "$path" ]]; then
+  echo "workspace path does not exist or is not a directory: $path" >&2
+  exit 1
+fi
+
+path="$(cd -- "$path" && pwd -P)"
+
+if ! tmux has-session -t "=$name" 2>/dev/null; then
+  tmux new-session -d -s "$name" -c "$path"
+  tmux set-option -t "=$name" -q @root_path "$path"
+fi
+
+if [[ -n "${TMUX:-}" ]]; then
+  exec tmux switch-client -t "=$name"
+else
+  exec tmux attach-session -t "=$name"
+fi
