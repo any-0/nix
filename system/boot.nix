@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   boot.loader.systemd-boot.enable = false;
@@ -9,6 +9,8 @@
   };
   boot.loader.timeout = 0;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   boot.plymouth.enable = true;
   boot.tmp.cleanOnBoot = true;
