@@ -101,10 +101,10 @@ source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/eza-colors.zsh"
 # Tmux
 tmux_auto() {
     [[ -n "$TMUX" ]] && return 0
-    if tmux has-session 2>/dev/null; then
-        tmux attach
+    if tmux has-session -t Main 2>/dev/null; then
+        tmux attach -t Main
     else
-        tmux
+        tmux new-session -s Main
     fi
 }
 
