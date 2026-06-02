@@ -55,13 +55,43 @@ _prompt_spacing_preexec() {
       ;;
   esac
   __prompt_spacing_ran_command=1
-  print ""
 }
 
 add-zsh-hook precmd _prompt_spacing_precmd
 add-zsh-hook preexec _prompt_spacing_preexec
 
 git_prompt() {
+  local tmp done pid output waited
+  tmp="${TMPDIR:-/tmp}/zsh-git-prompt.$$.$RANDOM"
+  done="${tmp}.done"
+
+  ( _git_prompt_info >| "$tmp"; : >| "$done" ) &
+  pid=$!
+
+  for waited in {1..5}; do
+    if [[ -e "$done" ]]; then
+      wait "$pid" 2>/dev/null
+      output="$(<"$tmp")"
+      rm -f "$tmp" "$done"
+      [[ -n "$output" ]] && print -r -- "$output"
+      return
+    fi
+    sleep 0.02
+  done
+
+  if [[ -e "$done" ]]; then
+    wait "$pid" 2>/dev/null
+    output="$(<"$tmp")"
+    [[ -n "$output" ]] && print -r -- "$output"
+  else
+    kill "$pid" 2>/dev/null
+    wait "$pid" 2>/dev/null
+    print -r -- "  [...]"
+  fi
+  rm -f "$tmp" "$done"
+}
+
+_git_prompt_info() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
 
   local changes numstat line x y add del branch
