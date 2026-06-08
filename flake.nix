@@ -83,7 +83,7 @@
         inherit username homeDirectory;
       };
       modules = [
-        ./configuration.nix
+        ./system/configuration.nix
         home-manager.nixosModules.home-manager
         {
           networking.hostName = hostname;
