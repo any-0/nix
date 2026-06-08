@@ -1,8 +1,110 @@
-{ config, pkgs, dot, scriptsDir, ... }:
+{ config, pkgs, lib, dot, scriptsDir, ... }:
 
 let
   tmuxClipboardCommand = pkgs.writeShellScript "tmux-clipboard" ''
     exec "${scriptsDir}/yank"
+  '';
+
+  tmuxZoxideSessionCreate = pkgs.writeShellScript "tmux-zoxide-session-create" ''
+    set -euo pipefail
+
+    export PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.tmux ]}:$PATH"
+
+    display_error() {
+      if [[ -n "''${TMUX:-}" ]]; then
+        tmux display-message "$1"
+      else
+        printf '%s\n' "$1" >&2
+      fi
+    }
+
+    path="$(tmux show-option -gqv @tmux-zoxide-path || true)"
+    tmux set-option -gu @tmux-zoxide-path 2>/dev/null || true
+
+    name="''${1:-}"
+    name="''${name//:/_}"
+
+    if [[ -z "$path" ]]; then
+      display_error 'zoxide session path was not set'
+      exit 1
+    fi
+
+    if [[ -z "$name" ]]; then
+      display_error 'session name must not be empty'
+      exit 1
+    fi
+
+    if ! tmux has-session -t "=$name" 2>/dev/null; then
+      tmux new-session -d -s "$name" -c "$path"
+      tmux set-option -t "=$name" -q @root_path "$path"
+    fi
+
+    if [[ -n "''${TMUX:-}" ]]; then
+      exec tmux switch-client -t "=$name"
+    else
+      exec tmux attach-session -t "=$name"
+    fi
+  '';
+
+  tmuxZoxideSession = pkgs.writeShellScript "tmux-zoxide-session" ''
+    set -euo pipefail
+
+    export PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.gnused pkgs.tmux pkgs.zoxide ]}:$PATH"
+
+    display_error() {
+      if [[ -n "''${TMUX:-}" ]]; then
+        tmux display-message "$1"
+      else
+        printf '%s\n' "$1" >&2
+      fi
+    }
+
+    resolve_path() {
+      local query="$1"
+      local path=""
+      local -a terms=()
+
+      if [[ -z "$query" ]]; then
+        display_error 'zoxide query must not be empty'
+        return 1
+      fi
+
+      if [[ -d "$query" ]]; then
+        (cd -- "$query" && pwd -P)
+        return
+      fi
+
+      read -r -a terms <<< "$query"
+
+      if ! path="$(zoxide query -- "''${terms[@]}" 2>/dev/null)"; then
+        display_error "No zoxide match for: $query"
+        return 1
+      fi
+
+      [[ -d "$path" ]] || {
+        display_error "Resolved path is not a directory: $path"
+        return 1
+      }
+
+      (cd -- "$path" && pwd -P)
+    }
+
+    default_session_name() {
+      local base
+      base="$(basename -- "$1")"
+      [[ -n "$base" && "$base" != / ]] || base="root"
+      base="''${base//:/_}"
+      base="$(printf '%s' "$base" | sed -E 's/^([^[:alpha:]]*)([[:lower:]])/\1\U\2/')"
+      printf '%s\n' "$base"
+    }
+
+    query="''${1:-}"
+    path="$(resolve_path "$query")" || exit 1
+    default_name="$(default_session_name "$path")"
+
+    tmux set-option -gq @tmux-zoxide-path "$path"
+    tmux command-prompt -I "$default_name" -p "session name:" \
+      "run-shell -b \"exec '${tmuxZoxideSessionCreate}' \\\"%%%\\\"\""
   '';
   tmuxEasyMotion = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "easy-motion";
@@ -33,6 +135,7 @@ in
     extraConfig = ''
       set -g default-shell "${pkgs.zsh}/bin/zsh"
       set -g @tmux-clipboard-command "${tmuxClipboardCommand}"
+      set -g @tmux-zoxide-session "${tmuxZoxideSession}"
       set -g clock-mode-style 24
       set -g @easy-motion-dim-style "fg=#888888"
       set -g @easy-motion-highlight-style "fg=#0074b1,bold"
