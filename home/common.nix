@@ -4,6 +4,7 @@ let
   dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
   scriptsDir = "${config.home.homeDirectory}/nix/scripts";
   localBinDir = "${config.home.homeDirectory}/.local/bin";
+  npmGlobalBinDir = "${config.home.homeDirectory}/.local/share/npm-global/bin";
   gopassStoreDir = "${config.home.homeDirectory}/nix/gopass/store";
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
   dotFile = path: { source = dot path; force = true; };
@@ -67,6 +68,7 @@ in
   home.sessionPath = [
     scriptsDir
     localBinDir
+    npmGlobalBinDir
   ];
 
   home.activation.gopassStoreSetup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
