@@ -20,6 +20,10 @@ in
   home.stateVersion = "25.11";
 
   nix.package = lib.mkDefault pkgs.nix;
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    warn-dirty = false;
+  };
 
   # Avoid building Home Manager's manual/options docs on every switch.
   manual.manpages.enable = false;

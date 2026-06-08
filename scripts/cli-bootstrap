@@ -46,14 +46,6 @@ if [[ "$platform" == "Linux" ]] && [[ -z "${WSL_DISTRO_NAME:-}" ]] && ! grep -qi
   echo "Continuing anyway."
 fi
 
-NIX_CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/nix"
-NIX_CONF_FILE="${NIX_CONF_DIR}/nix.conf"
-mkdir -p "${NIX_CONF_DIR}"
-if [[ ! -f "${NIX_CONF_FILE}" ]] || \
-  ! grep -Eq '^[[:space:]]*experimental-features[[:space:]]*=.*(nix-command.*flakes|flakes.*nix-command)' "${NIX_CONF_FILE}"; then
-  printf '%s\n' "${EXPERIMENTAL_FEATURES_LINE}" >> "${NIX_CONF_FILE}"
-fi
-
 if [[ -n "${NIX_CONFIG:-}" ]]; then
   export NIX_CONFIG="${NIX_CONFIG}"$'\n'"${EXPERIMENTAL_FEATURES_LINE}"
 else
