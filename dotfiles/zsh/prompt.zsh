@@ -1,15 +1,13 @@
 autoload -Uz add-zsh-hook
 
 typeset -g __prompt_spacing_ran_command=0
+typeset -g __prompt_first_line_cols=0
+typeset -g __prompt_time_col=1
+typeset -g __prompt_path_plain=""
+typeset -g __prompt_path_prompt=""
 
-prompt_arrow_color() {
-  if direnv_active; then
-    print "196"
-  elif [[ -n "$IN_NIX_SHELL" ]]; then
-    print "46"
-  else
-    print "39"
-  fi
+prompt_arrow_style() {
+  print "%F{245}"
 }
 
 direnv_active() {
@@ -31,12 +29,81 @@ prompt_user() {
   print -r -- "$user"
 }
 
+prompt_path_segments() {
+  local cwd cwd_display envrc root root_display parent base rel prefix colored colored_prompt part
+  local -a parts
+  cwd="$PWD"
+  cwd_display="${cwd/#$HOME/~}"
+
+  __prompt_path_plain="$cwd_display"
+  __prompt_path_prompt="${cwd_display//\%/%%}"
+
+  if envrc="$(direnv status --json 2>/dev/null | jq -r '.state.loadedRC.path // empty' 2>/dev/null)"; then
+    root="${envrc:h}"
+  fi
+
+  if [[ -n "$root" && ( "$cwd" == "$root" || "$cwd" == "$root/"* ) ]]; then
+    root_display="${root/#$HOME/~}"
+    parent="${root_display:h}"
+    base="${root_display:t}"
+    rel="${cwd#$root}"
+    rel="${rel#/}"
+
+    if [[ "$parent" == "/" ]]; then
+      prefix="/"
+    elif [[ "$parent" == "." ]]; then
+      prefix=""
+    else
+      prefix="${parent}/"
+    fi
+
+    colored="${base}${rel:+/$rel}"
+    parts=("${(s:/:)colored}")
+    colored_prompt=""
+    for part in "${parts[@]}"; do
+      [[ -n "$colored_prompt" ]] && colored_prompt+="%F{245}/"
+      colored_prompt+="%U%F{245}${part//\%/%%}%u"
+    done
+    __prompt_path_prompt="%F{245}${prefix//\%/%%}${colored_prompt}%F{245}"
+  fi
+}
+
 update_prompt() {
-  local arrow_color git_segment user_segment
-  arrow_color="$(prompt_arrow_color)"
+  local arrow_style git_segment user_segment first_left first_plain rendered_first_line sent_at cols pad_count padding
+  arrow_style="$(prompt_arrow_style)"
   git_segment="$(git_prompt)"
   user_segment="$(prompt_user)"
-  PS1="%F{245}${user_segment}@%m  [%~]${git_segment}%f"$'\n'"%B%F{${arrow_color}}❯%f%b "
+  prompt_path_segments
+  first_left="${user_segment}@%m  ${__prompt_path_prompt}${git_segment}"
+  first_plain="${user_segment}@%m  ${__prompt_path_plain//\%/%%}${git_segment}"
+  rendered_first_line="${(%)first_plain}"
+  __prompt_first_line_cols="${#rendered_first_line}"
+
+  sent_at="$(date '+%Y-%m-%d %H:%M:%S')"
+  cols="${COLUMNS:-80}"
+  (( __prompt_time_col = cols - ${#sent_at} + 1 ))
+  (( __prompt_time_col < __prompt_first_line_cols + 2 )) && __prompt_time_col=$((__prompt_first_line_cols + 2))
+  (( pad_count = __prompt_time_col - __prompt_first_line_cols - 1 ))
+  padding="${(l:${pad_count}:: :)}"
+
+  PS1="%F{245}${first_left}${padding}${sent_at}%f"$'\n'"%B${arrow_style}❯%f%b "
+  RPROMPT=""
+}
+
+_prompt_accept_line() {
+  local sent_at col up input_prompt_cols
+  sent_at="$(date '+%Y-%m-%d %H:%M:%S')"
+
+  # Stamp the timestamp onto the first prompt line when the command is sent.
+  # RPROMPT appears on the editing line for multiline prompts, so draw this
+  # directly at the right edge one visual prompt line above the command.
+  input_prompt_cols=2
+  (( up = (input_prompt_cols + CURSOR) / ${COLUMNS:-80} + 1 ))
+  col="$__prompt_time_col"
+
+  printf '\033[s\033[%dA\033[%dG\033[38;5;245m%s\033[0m\033[u' \
+    "$up" "$col" "$sent_at"
+  zle .accept-line
 }
 
 _prompt_spacing_precmd() {
@@ -59,6 +126,7 @@ _prompt_spacing_preexec() {
 
 add-zsh-hook precmd _prompt_spacing_precmd
 add-zsh-hook preexec _prompt_spacing_preexec
+zle -N accept-line _prompt_accept_line
 
 git_prompt() {
   local tmp done pid output waited
@@ -68,7 +136,7 @@ git_prompt() {
   ( _git_prompt_info >| "$tmp"; : >| "$done" ) &
   pid=$!
 
-  for waited in {1..5}; do
+  for waited in {1..10}; do
     if [[ -e "$done" ]]; then
       wait "$pid" 2>/dev/null
       output="$(<"$tmp")"
@@ -94,19 +162,9 @@ git_prompt() {
 _git_prompt_info() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
 
-  local changes numstat line x y add del branch
-  local staged=0 unstaged=0 untracked=0
+  local numstat add del _
   local added=0 removed=0
-  local -a segments
 
-  if command -v jj >/dev/null 2>&1 && jj --ignore-working-copy root >/dev/null 2>&1; then
-    branch="$(jj --ignore-working-copy log -r 'latest(first_ancestors(@) & bookmarks(), 1)' --no-graph -T 'local_bookmarks.filter(|b| !b.conflict()).map(|b| b.name()).join(" ")' 2>/dev/null)"
-    [[ -n "$branch" ]] || branch="jj"
-  fi
-  [[ -n "$branch" ]] || branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null)"
-  branch="${branch//\%/%%}"
-
-  changes="$(git status --porcelain 2>/dev/null)"
   numstat="$(
     git diff --numstat 2>/dev/null
     git diff --cached --numstat 2>/dev/null
@@ -117,26 +175,11 @@ _git_prompt_info() {
     [[ "$del" == <-> ]] && ((removed += del))
   done <<< "$numstat"
 
-  while IFS= read -r line; do
-    [[ -z "$line" ]] && continue
-
-    if [[ "$line" == '?? '* ]]; then
-      ((untracked++))
-      continue
-    fi
-
-    x="${line[1,1]}"
-    y="${line[2,2]}"
-    [[ "$x" != " " ]] && ((staged++))
-    [[ "$y" != " " ]] && ((unstaged++))
-  done <<< "$changes"
-
-  [[ -n "$branch" ]] && segments+=("${branch}")
-  segments+=("+${added} -${removed}")
-  ((staged > 0)) && segments+=("S:${staged}")
-  ((unstaged > 0)) && segments+=("M:${unstaged}")
-  ((untracked > 0)) && segments+=("U:${untracked}")
-  printf '  [%s]' "${(j: :)segments}"
+  if (( added > 0 || removed > 0 )); then
+    printf '  +%d -%d' "$added" "$removed"
+  else
+    printf '  ±0'
+  fi
 }
 
 setopt PROMPT_SUBST
