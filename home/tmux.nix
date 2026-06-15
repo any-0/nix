@@ -5,6 +5,25 @@ let
     exec "${scriptsDir}/yank"
   '';
 
+  tmuxSessionKeyFormat = pkgs.writeShellScript "tmux-session-key-format" ''
+    set -euo pipefail
+
+    key_file="''${1:-}"
+    format='#{e|+|:#{line},1}'
+
+    if [[ -r "$key_file" ]]; then
+      while read -r key name _; do
+        [[ -n "''${key:-}" ]] || continue
+        [[ "$key" != \#* ]] || continue
+        [[ -n "''${name:-}" ]] || continue
+
+        format="#{?#{&&:#{session_format},#{==:#{session_name},$name}},$key,$format}"
+      done < "$key_file"
+    fi
+
+    printf '%s' "$format"
+  '';
+
   tmuxZoxideSessionCreate = pkgs.writeShellScript "tmux-zoxide-session-create" ''
     set -euo pipefail
 
@@ -172,6 +191,8 @@ in
       set -g default-shell "${pkgs.zsh}/bin/zsh"
       set -g @tmux-clipboard-command "${tmuxClipboardCommand}"
       set -g @tmux-zoxide-session "${tmuxZoxideSession}"
+      set -g @tmux-session-keys-file "${config.xdg.configHome}/tmux/session-keys.conf"
+      run-shell 'tmux set-option -gq @tmux-session-key-format "$(${tmuxSessionKeyFormat} "${config.xdg.configHome}/tmux/session-keys.conf")"'
       set -g clock-mode-style 24
       set -g @continuum-restore "on"
       set -g @continuum-save-interval "0"
