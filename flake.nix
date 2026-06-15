@@ -14,109 +14,109 @@
   };
 
   outputs = { nixpkgs, home-manager, zen-browser, ... }:
-  let
-    system = "x86_64-linux";
-    hostname = "pc";
+    let
+      system = "x86_64-linux";
+      hostname = "pc";
 
-    username = "julian";
-    homeDirectory = "/home/${username}";
-    envOr = name: default:
-      let value = builtins.getEnv name;
-      in if value != "" then value else default;
-    cliUsername = envOr "USER" username;
-    cliHomeDirectory = envOr "HOME" homeDirectory;
+      username = "julian";
+      homeDirectory = "/home/${username}";
+      envOr = name: default:
+        let value = builtins.getEnv name;
+        in if value != "" then value else default;
+      cliUsername = envOr "USER" username;
+      cliHomeDirectory = envOr "HOME" homeDirectory;
 
-    zenBrowserOverlay = final: prev: {
-      zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
-    };
-    unfreePackageNames = [
-      "discord"
-      "steam"
-      "steam-unwrapped"
-    ];
-    allowUnfreePredicate = pkg:
-      builtins.elem (nixpkgs.lib.getName pkg) unfreePackageNames;
-    overlaysFor = system:
-      let
-        isLinux = builtins.match ".*-linux" system != null;
-      in
+      zenBrowserOverlay = final: prev: {
+        zen-browser = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
+      };
+      unfreePackageNames = [
+        "discord"
+        "steam"
+        "steam-unwrapped"
+      ];
+      allowUnfreePredicate = pkg:
+        builtins.elem (nixpkgs.lib.getName pkg) unfreePackageNames;
+      overlaysFor = system:
+        let
+          isLinux = builtins.match ".*-linux" system != null;
+        in
         nixpkgs.lib.optionals isLinux [ zenBrowserOverlay ];
 
-    mkPkgs = system:
-      import nixpkgs {
-        inherit system;
-        overlays = overlaysFor system;
-        config.allowUnfreePredicate = allowUnfreePredicate;
-      };
+      mkPkgs = system:
+        import nixpkgs {
+          inherit system;
+          overlays = overlaysFor system;
+          config.allowUnfreePredicate = allowUnfreePredicate;
+        };
 
-    mkHome = { modules, system, username, homeDirectory }:
-      home-manager.lib.homeManagerConfiguration {
-        pkgs = mkPkgs system;
-        modules = modules ++ [
+      mkHome = { modules, system, username, homeDirectory }:
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = mkPkgs system;
+          modules = modules ++ [
+            {
+              home.username = username;
+              home.homeDirectory = homeDirectory;
+            }
+          ];
+        };
+
+      desktopModules = [
+        ./home/common.nix
+        ./home/linux.nix
+        ./home/desktop.nix
+      ];
+
+      cliModules = [
+        ./home/common.nix
+        ./home/linux.nix
+      ];
+
+      darwinModules = [
+        ./home/common.nix
+        ./home/darwin.nix
+      ];
+    in
+    {
+      nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = {
+          inherit username homeDirectory;
+        };
+        modules = [
+          ./system/configuration.nix
+          home-manager.nixosModules.home-manager
           {
-            home.username = username;
-            home.homeDirectory = homeDirectory;
+            networking.hostName = hostname;
+
+            nixpkgs.overlays = overlaysFor system;
+            nixpkgs.config.allowUnfreePredicate = allowUnfreePredicate;
+
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.${username} = { imports = desktopModules; };
           }
         ];
       };
 
-    desktopModules = [
-      ./home/common.nix
-      ./home/linux.nix
-      ./home/desktop.nix
-    ];
+      homeConfigurations = {
+        desktop = mkHome {
+          inherit system username homeDirectory;
+          modules = desktopModules;
+        };
 
-    cliModules = [
-      ./home/common.nix
-      ./home/linux.nix
-    ];
+        cli = mkHome {
+          inherit system;
+          username = cliUsername;
+          homeDirectory = cliHomeDirectory;
+          modules = cliModules;
+        };
 
-    darwinModules = [
-      ./home/common.nix
-      ./home/darwin.nix
-    ];
-  in
-  {
-    nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
-      inherit system;
-      specialArgs = {
-        inherit username homeDirectory;
-      };
-      modules = [
-        ./system/configuration.nix
-        home-manager.nixosModules.home-manager
-        {
-          networking.hostName = hostname;
-
-          nixpkgs.overlays = overlaysFor system;
-          nixpkgs.config.allowUnfreePredicate = allowUnfreePredicate;
-
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.users.${username} = { imports = desktopModules; };
-        }
-      ];
-    };
-
-    homeConfigurations = {
-      desktop = mkHome {
-        inherit system username homeDirectory;
-        modules = desktopModules;
-      };
-
-      cli = mkHome {
-        inherit system;
-        username = cliUsername;
-        homeDirectory = cliHomeDirectory;
-        modules = cliModules;
-      };
-
-      mac = mkHome {
-        system = "aarch64-darwin";
-        inherit username;
-        homeDirectory = "/Users/${username}";
-        modules = darwinModules;
+        mac = mkHome {
+          system = "aarch64-darwin";
+          inherit username;
+          homeDirectory = "/Users/${username}";
+          modules = darwinModules;
+        };
       };
     };
-  };
 }
