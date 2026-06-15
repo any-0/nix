@@ -68,6 +68,7 @@ in
     PASSWORD_STORE_DIR = gopassStoreDir;
     EZA_CONFIG_DIR = "${config.xdg.configHome}/eza";
     NH_FLAKE = "${config.home.homeDirectory}/nix";
+    DIRENV_LOG_FORMAT = "";
   };
   home.sessionPath = [
     scriptsDir

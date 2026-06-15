@@ -30,8 +30,7 @@ prompt_user() {
 }
 
 prompt_path_segments() {
-  local cwd cwd_display envrc root root_display parent base rel prefix colored colored_prompt part
-  local -a parts
+  local cwd cwd_display envrc root root_display parent base rel prefix suffix
   cwd="$PWD"
   cwd_display="${cwd/#$HOME/~}"
 
@@ -57,14 +56,8 @@ prompt_path_segments() {
       prefix="${parent}/"
     fi
 
-    colored="${base}${rel:+/$rel}"
-    parts=("${(s:/:)colored}")
-    colored_prompt=""
-    for part in "${parts[@]}"; do
-      [[ -n "$colored_prompt" ]] && colored_prompt+="%F{245}/"
-      colored_prompt+="%U%F{245}${part//\%/%%}%u"
-    done
-    __prompt_path_prompt="%F{245}${prefix//\%/%%}${colored_prompt}%F{245}"
+    suffix="${rel:+/$rel}"
+    __prompt_path_prompt="%F{245}${prefix//\%/%%}%U${base//\%/%%}%u${suffix//\%/%%}%F{245}"
   fi
 }
 
