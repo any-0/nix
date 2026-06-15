@@ -101,11 +101,10 @@ source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/eza-colors.zsh"
 # Tmux
 tmux_auto() {
     [[ -n "$TMUX" ]] && return 0
-    if tmux has-session -t Main 2>/dev/null; then
-        tmux attach -t Main
-    else
-        tmux new-session -s Main
-    fi
+    command -v tmux &>/dev/null || return 0
+
+    local session="${TMUX_AUTO_SESSION:-Main}"
+    tmux new-session -A -s "$session"
 }
 
 # Ctrl-T for tmux
@@ -120,12 +119,8 @@ for km in emacs viins; do
 done
 
 # Auto-start tmux
-if [[ -o interactive ]] && [[ -z "$TMUX" ]] && [[ "$TERM" != "dumb" ]] && command -v tmux &>/dev/null; then
-    if tmux has-session -t Main 2>/dev/null; then
-        tmux attach -t Main
-    else
-        tmux new-session -s Main
-    fi
+if [[ -o interactive ]] && [[ -z "$TMUX" ]] && [[ "$TERM" != "dumb" ]]; then
+    tmux_auto
 fi
 
 #Edit command in nvim

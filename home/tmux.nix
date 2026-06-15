@@ -106,6 +106,40 @@ let
     tmux command-prompt -I "$default_name" -p "session name:" \
       "run-shell -b \"exec '${tmuxZoxideSessionCreate}' \\\"%%%\\\"\""
   '';
+  tmuxAlignedSave = pkgs.writeShellScript "tmux-aligned-save" ''
+    set -euo pipefail
+
+    export PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.tmux ]}:$PATH"
+
+    server_pid="$(tmux display-message -p '#{pid}')"
+    state_dir="''${XDG_RUNTIME_DIR:-/tmp}/tmux-aligned-save-''${UID:-$(id -u)}"
+    pid_file="$state_dir/$server_pid.pid"
+
+    mkdir -p "$state_dir"
+
+    if [[ -f "$pid_file" ]]; then
+      old_pid="$(cat "$pid_file" 2>/dev/null || true)"
+      if [[ -n "$old_pid" ]] && kill -0 "$old_pid" 2>/dev/null; then
+        exit 0
+      fi
+    fi
+
+    printf '%s\n' "$$" > "$pid_file"
+    trap 'rm -f "$pid_file"' EXIT
+
+    save_script="${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/save.sh"
+
+    while tmux info >/dev/null 2>&1; do
+      now="$(date +%s)"
+      sleep_for="$((60 - (now % 60)))"
+      [[ "$sleep_for" -gt 0 ]] || sleep_for=60
+      sleep "$sleep_for"
+
+      tmux info >/dev/null 2>&1 || exit 0
+      "$save_script" quiet >/dev/null 2>&1 || true
+    done
+  '';
+
   tmuxEasyMotion = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "easy-motion";
     version = "unstable-2025-07-11";
@@ -129,6 +163,8 @@ in
     # Plugins via Nix (no TPM)
     plugins = with pkgs.tmuxPlugins; [
       sensible
+      resurrect
+      continuum
       tmuxEasyMotion
     ];
 
@@ -137,6 +173,10 @@ in
       set -g @tmux-clipboard-command "${tmuxClipboardCommand}"
       set -g @tmux-zoxide-session "${tmuxZoxideSession}"
       set -g clock-mode-style 24
+      set -g @continuum-restore "on"
+      set -g @continuum-save-interval "0"
+      set -g @resurrect-capture-pane-contents "on"
+      run-shell -b "${tmuxAlignedSave}"
       set -g @easy-motion-dim-style "fg=#888888"
       set -g @easy-motion-highlight-style "fg=#0074b1,bold"
       set -g @easy-motion-highlight-2-first-style "fg=#009393,bold"
