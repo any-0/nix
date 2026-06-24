@@ -5,7 +5,6 @@ let
   scriptsDir = "${config.home.homeDirectory}/nix/scripts";
   localBinDir = "${config.home.homeDirectory}/.local/bin";
   npmGlobalBinDir = "${config.home.homeDirectory}/.local/share/npm-global/bin";
-  gopassStoreDir = "${config.home.homeDirectory}/nix/gopass/store";
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
   dotFile = path: { source = dot path; force = true; };
 in
@@ -65,7 +64,6 @@ in
   home.file.".pi/agent/extensions" = dotFile "pi/extensions";
 
   home.sessionVariables = {
-    PASSWORD_STORE_DIR = gopassStoreDir;
     EZA_CONFIG_DIR = "${config.xdg.configHome}/eza";
     NH_FLAKE = "${config.home.homeDirectory}/nix";
     DIRENV_LOG_FORMAT = "";
@@ -75,12 +73,6 @@ in
     localBinDir
     npmGlobalBinDir
   ];
-
-  home.activation.gopassStoreSetup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    store_dir="${gopassStoreDir}"
-    $DRY_RUN_CMD mkdir -p "$store_dir"
-    $DRY_RUN_CMD ${pkgs.gopass}/bin/gopass config mounts.path "$store_dir"
-  '';
 
   services.gpg-agent = {
     enable = true;
@@ -98,10 +90,8 @@ in
     unzip
     zip
     python3
-    gnupg
     # gcc
     gnumake
-    gopass
     zoxide
     eza
     bc

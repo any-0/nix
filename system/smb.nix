@@ -1,4 +1,4 @@
-{ homeDirectory, pkgs, ... }:
+{ homeDirectory, ... }:
 
 let
   smbCredentials = "${homeDirectory}/nix/secrets/smb-nas.cred";
@@ -14,10 +14,6 @@ let
 in
 {
   boot.supportedFilesystems = [ "cifs" ];
-
-  environment.systemPackages = with pkgs; [
-    cifs-utils
-  ];
 
   fileSystems = {
     "/mnt/home1" = {
