@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "usage: wew <file>" >&2
+  exit 1
+fi
+
+case "$(uname -s)" in
+  Darwin)
+    nohup open "$1" >/dev/null 2>&1 &
+    ;;
+  Linux)
+    if command -v evince >/dev/null 2>&1; then
+      nohup evince "$1" >/dev/null 2>&1 &
+    else
+      nohup xdg-open "$1" >/dev/null 2>&1 &
+    fi
+    ;;
+  *)
+    echo "unsupported platform: $(uname -s)" >&2
+    exit 1
+    ;;
+esac

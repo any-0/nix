@@ -14,7 +14,8 @@ _ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 mkdir -p "${_ZSH_CACHE_DIR}"
 compinit -d "${_ZSH_CACHE_DIR}/zcompdump-${ZSH_VERSION}"
 
-setopt extendedglob globdots MENU_COMPLETE
+setopt extendedglob globdots AUTO_MENU AUTO_LIST
+unsetopt MENU_COMPLETE LIST_AMBIGUOUS
 # Disable terminal EOF on Ctrl-D so it cannot close shells/panes.
 stty eof undef 2>/dev/null || true
 zstyle ':completion:*' matcher-list \
@@ -70,7 +71,6 @@ alias dc='cd'
 alias :q='exit'
 alias :q!='exit'
 alias p='python3'
-compdef '_arguments "1:entry:($( gopass ls --flat ))"' gpp gpu
 alias python='python3'
 alias shit='shutdown now'
 alias kys='tmux kill-server'
@@ -104,7 +104,8 @@ tmux_auto() {
     command -v tmux &>/dev/null || return 0
 
     local session="${TMUX_AUTO_SESSION:-Main}"
-    tmux new-session -A -s "$session"
+
+    tmux attach-session 2>/dev/null || tmux new-session -A -s "$session"
 }
 
 # Ctrl-T for tmux
