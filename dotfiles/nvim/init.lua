@@ -302,9 +302,12 @@ require("lazy").setup({
 }, { lockfile = vim.fn.stdpath("data") .. "/lazy/lazy-lock.json", })
 
 local ts_languages = {
-    "python", "cpp", "lua", "bash", "json",
-    "yaml", "javascript", "typescript", "tsx",
-    "html", "css", "latex", "rust"
+    "arduino", "bash", "c", "cpp", "css",
+    "diff", "dockerfile", "gitignore", "html",
+    "javascript", "json", "kdl", "kitty",
+    "latex", "lua", "make", "markdown", "nix",
+    "python", "rust", "tmux", "toml",
+    "typescript", "tsx", "yaml"
 }
 
 vim.api.nvim_create_autocmd("FileType", {
