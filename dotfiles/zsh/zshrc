@@ -105,11 +105,7 @@ tmux_auto() {
 
     local session="${TMUX_AUTO_SESSION:-Main}"
 
-    if tmux has-session 2>/dev/null; then
-        tmux attach-session
-    else
-        tmux new-session -s "$session"
-    fi
+    tmux attach-session 2>/dev/null || tmux new-session -A -s "$session"
 }
 
 # Ctrl-T for tmux
