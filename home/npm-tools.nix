@@ -2,6 +2,11 @@
 
 let
   npmGlobalDir = "${config.home.homeDirectory}/.local/share/npm-global";
+  npmPackages = [
+    "@earendil-works/pi-coding-agent"
+    "@openai/codex"
+    "@anthropic-ai/claude-code"
+  ];
   piRuntimePath = lib.makeBinPath (
     [ pkgs.nodejs ] ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.bubblewrap ]
   );
@@ -41,12 +46,37 @@ in
   home.activation.npmGlobalPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     npm_prefix="${npmGlobalDir}"
     npm_next="$npm_prefix.next"
+    npm="${pkgs.nodejs}/bin/npm"
+    node="${pkgs.nodejs}/bin/node"
 
-    $DRY_RUN_CMD rm -rf "$npm_next"
-    $DRY_RUN_CMD mkdir -p "$npm_next"
-    $DRY_RUN_CMD env PATH="${pkgs.nodejs}/bin:$PATH" ${pkgs.nodejs}/bin/npm install --global --prefix "$npm_next" --no-audit --no-fund @earendil-works/pi-coding-agent@latest @openai/codex@latest @anthropic-ai/claude-code@latest
-    $DRY_RUN_CMD rm -rf "$npm_prefix"
-    $DRY_RUN_CMD mv "$npm_next" "$npm_prefix"
+    npm_packages=(${lib.escapeShellArgs npmPackages})
+
+    npm_needs_install=0
+    for pkg in "''${npm_packages[@]}"; do
+      pkg_json="$npm_prefix/lib/node_modules/$pkg/package.json"
+      if [[ ! -f "$pkg_json" ]]; then
+        npm_needs_install=1
+        break
+      fi
+      installed="$("$node" -p "require('$pkg_json').version" 2>/dev/null || true)"
+      latest="$("$npm" view "$pkg" version 2>/dev/null || true)"
+      # Registry unreachable: keep whatever is installed.
+      [[ -n "$latest" ]] || continue
+      if [[ "$installed" != "$latest" ]]; then
+        npm_needs_install=1
+        break
+      fi
+    done
+
+    if [[ "$npm_needs_install" == 1 ]]; then
+      $DRY_RUN_CMD rm -rf "$npm_next"
+      $DRY_RUN_CMD mkdir -p "$npm_next"
+      $DRY_RUN_CMD env PATH="${pkgs.nodejs}/bin:$PATH" "$npm" install --global --prefix "$npm_next" --no-audit --no-fund ${lib.escapeShellArgs (map (p: "${p}@latest") npmPackages)}
+      $DRY_RUN_CMD rm -rf "$npm_prefix"
+      $DRY_RUN_CMD mv "$npm_next" "$npm_prefix"
+    else
+      verboseEcho "npm global packages up to date; skipping install"
+    fi
   '';
 
   home.packages = with pkgs; [
