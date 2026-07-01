@@ -119,8 +119,11 @@ for km in emacs viins; do
     bindkey -M "$km" '^[[5C' forward-word
 done
 
-# Auto-start tmux
-if [[ -o interactive ]] && [[ -z "$TMUX" ]] && [[ "$TERM" != "dumb" ]]; then
+# Auto-start tmux for local shells.
+if [[ -o interactive ]] \
+    && [[ -z "$TMUX" ]] \
+    && [[ "$TERM" != "dumb" ]] \
+    && [[ -z "${SSH_CONNECTION:-}${SSH_CLIENT:-}${SSH_TTY:-}" ]]; then
     tmux_auto
 fi
 
