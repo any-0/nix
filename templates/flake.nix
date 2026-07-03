@@ -2,6 +2,10 @@
   description = "Julian templates";
 
   outputs = { self }: {
+    templates.blank = {
+      path = ./blank;
+      description = "Blank project";
+    };
     templates.c = {
       path = ./c;
       description = "C project";
