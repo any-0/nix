@@ -62,13 +62,13 @@ prompt_path_segments() {
 }
 
 update_prompt() {
-  local arrow_style git_segment user_segment first_left first_plain rendered_first_line sent_at cols pad_count padding
+  local arrow_style jj_segment user_segment first_left first_plain rendered_first_line sent_at cols pad_count padding
   arrow_style="$(prompt_arrow_style)"
-  git_segment="$(git_prompt)"
+  jj_segment="$(jj_prompt)"
   user_segment="$(prompt_user)"
   prompt_path_segments
-  first_left="${user_segment}@%m  ${__prompt_path_prompt}${git_segment}"
-  first_plain="${user_segment}@%m  ${__prompt_path_plain//\%/%%}${git_segment}"
+  first_left="${user_segment}@%m  ${__prompt_path_prompt}${jj_segment}"
+  first_plain="${user_segment}@%m  ${__prompt_path_plain//\%/%%}${jj_segment}"
   rendered_first_line="${(%)first_plain}"
   __prompt_first_line_cols="${#rendered_first_line}"
 
@@ -121,12 +121,12 @@ add-zsh-hook precmd _prompt_spacing_precmd
 add-zsh-hook preexec _prompt_spacing_preexec
 zle -N accept-line _prompt_accept_line
 
-git_prompt() {
+jj_prompt() {
   local tmp done pid output waited
-  tmp="${TMPDIR:-/tmp}/zsh-git-prompt.$$.$RANDOM"
+  tmp="${TMPDIR:-/tmp}/zsh-jj-prompt.$$.$RANDOM"
   done="${tmp}.done"
 
-  ( _git_prompt_info >| "$tmp"; : >| "$done" ) &
+  ( _jj_prompt_info >| "$tmp"; : >| "$done" ) &
   pid=$!
 
   for waited in {1..10}; do
@@ -152,21 +152,15 @@ git_prompt() {
   rm -f "$tmp" "$done"
 }
 
-_git_prompt_info() {
-  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
-
-  local numstat add del _
+_jj_prompt_info() {
+  local stat summary
   local added=0 removed=0
 
-  numstat="$(
-    git diff --numstat 2>/dev/null
-    git diff --cached --numstat 2>/dev/null
-  )"
+  stat="$(jj --no-pager --color=never --quiet diff --stat 2>/dev/null)" || return
+  summary="${${(f)stat}[-1]}"
 
-  while IFS=$'\t' read -r add del _; do
-    [[ "$add" == <-> ]] && ((added += add))
-    [[ "$del" == <-> ]] && ((removed += del))
-  done <<< "$numstat"
+  [[ "$summary" =~ '([0-9]+) insertion' ]] && added="$match[1]"
+  [[ "$summary" =~ '([0-9]+) deletion' ]] && removed="$match[1]"
 
   if (( added > 0 || removed > 0 )); then
     printf '  +%d -%d' "$added" "$removed"
