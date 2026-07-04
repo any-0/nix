@@ -19,6 +19,8 @@
       in {
         default = pkgs.mkShell {
           packages = with pkgs; [
+            # Add project python packages here (nix-first; the .envrc venv
+            # fallback is only for packages nixpkgs doesn't have).
             (python312.withPackages (ps: [ ps.tkinter ]))
             pyright
             ruff

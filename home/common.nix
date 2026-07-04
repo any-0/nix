@@ -16,9 +16,13 @@ in
     ./tmux.nix
   ];
 
-  home.stateVersion = "25.11";
+  home.stateVersion = "25.11"; # never change
 
   nix.package = lib.mkDefault pkgs.nix;
+  programs.nh = {
+    enable = true;
+    flake = "${config.home.homeDirectory}/nix";
+  };
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
     warn-dirty = false;
@@ -65,7 +69,6 @@ in
 
   home.sessionVariables = {
     EZA_CONFIG_DIR = "${config.xdg.configHome}/eza";
-    NH_FLAKE = "${config.home.homeDirectory}/nix";
     DIRENV_LOG_FORMAT = "";
   };
   home.sessionPath = [
@@ -99,7 +102,6 @@ in
     gh
     jujutsu
     jjui
-    nh
   ];
 
 }

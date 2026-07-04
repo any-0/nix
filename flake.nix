@@ -36,11 +36,9 @@
       ];
       allowUnfreePredicate = pkg:
         builtins.elem (nixpkgs.lib.getName pkg) unfreePackageNames;
+      isLinux = system: builtins.match ".*-linux" system != null;
       overlaysFor = system:
-        let
-          isLinux = builtins.match ".*-linux" system != null;
-        in
-        nixpkgs.lib.optionals isLinux [ zenBrowserOverlay ];
+        nixpkgs.lib.optionals (isLinux system) [ zenBrowserOverlay ];
 
       mkPkgs = system:
         import nixpkgs {
@@ -49,15 +47,17 @@
           config.allowUnfreePredicate = allowUnfreePredicate;
         };
 
-      mkHome = { modules, system, username, homeDirectory }:
+      mkHome = { modules, system, username, homeDirectory, enableGc ? false }:
         home-manager.lib.homeManagerConfiguration {
           pkgs = mkPkgs system;
-          modules = modules ++ [
-            {
-              home.username = username;
-              home.homeDirectory = homeDirectory;
-            }
-          ];
+          modules = modules
+            ++ nixpkgs.lib.optional enableGc (import ./home/gc.nix system)
+            ++ [
+              {
+                home.username = username;
+                home.homeDirectory = homeDirectory;
+              }
+            ];
         };
 
       desktopModules = [
@@ -103,6 +103,7 @@
         desktop = mkHome {
           inherit system username homeDirectory;
           modules = desktopModules;
+          enableGc = true;
         };
 
         cli = mkHome {
@@ -110,6 +111,7 @@
           username = cliUsername;
           homeDirectory = cliHomeDirectory;
           modules = cliModules;
+          enableGc = true;
         };
 
         mac = mkHome {
@@ -117,6 +119,7 @@
           inherit username;
           homeDirectory = "/Users/${username}";
           modules = darwinModules;
+          enableGc = true;
         };
       };
     };

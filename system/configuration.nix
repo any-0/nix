@@ -7,6 +7,7 @@
     ./networking.nix
     ./users.nix
     ./nix.nix
+    ./gc.nix
     ./desktop.nix
     ./audio.nix
     ./docker.nix

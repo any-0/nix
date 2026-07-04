@@ -10,12 +10,6 @@
     "${pkgs.coreutils}/bin"
   ];
 
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
-
   xdg.configFile."zsh/.zprofile".text = ''
     unset __HM_SESS_VARS_SOURCED
     . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
