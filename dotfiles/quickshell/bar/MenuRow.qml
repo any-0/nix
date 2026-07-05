@@ -12,12 +12,13 @@ Rectangle {
     property bool trailingMuted: false
     property bool hoverDanger: false
     property bool dangerTint: false
+    property bool clickable: true
     signal clicked()
 
     width: parent.width
     height: 32
     radius: 8
-    color: rowMouse.pressed ? (dangerTint ? Theme.dangerPressed : Theme.pressed) : dangerTint ? Theme.dangerHover : rowMouse.containsMouse ? Theme.hover : Theme.transparent
+    color: row.clickable && rowMouse.pressed ? (dangerTint ? Theme.dangerPressed : Theme.pressed) : row.clickable && dangerTint ? Theme.dangerHover : row.clickable && rowMouse.containsMouse ? Theme.hover : Theme.transparent
 
     Behavior on color {
         ColorAnimation {
@@ -104,7 +105,8 @@ Rectangle {
         id: rowMouse
 
         anchors.fill: parent
-        hoverEnabled: true
+        enabled: row.clickable
+        hoverEnabled: row.clickable
         onClicked: row.clicked()
     }
 }
