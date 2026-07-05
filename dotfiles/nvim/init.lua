@@ -89,6 +89,7 @@ require("lazy").setup({
     {
         "easymotion/vim-easymotion",
         init = function()
+            vim.g.EasyMotion_keys = "asdghklqwertzuiopxycvbnmfj"
             vim.keymap.set({ "n", "x", "o" }, "<Space>", "<Plug>(easymotion-s)", { remap = true })
         end,
     },
