@@ -44,7 +44,10 @@ PanelWindow {
     exclusiveZone: -1
     exclusionMode: ExclusionMode.Normal
     focusable: false
-    WlrLayershell.layer: WlrLayer.Overlay
+    // Top (not Overlay) so fullscreen windows cover the parked clock exactly
+    // like they cover the bar; layer surfaces map after the bar, so this
+    // still draws above it.
+    WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     WlrLayershell.namespace: "quickshell-clock-" + screenInfo.name
     mask: Region {}
