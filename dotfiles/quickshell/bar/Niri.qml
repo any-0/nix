@@ -30,6 +30,16 @@ Singleton {
             .sort((a, b) => a.idx - b.idx);
     }
 
+    function activeWorkspaceForScreen(screenName) {
+        return niri.workspaces.find(workspace => workspace.output === screenName && workspace.is_active) || null;
+    }
+
+    function activeWorkspaceEmpty(screenName) {
+        const workspace = activeWorkspaceForScreen(screenName);
+        if (!workspace) return false;
+        return !niri.windows.some(window => window.workspace_id === workspace.id);
+    }
+
     function windowsForWorkspace(workspaceId) {
         return niri.windows
             .filter(window => window.workspace_id === workspaceId)

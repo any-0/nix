@@ -13,9 +13,22 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
-        Bar {
+        Scope {
             required property var modelData
-            screenInfo: modelData
+
+            Bar {
+                id: barWindow
+                screenInfo: modelData
+                desktopClockVisible: Niri.activeWorkspaceEmpty(modelData.name)
+                desktopClockSlotWidth: desktopClock.parkedWidth
+            }
+
+            DesktopClock {
+                id: desktopClock
+                screenInfo: modelData
+                barClockCenterX: barWindow.clockCenterX
+                barClockCenterY: barWindow.clockCenterY
+            }
         }
     }
 }
