@@ -37,16 +37,6 @@ in
     '';
   };
 
-  home.file.".local/bin/claude" = {
-    executable = true;
-    text = ''
-      #!/bin/sh
-      export PATH="${pkgs.nodejs}/bin:$PATH"
-      export CLAUDE_BASH_NO_LOGIN=1
-      exec "${npmGlobalDir}/bin/claude" "$@"
-    '';
-  };
-
   home.activation.npmGlobalPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     npm_prefix="${npmGlobalDir}"
     npm_next="$npm_prefix.next"

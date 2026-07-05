@@ -13,6 +13,7 @@
     ./docker.nix
     ./smb.nix
     ./games.nix
+    ./nix-ld.nix
   ];
 
   system.stateVersion = "25.11"; # never change
