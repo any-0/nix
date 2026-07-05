@@ -87,6 +87,8 @@ Item {
                     }
                 }
             }
+
+            onClicked: Popups.toggle(networkPopup)
         }
 
         BarButton {
@@ -167,6 +169,13 @@ Item {
 
         anchorWindow: root.anchorWindow
         anchorItem: bluetoothButton
+    }
+
+    NetworkMenu {
+        id: networkPopup
+
+        anchorWindow: root.anchorWindow
+        anchorItem: networkButton
     }
 
     MenuPopup {
