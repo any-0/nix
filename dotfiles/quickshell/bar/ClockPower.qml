@@ -1,17 +1,14 @@
 import QtQuick
 import Quickshell
 
-Rectangle {
-    id: pill
+Item {
+    id: root
 
     required property var anchorWindow
 
+    implicitWidth: clockRow.implicitWidth
+    implicitHeight: 30
     height: 30
-    radius: 15
-    color: Theme.surface
-    border.color: Theme.surfaceBorder
-    border.width: 1
-    width: clockRow.implicitWidth + 20
 
     SystemClock {
         id: clock
@@ -20,74 +17,44 @@ Rectangle {
 
     Row {
         id: clockRow
+
         anchors.centerIn: parent
-        spacing: 8
+        spacing: 4
 
-        Item {
-            id: clockArea
-            implicitWidth: clockTexts.implicitWidth
-            implicitHeight: clockTexts.implicitHeight
+        BarButton {
+            id: clockButton
 
-            Row {
-                id: clockTexts
-                spacing: 8
-
-                ModuleText {
-                    text: Qt.formatDateTime(clock.date, "yyyy-MM-dd")
-                }
-
-                ModuleText {
-                    text: Qt.formatDateTime(clock.date, "HH:mm")
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: calendarPopup.visible = !calendarPopup.visible
-            }
+            label: Qt.formatDateTime(clock.date, "yyyy-MM-dd  HH:mm")
+            fontSize: Theme.clockFontSize
+            onClicked: Popups.toggle(calendarPopup)
         }
 
-        ModuleText {
+        BarButton {
             id: powerButton
 
-            width: 18
-            horizontalAlignment: Text.AlignHCenter
-            text: "⏻"
-            font.family: "IosevkaTermSlab Nerd Font Mono"
-            font.weight: Font.Normal
-            muted: !powerMouse.containsMouse
-            danger: powerMouse.containsMouse
-
-            MouseArea {
-                id: powerMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                onClicked: powerPopup.visible = !powerPopup.visible
-            }
+            icon: "⏻"
+            iconColor: Theme.textMuted
+            fontSize: 16
+            iconYOffset: -1
+            hoverDanger: true
+            onClicked: Popups.toggle(powerPopup)
         }
     }
 
-    PopupWindow {
+    MenuPopup {
         id: calendarPopup
 
-        visible: false
-        color: "transparent"
-        implicitWidth: 248
-        implicitHeight: 252
-        anchor.window: pill.anchorWindow
-        anchor.rect.x: pill.anchorWindow.width - implicitWidth - 50
-        anchor.rect.y: pill.y + pill.height + 5
+        anchorWindow: root.anchorWindow
+        anchorItem: clockButton
+        menuWidth: 260
 
-        Rectangle {
+        Item {
             id: calendar
 
             property date displayedMonth: new Date(clock.date.getFullYear(), clock.date.getMonth(), 1)
 
-            anchors.fill: parent
-            color: Theme.surface
-            border.color: Theme.surfaceBorder
-            border.width: 1
-            radius: 12
+            width: parent.width
+            height: 230
 
             function shiftMonth(delta) {
                 displayedMonth = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth() + delta, 1);
@@ -118,53 +85,56 @@ Rectangle {
 
             Column {
                 anchors.fill: parent
-                anchors.margins: 10
                 spacing: 8
 
                 Row {
                     width: parent.width
-                    height: 24
+                    height: 28
 
                     CalendarNavButton {
-                        text: "<"
+                        text: "‹"
                         onClicked: calendar.shiftMonth(-1)
                     }
 
                     Text {
                         text: Qt.formatDate(calendar.displayedMonth, "MMMM yyyy")
-                        color: Theme.textPrimary
+                        color: Theme.text
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
-                        font.weight: Font.Bold
+                        font.pixelSize: 13
+                        font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        width: parent.width - 48
-                        height: 24
+                        width: parent.width - 56
+                        height: 28
                     }
 
                     CalendarNavButton {
-                        text: ">"
+                        text: "›"
                         onClicked: calendar.shiftMonth(1)
                     }
                 }
 
                 Grid {
+                    id: calendarGrid
+
+                    width: parent.width
                     columns: 7
                     rowSpacing: 4
                     columnSpacing: 4
 
                     Repeater {
                         model: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
                         delegate: Text {
                             required property string modelData
 
-                            width: 28
+                            width: (calendarGrid.width - calendarGrid.columnSpacing * 6) / 7
                             height: 18
                             text: modelData
                             color: Theme.textMuted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 12
-                            font.weight: Font.Bold
+                            font.pixelSize: 10
+                            font.weight: Font.DemiBold
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
@@ -172,24 +142,23 @@ Rectangle {
 
                     Repeater {
                         model: 42
+
                         delegate: Rectangle {
                             required property int index
                             property int day: calendar.dayForCell(index)
 
-                            width: 28
-                            height: 28
-                            radius: 10
-                            color: calendar.isToday(day) ? "#24ffffff" : "transparent"
-                            border.width: calendar.isToday(day) ? 1 : 0
-                            border.color: "#38ffffff"
+                            width: (calendarGrid.width - calendarGrid.columnSpacing * 6) / 7
+                            height: 24
+                            radius: 12
+                            color: calendar.isToday(day) ? Theme.accent : Theme.transparent
 
                             Text {
                                 anchors.centerIn: parent
                                 text: day > 0 ? String(day) : ""
-                                color: Theme.textPrimary
+                                color: calendar.isToday(day) ? Theme.white : Theme.text
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 13
-                                font.weight: calendar.isToday(day) ? Font.Bold : Font.DemiBold
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
                             }
                         }
                     }
@@ -198,115 +167,99 @@ Rectangle {
         }
     }
 
-    PopupWindow {
+    MenuPopup {
         id: powerPopup
 
-        visible: false
-        color: "transparent"
-        implicitWidth: 132
-        implicitHeight: powerMenuColumn.implicitHeight + 12
-        grabFocus: true
-        anchor.window: pill.anchorWindow
-        anchor.rect.x: pill.anchorWindow.width - implicitWidth - 13
-        anchor.rect.y: pill.y + pill.height + 5
+        menuWidth: 260
+        anchorWindow: root.anchorWindow
+        anchorItem: powerButton
 
-        Rectangle {
-            anchors.fill: parent
-            color: Theme.surface
-            border.color: Theme.surfaceBorder
-            border.width: 1
-            radius: 12
+        property string pendingAction: ""
 
-            Column {
-                id: powerMenuColumn
-                anchors.fill: parent
-                anchors.margins: 6
-                spacing: 2
+        function requestPowerAction(action) {
+            if (pendingAction === action) {
+                Popups.close(powerPopup);
+                Quickshell.execDetached(["systemctl", action === "shutdown" ? "poweroff" : "reboot"]);
+                return;
+            }
 
-                PowerMenuRow {
-                    label: "Shutdown"
-                    command: ["systemctl", "poweroff"]
-                }
+            pendingAction = action;
+            confirmTimer.restart();
+        }
 
-                PowerMenuRow {
-                    label: "Reboot"
-                    command: ["systemctl", "reboot"]
-                }
+        onVisibleChanged: {
+            pendingAction = "";
+            confirmTimer.stop();
+        }
 
-                PowerMenuRow {
-                    label: "Suspend"
-                    command: ["systemctl", "suspend"]
-                }
+        Timer {
+            id: confirmTimer
+
+            interval: 3000
+            repeat: false
+            onTriggered: powerPopup.pendingAction = ""
+        }
+
+        MenuRow {
+            icon: "⏻"
+            label: powerPopup.pendingAction === "shutdown" ? "Confirm shutdown?" : "Shut down"
+            danger: powerPopup.pendingAction === "shutdown"
+            dangerTint: powerPopup.pendingAction === "shutdown"
+            hoverDanger: powerPopup.pendingAction !== "shutdown"
+            onClicked: powerPopup.requestPowerAction("shutdown")
+        }
+
+        MenuRow {
+            icon: "󰜉"
+            label: powerPopup.pendingAction === "reboot" ? "Confirm reboot?" : "Reboot"
+            danger: powerPopup.pendingAction === "reboot"
+            dangerTint: powerPopup.pendingAction === "reboot"
+            hoverDanger: powerPopup.pendingAction !== "reboot"
+            onClicked: powerPopup.requestPowerAction("reboot")
+        }
+
+        MenuRow {
+            icon: "󰤄"
+            label: "Suspend"
+            onClicked: {
+                Popups.close(powerPopup);
+                Quickshell.execDetached(["systemctl", "suspend"]);
             }
         }
-    }
-
-    component ModuleText: Text {
-        property bool danger: false
-        property bool muted: false
-
-        color: danger ? Theme.danger : muted ? Theme.textMuted : Theme.textPrimary
-        font.family: Theme.fontFamily
-        font.pixelSize: 14
-        font.weight: Font.DemiBold
-        verticalAlignment: Text.AlignVCenter
-        height: 20
     }
 
     component CalendarNavButton: Rectangle {
         signal clicked()
         property alias text: label.text
 
-        width: 24
-        height: 24
-        radius: 10
-        color: navMouse.containsMouse ? "#29ffffff" : "#14ffffff"
+        width: 28
+        height: 28
+        radius: 8
+        color: navMouse.pressed ? Theme.pressed : navMouse.containsMouse ? Theme.hover : Theme.transparent
+
+        Behavior on color {
+            ColorAnimation {
+                duration: 150
+                easing.type: Easing.OutCubic
+            }
+        }
 
         Text {
             id: label
+
             anchors.centerIn: parent
-            color: Theme.textPrimary
+            color: Theme.text
             font.family: Theme.fontFamily
-            font.pixelSize: 13
-            font.weight: Font.Bold
-        }
-
-        MouseArea {
-            id: navMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: parent.clicked()
-        }
-    }
-
-    component PowerMenuRow: Rectangle {
-        required property string label
-        required property var command
-
-        width: parent.width
-        height: 28
-        radius: 8
-        color: menuMouse.containsMouse ? Theme.surfaceHover : "transparent"
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.left
-            anchors.leftMargin: 10
-            text: label
-            color: Theme.textPrimary
-            font.family: Theme.fontFamily
-            font.pixelSize: 13
+            font.pixelSize: 16
             font.weight: Font.DemiBold
         }
 
         MouseArea {
-            id: menuMouse
+            id: navMouse
+
             anchors.fill: parent
             hoverEnabled: true
-            onClicked: {
-                powerPopup.visible = false;
-                Quickshell.execDetached(command);
-            }
+            onClicked: parent.clicked()
         }
     }
 }

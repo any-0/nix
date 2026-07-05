@@ -1,12 +1,18 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland._WlrLayerShell
+import Quickshell.Wayland._BackgroundEffect
 
 PanelWindow {
     id: bar
 
     required property var screenInfo
-    readonly property int barHeight: 42
+    readonly property int barHeight: 30
+
+    BackgroundEffect.blurRegion: Region {
+        width: bar.width
+        height: bar.height
+    }
 
     screen: screenInfo
     visible: true
@@ -18,49 +24,50 @@ PanelWindow {
         right: true
     }
     exclusiveZone: barHeight
-    exclusionMode: ExclusionMode.Auto
+    exclusionMode: ExclusionMode.Normal
     aboveWindows: true
     focusable: false
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     WlrLayershell.namespace: "quickshell-bar-" + screenInfo.name
 
+    Rectangle {
+        anchors.fill: parent
+        color: Theme.bg
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+        onPressed: Popups.closeOpenPopup()
+    }
+
     Item {
         id: barRoot
+
         anchors.fill: parent
-        anchors.leftMargin: 8
-        anchors.rightMargin: 8
-        anchors.topMargin: 6
-        anchors.bottomMargin: 6
+        anchors.leftMargin: 12
+        anchors.rightMargin: 12
 
         StatusPill {
-            id: leftPill
+            id: leftGroup
+
             anchorWindow: bar
-            anchorOffsetX: barRoot.x
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        Rectangle {
-            id: workspacePill
-            height: 30
-            radius: 15
-            color: Theme.surface
-            border.color: Theme.surfaceBorder
-            border.width: 1
+        Workspaces {
+            id: workspaceGroup
+
+            screenName: bar.screenInfo.name
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-            width: workspaceRow.implicitWidth + 20
-
-            Workspaces {
-                id: workspaceRow
-                screenName: bar.screenInfo.name
-                anchors.centerIn: parent
-            }
         }
 
         ClockPower {
-            id: rightPill
+            id: rightGroup
+
             anchorWindow: bar
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
