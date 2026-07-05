@@ -1,16 +1,28 @@
 import QtQuick
-import Quickshell.Bluetooth
-import Quickshell.Networking
-import Quickshell.Services.Pipewire
 
 Item {
     id: root
 
     required property var anchorWindow
+    property bool desktopMode: false
+
+    // Icon glyph centers relative to this item, for the desktop overlay
+    // (which renders the actual glyphs; see BarButton.iconGhost).
+    readonly property real networkIconCenterX: leftRow.x + networkButton.x + networkButton.iconCenterX
+    readonly property real volumeIconCenterX: leftRow.x + volumeButton.x + volumeButton.iconCenterX
+    readonly property real volumeLabelCenterX: leftRow.x + volumeButton.x + volumeButton.labelCenterX
+    readonly property real bluetoothIconCenterX: leftRow.x + bluetoothButton.x + bluetoothButton.iconCenterX
 
     implicitWidth: leftRow.implicitWidth
     implicitHeight: 30
     height: 30
+
+    onDesktopModeChanged: {
+        if (!desktopMode) return;
+        Popups.close(networkPopup);
+        Popups.close(volumePopup);
+        Popups.close(bluetoothPopup);
+    }
 
     Row {
         id: leftRow
@@ -21,70 +33,16 @@ Item {
         BarButton {
             id: networkButton
 
-            property var connectedDevices: []
-            property var connectedNetworks: []
-            readonly property var connectedDevice: connectedDevices.length > 0 ? connectedDevices[0] : null
-            readonly property var connectedNetwork: connectedNetworks.length > 0 ? connectedNetworks[0] : null
-            readonly property bool offline: connectedDevice === null
+            icon: Status.networkIcon
+            iconGhost: true
+            danger: Status.networkOffline
+            enabled: !root.desktopMode
+            opacity: root.desktopMode ? 0 : 1
 
-            icon: offline ? "󰤭" : connectedDevice.type === DeviceType.Wifi ? wifiIcon(connectedNetwork ? connectedNetwork.signalStrength : 1) : "󰒍"
-            iconColor: offline ? Theme.danger : Theme.text
-            danger: offline
-
-            function wifiIcon(strength) {
-                if (strength >= 0.75) return "󰤨";
-                if (strength >= 0.5) return "󰤥";
-                if (strength >= 0.25) return "󰤢";
-                return "󰤟";
-            }
-
-            function syncDevice(device, include) {
-                const next = connectedDevices.filter(item => item !== device);
-                if (include) next.push(device);
-                connectedDevices = next;
-            }
-
-            function syncNetwork(network, include) {
-                const next = connectedNetworks.filter(item => item !== network);
-                if (include) next.push(network);
-                connectedNetworks = next;
-            }
-
-            Repeater {
-                model: Networking.devices
-
-                Item {
-                    required property var modelData
-
-                    readonly property bool isConnected: modelData.connected
-                        && modelData.state === ConnectionState.Connected
-                        && (modelData.type === DeviceType.Wifi || (modelData.type === DeviceType.Wired && modelData.hasLink))
-
-                    function updateDevice() {
-                        networkButton.syncDevice(modelData, isConnected);
-                    }
-
-                    Component.onCompleted: updateDevice()
-                    Component.onDestruction: networkButton.syncDevice(modelData, false)
-                    onIsConnectedChanged: updateDevice()
-
-                    Repeater {
-                        model: modelData.networks
-
-                        Item {
-                            required property var modelData
-
-                            readonly property bool activeWifi: modelData.connected && modelData.state === ConnectionState.Connected
-
-                            function updateNetwork() {
-                                networkButton.syncNetwork(modelData, activeWifi);
-                            }
-
-                            Component.onCompleted: updateNetwork()
-                            Component.onDestruction: networkButton.syncNetwork(modelData, false)
-                            onActiveWifiChanged: updateNetwork()
-                        }
-                    }
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 300
+                    easing.type: Easing.OutCubic
                 }
             }
 
@@ -94,69 +52,44 @@ Item {
         BarButton {
             id: volumeButton
 
-            readonly property var sink: Pipewire.defaultAudioSink
-            readonly property bool ready: sink && sink.audio
-            readonly property int volumePercent: ready ? Math.max(0, Math.min(100, Math.round(sink.audio.volume * 100))) : 0
-            readonly property bool volumeMuted: ready ? sink.audio.muted : false
+            icon: Status.volumeIcon
+            iconGhost: true
+            label: Status.volumePercent + "%"
+            labelGhost: true
+            muted: Status.volumeMuted
+            enabled: !root.desktopMode
+            opacity: root.desktopMode ? 0 : 1
 
-            icon: volumeMuted ? "󰖁" : "󰕾"
-            label: volumePercent + "%"
-            muted: volumeMuted
-
-            function setVolume(value) {
-                if (!ready) return;
-                const clamped = Math.max(0, Math.min(100, Math.round(value / 5) * 5));
-                sink.audio.muted = false;
-                sink.audio.volume = clamped / 100;
-            }
-
-            PwObjectTracker {
-                objects: [Pipewire.defaultAudioSink]
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 300
+                    easing.type: Easing.OutCubic
+                }
             }
 
             onClicked: button => {
-                if (button === Qt.RightButton && ready) sink.audio.muted = !sink.audio.muted;
+                if (button === Qt.RightButton) Status.toggleMute();
                 else Popups.toggle(volumePopup);
             }
-            onWheel: delta => setVolume(volumePercent + (delta > 0 ? 5 : -5))
+            onWheel: delta => Status.setVolume(Status.volumePercent + (delta > 0 ? 5 : -5))
         }
 
         BarButton {
             id: bluetoothButton
 
-            property var connectedDevices: []
-
-            // Whatever is actually connected right now; prefer a device that
-            // reports battery so the label stays informative.
-            readonly property var device: connectedDevices.find(d => d.batteryAvailable) || (connectedDevices.length > 0 ? connectedDevices[0] : null)
-            readonly property bool connected: device !== null
-            readonly property bool lowBattery: connected && device.batteryAvailable && device.battery < 0.2
-            readonly property string batteryText: connected && device.batteryAvailable ? String(Math.round(device.battery * 100)) + "%" : ""
-
             icon: "󰂯"
-            label: batteryText
-            iconColor: lowBattery ? Theme.danger : connected ? Theme.accent : Theme.textMuted
-            labelColor: lowBattery ? Theme.danger : connected ? Theme.text : Theme.textMuted
-            muted: !connected
-            danger: lowBattery
+            iconGhost: true
+            label: Status.bluetoothBatteryText
+            labelColor: Status.bluetoothLowBattery ? Theme.danger : Status.bluetoothConnected ? Theme.text : Theme.textMuted
+            muted: !Status.bluetoothConnected
+            danger: Status.bluetoothLowBattery
+            enabled: !root.desktopMode
+            opacity: root.desktopMode ? 0 : 1
 
-            function syncDevice(dev, include) {
-                const next = connectedDevices.filter(item => item !== dev);
-                if (include) next.push(dev);
-                connectedDevices = next;
-            }
-
-            Repeater {
-                model: Bluetooth.devices
-
-                Item {
-                    required property var modelData
-
-                    readonly property bool isConnected: modelData.connected
-
-                    Component.onCompleted: bluetoothButton.syncDevice(modelData, isConnected)
-                    Component.onDestruction: bluetoothButton.syncDevice(modelData, false)
-                    onIsConnectedChanged: bluetoothButton.syncDevice(modelData, isConnected)
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 300
+                    easing.type: Easing.OutCubic
                 }
             }
 
@@ -181,25 +114,9 @@ Item {
     MenuPopup {
         id: volumePopup
 
-        readonly property var sink: Pipewire.defaultAudioSink
-        readonly property bool ready: sink && sink.audio
-        readonly property int volumePercent: ready ? Math.max(0, Math.min(100, Math.round(sink.audio.volume * 100))) : 0
-        readonly property bool volumeMuted: ready ? sink.audio.muted : false
-
         anchorWindow: root.anchorWindow
         anchorItem: volumeButton
         menuWidth: 260
-
-        function setVolume(value) {
-            if (!ready) return;
-            const clamped = Math.max(0, Math.min(100, Math.round(value / 5) * 5));
-            sink.audio.muted = false;
-            sink.audio.volume = clamped / 100;
-        }
-
-        PwObjectTracker {
-            objects: [Pipewire.defaultAudioSink]
-        }
 
         Row {
             width: parent.width
@@ -223,8 +140,8 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: volumePopup.volumeMuted ? "󰖁" : "󰕾"
-                    color: volumePopup.volumeMuted ? Theme.textMuted : Theme.text
+                    text: Status.volumeIcon
+                    color: Status.volumeMuted ? Theme.textMuted : Theme.text
                     font.family: Theme.fontFamily
                     font.pixelSize: 13
                     font.weight: Font.DemiBold
@@ -235,7 +152,7 @@ Item {
 
                     anchors.fill: parent
                     hoverEnabled: true
-                    onClicked: if (volumePopup.ready) volumePopup.sink.audio.muted = !volumePopup.sink.audio.muted
+                    onClicked: Status.toggleMute()
                 }
             }
 
@@ -246,8 +163,6 @@ Item {
                 height: 32
 
                 Rectangle {
-                    id: sliderTrack
-
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
@@ -256,7 +171,7 @@ Item {
                     color: Theme.track
 
                     Rectangle {
-                        width: parent.width * volumePopup.volumePercent / 100
+                        width: parent.width * Status.volumePercent / 100
                         height: parent.height
                         radius: 3
                         color: Theme.accent
@@ -275,7 +190,7 @@ Item {
                     height: 14
                     radius: 7
                     color: Theme.white
-                    x: Math.max(0, Math.min(slider.width - width, slider.width * volumePopup.volumePercent / 100 - width / 2))
+                    x: Math.max(0, Math.min(slider.width - width, slider.width * Status.volumePercent / 100 - width / 2))
                     anchors.verticalCenter: parent.verticalCenter
 
                     Behavior on x {
@@ -288,17 +203,13 @@ Item {
 
                 MouseArea {
                     anchors.fill: parent
-                    onPressed: event => updateVolume(event.x)
+                    onPressed: event => Status.setVolume(event.x / width * 100)
                     onPositionChanged: event => {
-                        if (pressed) updateVolume(event.x);
+                        if (pressed) Status.setVolume(event.x / width * 100);
                     }
                     onWheel: wheel => {
-                        volumePopup.setVolume(volumePopup.volumePercent + (wheel.angleDelta.y > 0 ? 5 : -5));
+                        Status.setVolume(Status.volumePercent + (wheel.angleDelta.y > 0 ? 5 : -5));
                         wheel.accepted = true;
-                    }
-
-                    function updateVolume(pointerX) {
-                        volumePopup.setVolume(pointerX / width * 100);
                     }
                 }
             }
@@ -308,7 +219,7 @@ Item {
 
                 width: 36
                 height: 32
-                text: volumePopup.volumePercent + "%"
+                text: Status.volumePercent + "%"
                 color: Theme.text
                 font.family: Theme.fontFamily
                 font.pixelSize: 12

@@ -29,6 +29,15 @@ ShellRoot {
                 barClockCenterX: barWindow.clockCenterX
                 barClockCenterY: barWindow.clockCenterY
             }
+
+            DesktopStatus {
+                screenInfo: modelData
+                barCenterY: barWindow.clockCenterY
+                networkIconBarX: barWindow.networkIconCenterX
+                volumeIconBarX: barWindow.volumeIconCenterX
+                volumeLabelBarX: barWindow.volumeLabelCenterX
+                bluetoothIconBarX: barWindow.bluetoothIconCenterX
+            }
         }
     }
 }
