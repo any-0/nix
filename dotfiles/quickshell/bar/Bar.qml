@@ -7,7 +7,13 @@ PanelWindow {
     id: bar
 
     required property var screenInfo
+    property bool desktopClockVisible: false
+    property real desktopClockSlotWidth: 0
     readonly property int barHeight: 30
+    // Screen coords of the bar clock's resting center, for the desktop clock
+    // handoff (bar spans the full screen width at y 0, so window == screen).
+    readonly property real clockCenterX: width - 12 - rightGroup.clockCenterOffsetFromRight
+    readonly property real clockCenterY: barHeight / 2
 
     BackgroundEffect.blurRegion: Region {
         width: bar.width
@@ -69,6 +75,8 @@ PanelWindow {
             id: rightGroup
 
             anchorWindow: bar
+            desktopClockVisible: bar.desktopClockVisible
+            clockSlotWidth: bar.desktopClockSlotWidth
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
         }

@@ -5,10 +5,21 @@ Item {
     id: root
 
     required property var anchorWindow
+    property bool desktopClockVisible: false
+    // Width of the clock text block, provided by DesktopClock (which owns and
+    // renders the actual text; the bar only reserves this slot).
+    property real clockSlotWidth: 0
+    // Distance from this item's right edge to the clock slot's resting center.
+    readonly property real clockCenterOffsetFromRight: powerButton.width + clockRow.spacing + clockButton.implicitWidth / 2
 
     implicitWidth: clockRow.implicitWidth
     implicitHeight: 30
+    width: implicitWidth
     height: 30
+
+    onDesktopClockVisibleChanged: {
+        if (desktopClockVisible) Popups.close(calendarPopup);
+    }
 
     SystemClock {
         id: clock
@@ -21,12 +32,30 @@ Item {
         anchors.centerIn: parent
         spacing: 4
 
-        BarButton {
-            id: clockButton
+        Item {
+            id: clockSlot
 
-            label: Qt.formatDateTime(clock.date, "yyyy-MM-dd  HH:mm")
-            fontSize: Theme.clockFontSize
-            onClicked: Popups.toggle(calendarPopup)
+            width: root.desktopClockVisible ? 0 : clockButton.implicitWidth
+            height: 30
+            clip: true
+
+            Behavior on width {
+                NumberAnimation {
+                    duration: 450
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            // Invisible placeholder: DesktopClock renders the text on its
+            // overlay exactly over this slot; this only provides the hover
+            // highlight and the click target for the calendar.
+            BarButton {
+                id: clockButton
+
+                implicitWidth: root.clockSlotWidth + 16
+                enabled: !root.desktopClockVisible
+                onClicked: Popups.toggle(calendarPopup)
+            }
         }
 
         BarButton {
