@@ -125,7 +125,7 @@ layout {
     background-color "#00000000"
 
     // Set gaps around windows in logical pixels.
-    gaps 16
+    gaps 0
 
     // When to center a column when changing focus, options are:
     // - "never", default behavior, focusing an off-screen column will keep at the left
@@ -269,10 +269,10 @@ layout {
     // Top and bottom struts will simply add outer gaps in addition to the area occupied by
     // layer-shell panels and regular gaps.
     struts {
-        left -8
-        right -8
-        top -16
-        bottom -8
+        left 0
+        right 0
+        top 0
+        bottom 0
     }
 }
 
@@ -280,6 +280,27 @@ layout {
 // Note that running niri as a session supports xdg-desktop-autostart,
 // which may be more convenient to use.
 // See the binds section below for more spawn examples.
+
+// Compositor-side blur for surfaces that request it via ext-background-effect (the bar).
+blur {
+    on
+}
+
+// Bar + its menus: blur the wallpaper (xray), not whatever window happens to
+// be underneath — avoids hard cuts at window edges in the blurred backdrop.
+layer-rule {
+    match namespace="^quickshell-bar"
+    background-effect {
+        blur true
+        xray true
+    }
+    popups {
+        background-effect {
+            blur true
+            xray true
+        }
+    }
+}
 
 // Pick one wallpaper at startup and use it for swaybg.
 spawn-sh-at-startup "exec swaybg -i \"$(find \"$HOME/Pictures/Wallpapers\" -maxdepth 1 -type f | shuf -n 1)\" -m fill"
@@ -355,7 +376,7 @@ window-rule {
 // Example: enable rounded corners for all windows.
 // (This example rule is commented out with a "/-" in front.)
 window-rule {
-    geometry-corner-radius 12
+    geometry-corner-radius 0
     clip-to-geometry true
 }
 

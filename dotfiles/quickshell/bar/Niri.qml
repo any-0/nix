@@ -9,6 +9,7 @@ Singleton {
 
     property var workspaces: []
     property var windows: []
+    signal interaction()
 
     function workspaceDisplayName(workspace) {
         return workspace.name || String(workspace.idx);
@@ -131,6 +132,8 @@ Singleton {
         if (event.WorkspaceUrgencyChanged) setWorkspaceUrgency(event.WorkspaceUrgencyChanged.id, event.WorkspaceUrgencyChanged.urgent);
         if (event.WindowUrgencyChanged) setWindowUrgency(event.WindowUrgencyChanged.id, event.WindowUrgencyChanged.urgent);
         if (event.WindowLayoutsChanged) setWindowLayouts(event.WindowLayoutsChanged.changes);
+
+        if (event.WorkspaceActivated || event.WorkspaceActiveWindowChanged || event.WindowFocusChanged) interaction();
     }
 
     function replaceWorkspaces(next) {
