@@ -14,6 +14,11 @@ PanelWindow {
     // handoff (bar spans the full screen width at y 0, so window == screen).
     readonly property real clockCenterX: width - 12 - rightGroup.clockCenterOffsetFromRight
     readonly property real clockCenterY: barHeight / 2
+    // Screen coords of the status icon centers, for the desktop overlay.
+    readonly property real networkIconCenterX: barRoot.x + leftGroup.x + leftGroup.networkIconCenterX
+    readonly property real volumeIconCenterX: barRoot.x + leftGroup.x + leftGroup.volumeIconCenterX
+    readonly property real volumeLabelCenterX: barRoot.x + leftGroup.x + leftGroup.volumeLabelCenterX
+    readonly property real bluetoothIconCenterX: barRoot.x + leftGroup.x + leftGroup.bluetoothIconCenterX
 
     BackgroundEffect.blurRegion: Region {
         width: bar.width
@@ -59,6 +64,7 @@ PanelWindow {
             id: leftGroup
 
             anchorWindow: bar
+            desktopMode: bar.desktopClockVisible
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
         }

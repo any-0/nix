@@ -5,6 +5,13 @@ Item {
 
     property string icon: ""
     property string label: ""
+    // When true the icon/label still reserves its layout slot but is not
+    // drawn — the desktop overlay renders it on top so it can fly away.
+    property bool iconGhost: false
+    property bool labelGhost: false
+    // Glyph/label centers relative to this button, for the overlay.
+    readonly property real iconCenterX: highlight.x + content.x + iconText.x + iconText.implicitWidth / 2
+    readonly property real labelCenterX: highlight.x + content.x + labelText.x + labelText.implicitWidth / 2
     property color iconColor: danger ? Theme.danger : muted ? Theme.textMuted : Theme.text
     property color labelColor: danger ? Theme.danger : muted ? Theme.textMuted : Theme.text
     property bool danger: false
@@ -46,7 +53,10 @@ Item {
             spacing: root.icon.length > 0 && root.label.length > 0 ? 6 : 0
 
             Text {
+                id: iconText
+
                 visible: root.icon.length > 0
+                opacity: root.iconGhost ? 0 : 1
                 height: highlight.height
                 text: root.icon
                 color: root.hoverDanger && mouse.containsMouse ? Theme.danger : root.iconColor
@@ -65,7 +75,10 @@ Item {
             }
 
             Text {
+                id: labelText
+
                 visible: root.label.length > 0
+                opacity: root.labelGhost ? 0 : 1
                 height: highlight.height
                 text: root.label
                 color: root.hoverDanger && mouse.containsMouse ? Theme.danger : root.labelColor
