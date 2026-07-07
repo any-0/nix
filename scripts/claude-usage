@@ -1,0 +1,219 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+credentials_file="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.credentials.json"
+usage_url="https://api.anthropic.com/api/oauth/usage"
+refresh_url="https://platform.claude.com/v1/oauth/token"
+client_id="9d1c250a-e61b-44d9-88ed-5944d1962f5e"
+
+json_error() {
+  jq -cn --arg error "$1" '{
+    ok: false,
+    error: $error,
+    plan: "",
+    credits: null,
+    resetCredits: null,
+    fiveHourPercentLeft: null,
+    weeklyPercentLeft: null,
+    monthlyPercentLeft: null,
+    fiveHourUsedPercent: null,
+    weeklyUsedPercent: null,
+    fiveHourResetAt: null,
+    weeklyResetAt: null,
+    fiveHourWindowSeconds: null,
+    weeklyWindowSeconds: null,
+    fiveHourReset: "",
+    weeklyReset: "",
+    monthlyReset: "",
+    raw: ""
+  }'
+}
+
+if [[ ! -f "$credentials_file" ]]; then
+  json_error "Claude credentials not found"
+  exit 0
+fi
+
+access_token="$(jq -r '.claudeAiOauth.accessToken // empty' "$credentials_file")"
+refresh_token="$(jq -r '.claudeAiOauth.refreshToken // empty' "$credentials_file")"
+subscription_type="$(jq -r '.claudeAiOauth.subscriptionType // empty' "$credentials_file")"
+
+if [[ -z "$access_token" ]]; then
+  json_error "Claude access token missing"
+  exit 0
+fi
+
+refresh_access_token() {
+  [[ -n "$refresh_token" ]] || return 1
+
+  local body refreshed staged
+  body="$(
+    jq -rn \
+      --arg grant_type "refresh_token" \
+      --arg refresh_token "$refresh_token" \
+      --arg client_id "$client_id" \
+      '"grant_type=\($grant_type | @uri)&refresh_token=\($refresh_token | @uri)&client_id=\($client_id | @uri)"'
+  )"
+  refreshed="$(
+    curl -L --silent --show-error --fail-with-body \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -H "Accept: application/json" \
+      --data "$body" \
+      "$refresh_url"
+  )" || return 1
+
+  access_token="$(jq -r '.access_token // empty' <<<"$refreshed")"
+  refresh_token="$(jq -r '.refresh_token // empty' <<<"$refreshed")"
+  [[ -n "$access_token" ]] || return 1
+
+  staged="$(mktemp "$(dirname "$credentials_file")/.credentials.json.quickshell.XXXXXX")"
+  jq \
+    --arg access_token "$access_token" \
+    --arg refresh_token "$refresh_token" \
+    --arg expires_at "$(date -u -d "+$(jq -r '.expires_in // 0' <<<"$refreshed") seconds" +%Y-%m-%dT%H:%M:%S.000Z)" \
+    '.claudeAiOauth.accessToken = $access_token
+      | .claudeAiOauth.refreshToken = $refresh_token
+      | .claudeAiOauth.expiresAt = $expires_at' \
+    "$credentials_file" > "$staged"
+  chmod 600 "$staged"
+  mv "$staged" "$credentials_file"
+}
+
+fetch_usage() {
+  local status_file body_file status
+  status_file="$(mktemp)"
+  body_file="$(mktemp)"
+
+  curl -L --silent --show-error \
+    -w '%{http_code}' \
+    -o "$body_file" \
+    -H "Authorization: Bearer $access_token" \
+    -H "Accept: application/json" \
+    -H "Content-Type: application/json" \
+    -H "anthropic-beta: oauth-2025-04-20" \
+    -H "User-Agent: claude-code/2.1.201" \
+    "$usage_url" > "$status_file" || true
+
+  status="$(cat "$status_file")"
+  rm -f "$status_file"
+
+  if [[ "$status" == "401" ]]; then
+    rm -f "$body_file"
+    return 2
+  fi
+
+  if [[ "$status" == "429" ]]; then
+    rm -f "$body_file"
+    json_error "Claude usage API is rate limited"
+    exit 0
+  fi
+
+  if [[ ! "$status" =~ ^2 ]]; then
+    local body
+    body="$(cat "$body_file")"
+    rm -f "$body_file"
+    json_error "Claude usage API error $status: $body"
+    exit 0
+  fi
+
+  cat "$body_file"
+  rm -f "$body_file"
+}
+
+usage_json="$(fetch_usage || rc=$?; if [[ "${rc:-0}" == "2" ]]; then refresh_access_token && fetch_usage || json_error "Claude OAuth token expired"; fi)"
+
+if ! jq -e . >/dev/null 2>&1 <<<"$usage_json"; then
+  printf '%s\n' "$usage_json"
+  exit 0
+fi
+
+if jq -e 'has("ok") and .ok == false' >/dev/null 2>&1 <<<"$usage_json"; then
+  printf '%s\n' "$usage_json"
+  exit 0
+fi
+
+jq -cn \
+  --argjson usage "$usage_json" \
+  --arg subscriptionType "$subscription_type" '
+  def iso_epoch:
+    sub("\\.[0-9]+"; "")
+    | sub("\\+00:00$"; "Z")
+    | fromdateiso8601;
+
+  def reset_epoch($window):
+    if $window == null or $window.resets_at == null then null
+    else ($window.resets_at | iso_epoch)
+    end;
+
+  def reset_text($window):
+    (reset_epoch($window)) as $reset
+    | if $reset == null then ""
+      else
+        (($reset - now) | floor) as $seconds
+        | if $seconds < 60 then "\($seconds)s"
+          elif $seconds < 3600 then "\(($seconds / 60) | floor)m"
+          elif $seconds < 86400 then "\(($seconds / 3600) | floor)h \((($seconds % 3600) / 60) | floor)m"
+          else "\(($seconds / 86400) | floor)d \(((($seconds % 86400) / 3600) | floor))h"
+          end
+      end;
+
+  def plan_label:
+    if $subscriptionType == "pro" then "Pro"
+    elif $subscriptionType == "max" then "Max"
+    elif $subscriptionType == "team" then "Team"
+    elif $subscriptionType == "enterprise" then "Enterprise"
+    elif $subscriptionType == "" then ""
+    else ($subscriptionType | ascii_upcase)
+    end;
+
+  def scoped_weekly_window:
+    [
+      ($usage.limits // [])[]
+      | select((.group // "") == "weekly")
+      | select((.is_active // false) == true)
+      | select(.percent != null and .resets_at != null)
+      | {
+          utilization: .percent,
+          resets_at: .resets_at
+        }
+    ]
+    | max_by(.utilization);
+
+  $usage.five_hour as $five
+  | (scoped_weekly_window // $usage.seven_day) as $weekly
+  | {
+      ok: true,
+      error: "",
+      plan: plan_label,
+      credits: (
+        if $usage.extra_usage.used_credits == null then null
+        else ($usage.extra_usage.used_credits | tonumber)
+        end
+      ),
+      resetCredits: null,
+      fiveHourPercentLeft: (
+        if $five.utilization == null then null
+        else ([0, (100 - ($five.utilization | tonumber))] | max)
+        end
+      ),
+      weeklyPercentLeft: (
+        if $weekly.utilization == null then null
+        else ([0, (100 - ($weekly.utilization | tonumber))] | max)
+        end
+      ),
+      monthlyPercentLeft: (
+        if $usage.extra_usage.utilization == null then null
+        else ([0, (100 - ($usage.extra_usage.utilization | tonumber))] | max)
+        end
+      ),
+      fiveHourUsedPercent: ($five.utilization // null),
+      weeklyUsedPercent: ($weekly.utilization // null),
+      fiveHourResetAt: reset_epoch($five),
+      weeklyResetAt: reset_epoch($weekly),
+      fiveHourWindowSeconds: 18000,
+      weeklyWindowSeconds: 604800,
+      fiveHourReset: reset_text($five),
+      weeklyReset: reset_text($weekly),
+      monthlyReset: "",
+      raw: ""
+    }'

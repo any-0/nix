@@ -5,6 +5,7 @@ Item {
 
     required property var anchorWindow
     property bool desktopMode: false
+    property bool desktopModeActive: false
 
     // Icon glyph centers relative to this item, for the desktop overlay
     // (which renders the actual glyphs; see BarButton.iconGhost).
@@ -18,10 +19,22 @@ Item {
     height: 30
 
     onDesktopModeChanged: {
-        if (!desktopMode) return;
-        Popups.close(networkPopup);
-        Popups.close(volumePopup);
-        Popups.close(bluetoothPopup);
+        if (desktopMode) {
+            Popups.close(networkPopup);
+            Popups.close(volumePopup);
+            Popups.close(bluetoothPopup);
+            desktopModeDelay.restart();
+        } else {
+            desktopModeDelay.stop();
+            desktopModeActive = false;
+        }
+    }
+
+    Timer {
+        id: desktopModeDelay
+
+        interval: 5000
+        onTriggered: root.desktopModeActive = root.desktopMode
     }
 
     Row {
@@ -36,12 +49,12 @@ Item {
             icon: Status.networkIcon
             iconGhost: true
             danger: Status.networkOffline
-            enabled: !root.desktopMode
-            opacity: root.desktopMode ? 0 : 1
+            enabled: !root.desktopModeActive
+            opacity: root.desktopModeActive ? 0 : 1
 
             Behavior on opacity {
                 NumberAnimation {
-                    duration: 300
+                    duration: root.desktopModeActive ? 600 : 300
                     easing.type: Easing.OutCubic
                 }
             }
@@ -57,12 +70,12 @@ Item {
             label: Status.volumePercent + "%"
             labelGhost: true
             muted: Status.volumeMuted
-            enabled: !root.desktopMode
-            opacity: root.desktopMode ? 0 : 1
+            enabled: !root.desktopModeActive
+            opacity: root.desktopModeActive ? 0 : 1
 
             Behavior on opacity {
                 NumberAnimation {
-                    duration: 300
+                    duration: root.desktopModeActive ? 600 : 300
                     easing.type: Easing.OutCubic
                 }
             }
@@ -83,12 +96,12 @@ Item {
             labelColor: Status.bluetoothLowBattery ? Theme.danger : Status.bluetoothConnected ? Theme.text : Theme.textMuted
             muted: !Status.bluetoothConnected
             danger: Status.bluetoothLowBattery
-            enabled: !root.desktopMode
-            opacity: root.desktopMode ? 0 : 1
+            enabled: !root.desktopModeActive
+            opacity: root.desktopModeActive ? 0 : 1
 
             Behavior on opacity {
                 NumberAnimation {
-                    duration: 300
+                    duration: root.desktopModeActive ? 600 : 300
                     easing.type: Easing.OutCubic
                 }
             }
