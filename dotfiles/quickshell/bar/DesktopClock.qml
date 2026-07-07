@@ -19,13 +19,48 @@ PanelWindow {
     readonly property real parkedWidth: barBlockMetrics.width
 
     // 0 = parked in the bar, 1 = centered on the desktop.
-    property real progress: desktopEmpty ? 1 : 0
+    property real progress: 0
 
-    Behavior on progress {
-        NumberAnimation {
-            duration: 450
-            easing.type: Easing.OutCubic
+    function transitionProgress() {
+        if (desktopEmpty) {
+            toBarAnimation.stop();
+            desktopDelay.restart();
+        } else {
+            desktopDelay.stop();
+            toDesktopAnimation.stop();
+            toBarAnimation.restart();
         }
+    }
+
+    onDesktopEmptyChanged: transitionProgress()
+
+    Component.onCompleted: transitionProgress()
+
+    Timer {
+        id: desktopDelay
+
+        interval: 5000
+        onTriggered: toDesktopAnimation.restart()
+    }
+
+    NumberAnimation {
+        id: toDesktopAnimation
+
+        target: window
+        property: "progress"
+        to: 1
+        duration: 900
+        easing.type: Easing.OutCubic
+    }
+
+    NumberAnimation {
+        id: toBarAnimation
+
+        target: window
+        property: "progress"
+        to: 0
+        duration: 450
+        easing.type: Easing.OutCubic
     }
 
     function lerp(a, b) {

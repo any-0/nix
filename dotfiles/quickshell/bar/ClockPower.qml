@@ -6,6 +6,7 @@ Item {
 
     required property var anchorWindow
     property bool desktopClockVisible: false
+    property bool desktopClockActive: false
     // Width of the clock text block, provided by DesktopClock (which owns and
     // renders the actual text; the bar only reserves this slot).
     property real clockSlotWidth: 0
@@ -18,7 +19,20 @@ Item {
     height: 30
 
     onDesktopClockVisibleChanged: {
-        if (desktopClockVisible) Popups.close(calendarPopup);
+        if (desktopClockVisible) {
+            Popups.close(calendarPopup);
+            desktopClockDelay.restart();
+        } else {
+            desktopClockDelay.stop();
+            desktopClockActive = false;
+        }
+    }
+
+    Timer {
+        id: desktopClockDelay
+
+        interval: 5000
+        onTriggered: root.desktopClockActive = root.desktopClockVisible
     }
 
     SystemClock {
@@ -32,16 +46,24 @@ Item {
         anchors.centerIn: parent
         spacing: 4
 
+        ClaudeUsage {
+            anchorWindow: root.anchorWindow
+        }
+
+        CodexUsage {
+            anchorWindow: root.anchorWindow
+        }
+
         Item {
             id: clockSlot
 
-            width: root.desktopClockVisible ? 0 : clockButton.implicitWidth
+            width: root.desktopClockActive ? 0 : clockButton.implicitWidth
             height: 30
             clip: true
 
             Behavior on width {
                 NumberAnimation {
-                    duration: 450
+                    duration: root.desktopClockActive ? 900 : 450
                     easing.type: Easing.OutCubic
                 }
             }
@@ -53,7 +75,7 @@ Item {
                 id: clockButton
 
                 implicitWidth: root.clockSlotWidth + 16
-                enabled: !root.desktopClockVisible
+                enabled: !root.desktopClockActive
                 onClicked: Popups.toggle(calendarPopup)
             }
         }

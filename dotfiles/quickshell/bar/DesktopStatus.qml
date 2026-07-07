@@ -22,7 +22,8 @@ PanelWindow {
     readonly property bool desktopEmpty: Niri.activeWorkspaceEmpty(screenInfo.name)
     readonly property bool cardsSettled: networkCard.progress === 1 && volumeCard.progress === 1 && bluetoothCard.progress === 1
 
-    readonly property int flightMs: 450
+    readonly property int toDesktopFlightMs: 900
+    readonly property int toBarFlightMs: 450
     readonly property int staggerMs: 60
 
     readonly property real cardWidth: 260
@@ -364,9 +365,8 @@ PanelWindow {
         title: "BLUETOOTH"
         headerTrailing: Status.bluetoothBatteryText
 
-        Column {
+        Item {
             anchors.fill: parent
-            spacing: 2
 
             Text {
                 visible: Status.bluetoothPairedDevices.length === 0
@@ -379,8 +379,11 @@ PanelWindow {
                 verticalAlignment: Text.AlignVCenter
             }
 
-            Repeater {
+            ListView {
+                anchors.fill: parent
+                clip: true
                 model: Status.bluetoothPairedDevices
+                spacing: 2
 
                 delegate: Rectangle {
                     required property var modelData
@@ -468,19 +471,54 @@ PanelWindow {
         readonly property real finalY: window.cardsTop + index * (window.cardHeight + window.cardGap)
 
         // 0 = folded into the bar behind its icon, 1 = unfolded on the desktop.
-        property real progress: window.desktopEmpty ? 1 : 0
+        property real progress: 0
 
-        Behavior on progress {
-            SequentialAnimation {
-                PauseAnimation {
-                    duration: card.index * window.staggerMs
-                }
-
-                NumberAnimation {
-                    duration: window.flightMs
-                    easing.type: Easing.OutCubic
-                }
+        function transitionProgress() {
+            if (window.desktopEmpty) {
+                toBarAnimation.stop();
+                desktopDelay.restart();
+            } else {
+                desktopDelay.stop();
+                toDesktopAnimation.stop();
+                toBarAnimation.restart();
             }
+        }
+
+        Component.onCompleted: transitionProgress()
+
+        Connections {
+            target: window
+
+            function onDesktopEmptyChanged() {
+                card.transitionProgress();
+            }
+        }
+
+        Timer {
+            id: desktopDelay
+
+            interval: 5000 + card.index * window.staggerMs
+            onTriggered: toDesktopAnimation.restart()
+        }
+
+        NumberAnimation {
+            id: toDesktopAnimation
+
+            target: card
+            property: "progress"
+            to: 1
+            duration: window.toDesktopFlightMs
+            easing.type: Easing.OutCubic
+        }
+
+        NumberAnimation {
+            id: toBarAnimation
+
+            target: card
+            property: "progress"
+            to: 0
+            duration: window.toBarFlightMs
+            easing.type: Easing.OutCubic
         }
 
         function lerp(a, b) {

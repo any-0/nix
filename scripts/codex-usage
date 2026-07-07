@@ -1,0 +1,216 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+codex_home="${CODEX_HOME:-$HOME/.codex}"
+auth_file="$codex_home/auth.json"
+usage_url="https://chatgpt.com/backend-api/wham/usage"
+reset_credits_url="https://chatgpt.com/backend-api/wham/rate-limit-reset-credits"
+
+json_error() {
+  jq -cn --arg error "$1" '{
+    ok: false,
+    error: $error,
+    plan: "",
+    credits: null,
+    resetCredits: null,
+    fiveHourPercentLeft: null,
+    weeklyPercentLeft: null,
+    monthlyPercentLeft: null,
+    fiveHourUsedPercent: null,
+    weeklyUsedPercent: null,
+    fiveHourResetAt: null,
+    weeklyResetAt: null,
+    fiveHourWindowSeconds: null,
+    weeklyWindowSeconds: null,
+    fiveHourReset: "",
+    weeklyReset: "",
+    monthlyReset: "",
+    raw: ""
+  }'
+}
+
+if [[ ! -f "$auth_file" ]]; then
+  json_error "Codex auth.json not found"
+  exit 0
+fi
+
+access_token="$(jq -r '.tokens.access_token // empty' "$auth_file")"
+refresh_token="$(jq -r '.tokens.refresh_token // empty' "$auth_file")"
+account_id="$(jq -r '.tokens.account_id // empty' "$auth_file")"
+
+if [[ -z "$access_token" ]]; then
+  json_error "Codex access token missing"
+  exit 0
+fi
+
+refresh_access_token() {
+  [[ -n "$refresh_token" ]] || return 1
+
+  local refreshed
+  refreshed="$(
+    jq -cn \
+      --arg refresh_token "$refresh_token" \
+      '{
+        client_id: "app_EMoamEEZ73f0CkXaXp7hrann",
+        grant_type: "refresh_token",
+        refresh_token: $refresh_token,
+        scope: "openid profile email"
+      }' \
+      | curl -L --silent --show-error --fail-with-body \
+          -H "Content-Type: application/json" \
+          --data @- \
+          https://auth.openai.com/oauth/token
+  )" || return 1
+
+  access_token="$(jq -r '.access_token // empty' <<<"$refreshed")"
+  refresh_token="$(jq -r '.refresh_token // empty' <<<"$refreshed")"
+  [[ -n "$access_token" ]] || return 1
+
+  local staged
+  staged="$(mktemp "$codex_home/.auth.json.quickshell.XXXXXX")"
+  jq \
+    --arg access_token "$access_token" \
+    --arg refresh_token "$refresh_token" \
+    --arg id_token "$(jq -r '.id_token // empty' <<<"$refreshed")" \
+    --arg last_refresh "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    '.tokens.access_token = $access_token
+      | .tokens.refresh_token = $refresh_token
+      | (if $id_token == "" then . else .tokens.id_token = $id_token end)
+      | .last_refresh = $last_refresh' \
+    "$auth_file" > "$staged"
+  chmod 600 "$staged"
+  mv "$staged" "$auth_file"
+}
+
+fetch_usage() {
+  local status_file body_file status
+  status_file="$(mktemp)"
+  body_file="$(mktemp)"
+
+  curl -L --silent --show-error \
+    -w '%{http_code}' \
+    -o "$body_file" \
+    -H "Authorization: Bearer $access_token" \
+    -H "Accept: application/json" \
+    -H "User-Agent: quickshell-codex-usage" \
+    ${account_id:+-H "ChatGPT-Account-Id: $account_id"} \
+    "$usage_url" > "$status_file" || true
+
+  status="$(cat "$status_file")"
+  rm -f "$status_file"
+
+  if [[ "$status" == "401" || "$status" == "403" ]]; then
+    rm -f "$body_file"
+    return 2
+  fi
+
+  if [[ ! "$status" =~ ^2 ]]; then
+    local body
+    body="$(cat "$body_file")"
+    rm -f "$body_file"
+    json_error "Codex usage API error $status: $body"
+    exit 0
+  fi
+
+  cat "$body_file"
+  rm -f "$body_file"
+}
+
+usage_json="$(fetch_usage || rc=$?; if [[ "${rc:-0}" == "2" ]]; then refresh_access_token && fetch_usage || json_error "Codex OAuth token expired"; fi)"
+
+if ! jq -e . >/dev/null 2>&1 <<<"$usage_json"; then
+  printf '%s\n' "$usage_json"
+  exit 0
+fi
+
+if jq -e 'has("ok") and .ok == false' >/dev/null 2>&1 <<<"$usage_json"; then
+  printf '%s\n' "$usage_json"
+  exit 0
+fi
+
+reset_credits_json="$(
+  curl -L --silent --show-error --fail-with-body \
+    -H "Authorization: Bearer $access_token" \
+    -H "Accept: application/json" \
+    -H "User-Agent: quickshell-codex-usage" \
+    -H "OpenAI-Beta: codex-1" \
+    -H "originator: Codex Desktop" \
+    ${account_id:+-H "ChatGPT-Account-ID: $account_id"} \
+    "$reset_credits_url" 2>/dev/null || true
+)"
+
+if ! jq -e . >/dev/null 2>&1 <<<"$reset_credits_json"; then
+  reset_credits_json="null"
+fi
+
+jq -cn \
+  --argjson usage "$usage_json" \
+  --argjson resetCredits "${reset_credits_json:-null}" '
+  def plan_label:
+    ($usage.plan_type // "") as $plan
+    | if $plan == "prolite" then "Pro"
+      elif $plan == "plus" then "Plus"
+      elif $plan == "pro" then "Pro"
+      elif $plan == "team" then "Team"
+      elif $plan == "business" then "Business"
+      elif $plan == "enterprise" then "Enterprise"
+      elif $plan == "free" then "Free"
+      elif $plan == "go" then "Go"
+      else ""
+      end;
+
+  def percent_left($window):
+    if $window == null or ($window.used_percent == null) then null
+    else ([0, (100 - ($window.used_percent | tonumber))] | max)
+    end;
+
+  def reset_text($window):
+    if $window == null then ""
+    else
+      (($window.reset_after_seconds // (($window.reset_at // now) - now)) | floor) as $seconds
+      | if $seconds < 60 then "\($seconds)s"
+        elif $seconds < 3600 then "\(($seconds / 60) | floor)m"
+        elif $seconds < 86400 then "\(($seconds / 3600) | floor)h \((($seconds % 3600) / 60) | floor)m"
+        else "\(($seconds / 86400) | floor)d \(((($seconds % 86400) / 3600) | floor))h"
+        end
+    end;
+
+  $usage.rate_limit.primary_window as $primary
+  | $usage.rate_limit.secondary_window as $secondary
+  | ($usage.individual_limit // $usage.rate_limit.individual_limit) as $monthly
+  | {
+      ok: true,
+      error: "",
+      plan: plan_label,
+      credits: (
+        if $usage.credits.balance == null then null
+        else ($usage.credits.balance | tonumber)
+        end
+      ),
+      resetCredits: (
+        if $resetCredits == null then null
+        else $resetCredits.available_count
+        end
+      ),
+      fiveHourPercentLeft: percent_left($primary),
+      weeklyPercentLeft: percent_left($secondary),
+      monthlyPercentLeft: (
+        if $monthly.remaining_percent == null then null
+        else ($monthly.remaining_percent | tonumber | floor)
+        end
+      ),
+      fiveHourUsedPercent: ($primary.used_percent // null),
+      weeklyUsedPercent: ($secondary.used_percent // null),
+      fiveHourResetAt: ($primary.reset_at // null),
+      weeklyResetAt: ($secondary.reset_at // null),
+      fiveHourWindowSeconds: ($primary.limit_window_seconds // null),
+      weeklyWindowSeconds: ($secondary.limit_window_seconds // null),
+      fiveHourReset: reset_text($primary),
+      weeklyReset: reset_text($secondary),
+      monthlyReset: (
+        if $monthly.resets_at == null and $monthly.resetsAt == null then ""
+        else reset_text({reset_at: ($monthly.resets_at // $monthly.resetsAt)})
+        end
+      ),
+      raw: ""
+    }'
