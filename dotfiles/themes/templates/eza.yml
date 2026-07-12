@@ -1,0 +1,102 @@
+colourful: true
+
+filekinds:
+  normal: {foreground: "#@foreground@"}
+  directory: {foreground: "#@secondary@", is_bold: true}
+  symlink: {foreground: "#@accent@"}
+  pipe: {foreground: "#@muted@"}
+  block_device: {foreground: "#@secondary@", is_bold: true}
+  char_device: {foreground: "#@secondary@", is_bold: true}
+  socket: {foreground: "#@accent@", is_bold: true}
+  special: {foreground: "#@secondary@"}
+  executable: {foreground: "#@success@", is_bold: true}
+  mount_point: {foreground: "#@secondary@", is_bold: true, is_underline: true}
+
+perms:
+  user_read: {foreground: "#@warning@", is_bold: true}
+  user_write: {foreground: "#@accent@", is_bold: true}
+  user_execute_file: {foreground: "#@success@", is_bold: true, is_underline: true}
+  user_execute_other: {foreground: "#@success@", is_bold: true}
+  group_read: {foreground: "#@warning@"}
+  group_write: {foreground: "#@accent@"}
+  group_execute: {foreground: "#@success@"}
+  other_read: {foreground: "#@muted@"}
+  other_write: {foreground: "#@accent@"}
+  other_execute: {foreground: "#@success@"}
+  special_user_file: {foreground: "#@accent@"}
+  special_other: {foreground: "#@muted@"}
+  attribute: {foreground: "#@muted@"}
+
+size:
+  major: {foreground: "#@success@", is_bold: true}
+  minor: {foreground: "#@success@"}
+  number_byte: {foreground: "#@foreground@", is_bold: true}
+  number_kilo: {foreground: "#@success@", is_bold: true}
+  number_mega: {foreground: "#@secondary@", is_bold: true}
+  number_giga: {foreground: "#@accent@", is_bold: true}
+  number_huge: {foreground: "#@accent@", is_bold: true}
+  unit_byte: {foreground: "#@muted@"}
+  unit_kilo: {foreground: "#@success@"}
+  unit_mega: {foreground: "#@secondary@"}
+  unit_giga: {foreground: "#@accent@"}
+  unit_huge: {foreground: "#@accent@"}
+
+users:
+  user_you: {foreground: "#@foreground@", is_bold: true}
+  user_root: {foreground: "#@accent@"}
+  user_other: {foreground: "#@foreground@"}
+  group_yours: {foreground: "#@foreground@", is_bold: true}
+  group_other: {foreground: "#@muted@"}
+  group_root: {foreground: "#@accent@"}
+
+links:
+  normal: {foreground: "#@accent@", is_bold: true}
+  multi_link_file: {foreground: "#@secondary@"}
+
+git:
+  new: {foreground: "#@success@"}
+  modified: {foreground: "#@accent@"}
+  deleted: {foreground: "#@accent@"}
+  renamed: {foreground: "#@secondary@"}
+  typechange: {foreground: "#@secondary@"}
+  ignored: {foreground: "#@muted@", is_dimmed: true}
+  conflicted: {foreground: "#@accent@", is_bold: true}
+
+git_repo:
+  branch_main: {foreground: "#@foreground@"}
+  branch_other: {foreground: "#@accent@"}
+  git_clean: {foreground: "#@success@"}
+  git_dirty: {foreground: "#@accent@"}
+
+security_context:
+  colon: {foreground: "#@muted@", is_dimmed: true}
+  user: {foreground: "#@secondary@"}
+  role: {foreground: "#@success@"}
+  typ: {foreground: "#@secondary@"}
+  range: {foreground: "#@accent@"}
+
+file_type:
+  image: {foreground: "#@accent@"}
+  video: {foreground: "#@accent@", is_bold: true}
+  music: {foreground: "#@success@"}
+  lossless: {foreground: "#@warning@", is_bold: true}
+  crypto: {foreground: "#@success@", is_bold: true}
+  document: {foreground: "#@secondary@"}
+  compressed: {foreground: "#@accent@"}
+  temp: {foreground: "#@muted@"}
+  compiled: {foreground: "#@secondary@"}
+  build: {foreground: "#@secondary@", is_bold: true, is_underline: true}
+  source: {foreground: "#@accent@"}
+
+punctuation: {foreground: "#@muted@", is_bold: true}
+date: {foreground: "#@muted@"}
+inode: {foreground: "#@accent@"}
+blocks: {foreground: "#@secondary@"}
+header: {foreground: "#@foreground@", is_underline: true}
+octal: {foreground: "#@secondary@"}
+flags: {foreground: "#@secondary@"}
+
+symlink_path: {foreground: "#@accent@"}
+control_char: {foreground: "#@accent@"}
+broken_symlink: {foreground: "#@accent@", is_bold: true}
+broken_path_overlay: {foreground: "#@muted@", is_underline: true}

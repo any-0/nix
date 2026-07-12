@@ -1,0 +1,15 @@
+{
+  "bg": "@backgroundA62@",
+  "cardBg": "@backgroundA80@",
+  "text": "#@foreground@",
+  "textMuted": "#@textMuted@",
+  "accent": "#@accent@",
+  "danger": "#@danger@",
+  "hover": "@overlayA09@",
+  "pressed": "@overlayA14@",
+  "dangerHover": "@dangerA13@",
+  "dangerPressed": "@dangerA22@",
+  "track": "@overlayA13@",
+  "trackMuted": "@overlayA08@",
+  "white": "#@bright@"
+}

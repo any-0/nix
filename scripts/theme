@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-theme_root="$(cd -- "$script_dir/../dotfiles/themes" && pwd)"
 config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/theme"
+theme_root="$config_dir/themes"
 
 current_theme() {
   basename -- "$(readlink -- "$config_dir/current")"
 }
 
 list_themes() {
-  find "$theme_root" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort
+  find -L "$theme_root" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort
 }
 
 refresh_clients() {
