@@ -19,7 +19,8 @@
       in {
         default = pkgs.mkShell {
           packages = with pkgs; [
-            # ts_ls needs the TypeScript SDK (tsserver)
+            nodejs
+            python3
             typescript
             typescript-language-server
             pyright

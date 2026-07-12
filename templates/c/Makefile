@@ -1,6 +1,7 @@
-CC := gcc
-CPPFLAGS := -Iinclude
-CFLAGS := -std=c17 -Wall -Wextra -Wpedantic -O2
+CC ?= cc
+CPPFLAGS ?= -Iinclude
+CFLAGS ?= -std=c17 -Wall -Wextra -Wpedantic -O2
+LDLIBS ?= -lm
 SRC_DIR := src
 BUILD_DIR := build
 TARGET := $(BUILD_DIR)/main
@@ -15,11 +16,9 @@ build:
 	@mkdir -p $(BUILD_DIR)
 
 $(TARGET): $(OBJ) | build
-	@$(CC) $(CFLAGS) -o $@ $^ -lm
-	@chmod +x $@
+	@$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 run: $(TARGET)
-	@test -x $(TARGET) || chmod +x $(TARGET)
 	@./$(TARGET)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | build

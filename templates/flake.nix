@@ -2,6 +2,10 @@
   description = "Julian templates";
 
   outputs = { self }: {
+    templates.arduino = {
+      path = ./arduino;
+      description = "Arduino project";
+    };
     templates.blank = {
       path = ./blank;
       description = "Blank project";
@@ -29,10 +33,6 @@
     templates.tex = {
       path = ./latex;
       description = "LaTeX project";
-    };
-    templates.arduino = {
-      path = ./arduino;
-      description = "Arduino project";
     };
   };
 }

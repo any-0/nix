@@ -1,6 +1,6 @@
 #include <stdio.h>
 
 int main(void) {
-  puts("Hello, C template!");
-  return 0;
+    puts("Hello, C template!");
+    return 0;
 }
