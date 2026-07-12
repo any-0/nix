@@ -6,10 +6,14 @@ let
   npmGlobalBinDir = "${config.home.homeDirectory}/.local/share/npm-global/bin";
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
   dotFile = path: { source = dot path; force = true; };
+  activeThemeFile = path: {
+    source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.configHome}/theme/current/${path}";
+    force = true;
+  };
   scriptPackages = import ./scripts.nix { inherit config lib pkgs; };
 in
 {
-  _module.args = { inherit dot dotFile scriptPackages; };
+  _module.args = { inherit activeThemeFile dot dotFile scriptPackages; };
   imports = [
     ./npm-tools.nix
     ./neovim-tools.nix
@@ -57,9 +61,10 @@ in
   xdg.configFile."zsh/.zshenv" = dotFile ".zshenv";
   xdg.configFile."zsh/prompt.zsh" = dotFile "zsh/prompt.zsh";
   xdg.configFile."zsh/eza-colors.zsh" = dotFile "zsh/eza-colors.zsh";
-  xdg.configFile."eza/theme.yml" = dotFile "eza/theme.yml";
+  xdg.configFile."eza/theme.yml" = activeThemeFile "eza.yml";
   xdg.configFile."kitty/kitty.conf" = dotFile "kitty/kitty.conf";
   xdg.configFile."jj/config.toml" = dotFile "jj/config.toml";
+  xdg.configFile."jj/conf.d/theme.toml" = activeThemeFile "jj.toml";
 
   xdg.configFile."nvim" = dotFile "nvim";
   home.file.".zshenv" = dotFile ".zshenv";
@@ -73,6 +78,15 @@ in
     localBinDir
     npmGlobalBinDir
   ];
+
+  home.activation.initializeTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    theme_dir="${config.xdg.configHome}/theme"
+    ${lib.getExe' pkgs.coreutils "mkdir"} -p "$theme_dir"
+
+    if [[ ! -e "$theme_dir/current" && ! -L "$theme_dir/current" ]]; then
+      ${lib.getExe' pkgs.coreutils "ln"} -s "${dotfilesDir}/themes/light" "$theme_dir/current"
+    fi
+  '';
 
   services.gpg-agent = {
     enable = true;

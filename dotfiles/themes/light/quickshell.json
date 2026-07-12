@@ -1,0 +1,15 @@
+{
+  "bg": "#9efcf9f0",
+  "cardBg": "#ccfcf9f0",
+  "text": "#171719",
+  "textMuted": "#66666c",
+  "accent": "#0074b1",
+  "danger": "#8b0000",
+  "hover": "#12000000",
+  "pressed": "#1f000000",
+  "dangerHover": "#218b0000",
+  "dangerPressed": "#388b0000",
+  "track": "#21000000",
+  "trackMuted": "#14000000",
+  "white": "#ffffff"
+}

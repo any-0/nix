@@ -112,6 +112,7 @@ binds {
     Mod+R hotkey-overlay-title="Run an Application: fuzzel" { spawn "fuzzel"; }
     Mod+E hotkey-overlay-title="Open File Manager" { spawn "dolphin"; }
     Mod+Y hotkey-overlay-title="Open Browser: zen-browser" { spawn "zen"; }
+    Mod+Shift+T hotkey-overlay-title="Switch Theme" { spawn "theme" "next"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
 
     // Audio and brightness

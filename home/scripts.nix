@@ -28,6 +28,10 @@ let
     sendToMe = mkBashScript "sendToMe" [ pkgs.coreutils pkgs.curl pkgs.zip ];
     sesh = mkBashScript "sesh" [ pkgs.coreutils pkgs.tmux ];
     switch = mkBashScript "switch" [ pkgs.coreutils pkgs.nh pkgs.nix ];
+    theme = mkBashScript "theme" (
+      [ pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.tmux ]
+      ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.glib pkgs.mako pkgs.procps pkgs.quickshell ]
+    );
     template = mkBashScript "template" [ pkgs.coreutils pkgs.direnv pkgs.git pkgs.nix ];
     view = mkBashScript "view" (
       [ pkgs.coreutils ]
