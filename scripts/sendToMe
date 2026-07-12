@@ -5,7 +5,10 @@ API_URL="https://mail-api.any-0.com/send"
 API_KEY_FILE="${HOME}/nix/secrets/sendtome_key"
 DEFAULT_TO="julianorlich1@gmail.com"
 
-die() { echo "Error: $*" >&2; exit 1; }
+die() {
+    echo "Error: $*" >&2
+    exit 1
+}
 
 usage() {
     echo "Usage: sendToMe <file|dir> [--mail=<email>]" >&2
@@ -29,44 +32,48 @@ done
 [[ ! -e "$TARGET" ]] && die "'$TARGET' not found"
 [[ ! -f "$API_KEY_FILE" ]] && die "API key not found at $API_KEY_FILE"
 
+umask 077
+TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/sendtome.XXXXXX")"
+trap 'rm -rf "$TMP_DIR"' EXIT
+
 API_KEY="$(cat "$API_KEY_FILE")"
+HEADER_FILE="$TMP_DIR/headers"
+printf 'X-API-Key: %s\n' "$API_KEY" > "$HEADER_FILE"
+unset API_KEY
+
 FILENAME="$(basename "$TARGET")"
-TMPZIP=""
-
-cleanup() { [[ -n "$TMPZIP" ]] && rm -f "$TMPZIP"; }
-trap cleanup EXIT
-
 UPLOAD_PATH="$TARGET"
 
 if [[ -d "$TARGET" ]]; then
-    TMPZIP="$(mktemp -u /tmp/sendtome_XXXXXX.zip)"
+    ARCHIVE="$TMP_DIR/${FILENAME}.zip"
     echo "Zipping '$FILENAME'..."
     TARGET_DIR="$(cd "$(dirname "$TARGET")" && pwd -P)"
-    (cd "$TARGET_DIR" && zip -qr "$TMPZIP" "$FILENAME")
+    (cd "$TARGET_DIR" && zip -qr "$ARCHIVE" "./$FILENAME")
     FILENAME="${FILENAME}.zip"
-    UPLOAD_PATH="$TMPZIP"
+    UPLOAD_PATH="$ARCHIVE"
 fi
 
 echo "Sending '$FILENAME' to $TO..."
 
-RESP_FILE="$(mktemp /tmp/sendtome_resp_XXXXXX)"
+RESP_FILE="$TMP_DIR/response"
 curl_args=(
-    -sSw "%{http_code}"
+    --silent
+    --show-error
+    --write-out "%{http_code}"
     -o "$RESP_FILE"
-    -H "X-API-Key: $API_KEY"
-    -F "file=@${UPLOAD_PATH};filename=${FILENAME}"
-    -F "to=${TO}"
+    --header "@$HEADER_FILE"
+    --form "file=@${UPLOAD_PATH};filename=${FILENAME}"
+    --form "to=${TO}"
 )
 if [[ -n "$SUBJECT" ]]; then
-    curl_args+=(-F "subject=${SUBJECT}")
+    curl_args+=(--form "subject=${SUBJECT}")
 fi
 
 HTTP_STATUS=$(curl "${curl_args[@]}" "$API_URL")
 
 BODY="$(cat "$RESP_FILE")"
-rm -f "$RESP_FILE"
 
-if [[ "$HTTP_STATUS" == "200" ]]; then
+if [[ "$HTTP_STATUS" =~ ^2 ]]; then
     echo "Sent."
 else
     die "API returned HTTP $HTTP_STATUS: $BODY"
