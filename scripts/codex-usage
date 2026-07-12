@@ -43,80 +43,114 @@ if [[ -z "$access_token" ]]; then
   exit 0
 fi
 
+umask 077
+tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/codex-usage.XXXXXX")"
+staged_credentials=""
+cleanup() {
+  rm -rf "$tmp_dir"
+  [[ -z "$staged_credentials" ]] || rm -f "$staged_credentials"
+}
+trap cleanup EXIT
+
+auth_header="$tmp_dir/auth-header"
+write_auth_header() {
+  printf 'Authorization: Bearer %s\n' "$access_token" > "$auth_header"
+  [[ -z "$account_id" ]] || printf 'ChatGPT-Account-Id: %s\n' "$account_id" >> "$auth_header"
+}
+write_auth_header
+
 refresh_access_token() {
   [[ -n "$refresh_token" ]] || return 1
 
-  local refreshed
-  refreshed="$(
-    jq -cn \
-      --arg refresh_token "$refresh_token" \
+  local new_refresh_token refresh_response
+  refresh_response="$tmp_dir/refresh-response"
+  if ! printf '%s' "$refresh_token" \
+    | jq -Rc \
       '{
         client_id: "app_EMoamEEZ73f0CkXaXp7hrann",
         grant_type: "refresh_token",
-        refresh_token: $refresh_token,
+        refresh_token: .,
         scope: "openid profile email"
       }' \
-      | curl -L --silent --show-error --fail-with-body \
-          -H "Content-Type: application/json" \
-          --data @- \
-          https://auth.openai.com/oauth/token
-  )" || return 1
+    | curl -L --silent --show-error --fail-with-body \
+        -H "Content-Type: application/json" \
+        --data @- \
+        --output "$refresh_response" \
+        https://auth.openai.com/oauth/token; then
+    return 1
+  fi
 
-  access_token="$(jq -r '.access_token // empty' <<<"$refreshed")"
-  refresh_token="$(jq -r '.refresh_token // empty' <<<"$refreshed")"
+  access_token="$(jq -r '.access_token // empty' "$refresh_response")"
   [[ -n "$access_token" ]] || return 1
+  new_refresh_token="$(jq -r '.refresh_token // empty' "$refresh_response")"
+  [[ -z "$new_refresh_token" ]] || refresh_token="$new_refresh_token"
+  write_auth_header
 
-  local staged
-  staged="$(mktemp "$codex_home/.auth.json.quickshell.XXXXXX")"
-  jq \
-    --arg access_token "$access_token" \
-    --arg refresh_token "$refresh_token" \
-    --arg id_token "$(jq -r '.id_token // empty' <<<"$refreshed")" \
-    --arg last_refresh "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    '.tokens.access_token = $access_token
-      | .tokens.refresh_token = $refresh_token
-      | (if $id_token == "" then . else .tokens.id_token = $id_token end)
-      | .last_refresh = $last_refresh' \
-    "$auth_file" > "$staged"
-  chmod 600 "$staged"
-  mv "$staged" "$auth_file"
+  staged_credentials="$(mktemp "$codex_home/.auth.json.quickshell.XXXXXX")"
+  jq --slurpfile refreshed "$refresh_response" \
+    '($refreshed[0]) as $new
+      | .tokens.access_token = $new.access_token
+      | (if ($new.refresh_token // "") == "" then .
+         else .tokens.refresh_token = $new.refresh_token end)
+      | (if ($new.id_token // "") == "" then .
+         else .tokens.id_token = $new.id_token end)
+      | .last_refresh = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))' \
+    "$auth_file" > "$staged_credentials"
+  chmod 600 "$staged_credentials"
+  mv "$staged_credentials" "$auth_file"
+  staged_credentials=""
 }
 
 fetch_usage() {
-  local status_file body_file status
-  status_file="$(mktemp)"
-  body_file="$(mktemp)"
+  local body_file status
+  body_file="$tmp_dir/usage-body"
 
-  curl -L --silent --show-error \
+  if ! status="$(curl -L --silent --show-error \
     -w '%{http_code}' \
     -o "$body_file" \
-    -H "Authorization: Bearer $access_token" \
+    -H "@$auth_header" \
     -H "Accept: application/json" \
     -H "User-Agent: quickshell-codex-usage" \
-    ${account_id:+-H "ChatGPT-Account-Id: $account_id"} \
-    "$usage_url" > "$status_file" || true
-
-  status="$(cat "$status_file")"
-  rm -f "$status_file"
+    "$usage_url")"; then
+    json_error "Codex usage API request failed"
+    return 0
+  fi
 
   if [[ "$status" == "401" || "$status" == "403" ]]; then
-    rm -f "$body_file"
     return 2
   fi
 
   if [[ ! "$status" =~ ^2 ]]; then
     local body
     body="$(cat "$body_file")"
-    rm -f "$body_file"
     json_error "Codex usage API error $status: $body"
     exit 0
   fi
 
   cat "$body_file"
-  rm -f "$body_file"
 }
 
-usage_json="$(fetch_usage || rc=$?; if [[ "${rc:-0}" == "2" ]]; then refresh_access_token && fetch_usage || json_error "Codex OAuth token expired"; fi)"
+load_usage() {
+  local rc
+
+  if usage_json="$(fetch_usage)"; then
+    return
+  else
+    rc=$?
+  fi
+
+  if [[ "$rc" != "2" ]] || ! refresh_access_token; then
+    usage_json="$(json_error "Codex OAuth token expired")"
+    return
+  fi
+
+  if ! usage_json="$(fetch_usage)"; then
+    usage_json="$(json_error "Codex OAuth token expired")"
+  fi
+}
+
+usage_json=""
+load_usage
 
 if ! jq -e . >/dev/null 2>&1 <<<"$usage_json"; then
   printf '%s\n' "$usage_json"
@@ -130,12 +164,11 @@ fi
 
 reset_credits_json="$(
   curl -L --silent --show-error --fail-with-body \
-    -H "Authorization: Bearer $access_token" \
+    -H "@$auth_header" \
     -H "Accept: application/json" \
     -H "User-Agent: quickshell-codex-usage" \
     -H "OpenAI-Beta: codex-1" \
     -H "originator: Codex Desktop" \
-    ${account_id:+-H "ChatGPT-Account-ID: $account_id"} \
     "$reset_credits_url" 2>/dev/null || true
 )"
 
