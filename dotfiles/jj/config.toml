@@ -8,6 +8,9 @@ email = "julianorlich1@gmail.com"
 color = "auto"
 editor = "nvim"
 
+[revsets]
+log = "::"
+
 [colors]
 # anyscheme for jj: light-background, high-contrast, not washed out.
 # Based on dotfiles/nvim/colors/anyscheme.lua.
