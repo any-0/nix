@@ -124,7 +124,7 @@ fetch_usage() {
     local body
     body="$(cat "$body_file")"
     json_error "Codex usage API error $status: $body"
-    exit 0
+    return 0
   fi
 
   cat "$body_file"
