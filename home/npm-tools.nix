@@ -30,7 +30,10 @@ in
     text = ''
       #!/bin/sh
       export PATH="${pkgs.nodejs}/bin:$PATH"
-      exec "${npmGlobalDir}/bin/codex" -c 'tui.keymap.editor.insert_newline=["ctrl-j","shift-enter","alt-enter"]' "$@"
+      exec "${npmGlobalDir}/bin/codex" \
+        -c 'allow_login_shell=false' \
+        -c 'tui.keymap.editor.insert_newline=["ctrl-j","shift-enter","alt-enter"]' \
+        "$@"
     '';
   };
 
@@ -39,6 +42,7 @@ in
     text = ''
       #!/bin/sh
       export PATH="${pkgs.nodejs}/bin:$PATH"
+      export CLAUDE_BASH_NO_LOGIN=1
       exec "${npmGlobalDir}/bin/claude" "$@"
     '';
   };
