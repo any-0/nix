@@ -38,6 +38,7 @@ activate_theme() {
   mkdir -p "$config_dir"
   trap 'rm -f "$next_link"' EXIT
   ln -s "$theme_dir" "$next_link"
+  # mv -T is GNU-only; the nix wrapper guarantees coreutils on PATH.
   mv -Tf "$next_link" "$config_dir/current"
   trap - EXIT
 
