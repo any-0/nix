@@ -4,6 +4,7 @@ let
   dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
   localBinDir = "${config.home.homeDirectory}/.local/bin";
   npmGlobalBinDir = "${config.home.homeDirectory}/.local/share/npm-global/bin";
+  themeRoot = import ../dotfiles/themes { inherit lib pkgs; };
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
   dotFile = path: { source = dot path; force = true; };
   activeThemeFile = path: {
@@ -65,6 +66,7 @@ in
   xdg.configFile."kitty/kitty.conf" = dotFile "kitty/kitty.conf";
   xdg.configFile."jj/config.toml" = dotFile "jj/config.toml";
   xdg.configFile."jj/conf.d/theme.toml" = activeThemeFile "jj.toml";
+  xdg.configFile."theme/themes".source = themeRoot;
 
   xdg.configFile."nvim" = dotFile "nvim";
   home.file.".zshenv" = dotFile ".zshenv";
@@ -83,9 +85,11 @@ in
     theme_dir="${config.xdg.configHome}/theme"
     ${lib.getExe' pkgs.coreutils "mkdir"} -p "$theme_dir"
 
-    if [[ ! -e "$theme_dir/current" && ! -L "$theme_dir/current" ]]; then
-      ${lib.getExe' pkgs.coreutils "ln"} -s "${dotfilesDir}/themes/light" "$theme_dir/current"
+    theme_name=light
+    if [[ -L "$theme_dir/current" ]]; then
+      theme_name="$(${lib.getExe' pkgs.coreutils "basename"} "$(${lib.getExe' pkgs.coreutils "readlink"} "$theme_dir/current")")"
     fi
+    ${lib.getExe' pkgs.coreutils "ln"} -sfn "$theme_dir/themes/$theme_name" "$theme_dir/current"
   '';
 
   services.gpg-agent = {

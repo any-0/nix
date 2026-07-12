@@ -1,0 +1,174 @@
+[colors]
+# anyscheme for jj: dark-background, high-contrast, not washed out.
+# Based on dotfiles/nvim/colors/anyscheme.lua.
+
+# Palette:
+# fg          #@foreground@
+# secondary   #@secondary@
+# accent    #@accent@
+# success     #@success@
+# secondary   #@secondary@
+# warning  #@warning@
+# comment     #@muted@
+# ui_gray     #@textMuted@  (darkened from nvim's #@surfaceStrong@ for terminal readability)
+# error       #@danger@
+# warn        #@warning@
+# diff_add    #@diffAdd@
+# diff_delete #@diffDelete@
+# diff_change #@diffChange@
+
+# Diagnostics / command output
+error = { fg = "#@danger@", bold = true }
+error_source = "#@foreground@"
+"error heading" = { fg = "#@danger@", bold = true }
+"error_source heading" = { fg = "#@foreground@", bold = true }
+warning = { fg = "#@warning@", bold = true }
+"warning heading" = { fg = "#@warning@", bold = true }
+hint = "#@accent@"
+"hint heading" = { fg = "#@accent@", bold = true }
+
+# IDs. jj splits short IDs into prefix/rest labels, so color those explicitly.
+commit_id = "#@accent@"
+change_id = "#@secondary@"
+"commit_id prefix" = { fg = "#@foreground@", bold = true }
+"commit_id rest" = "#@accent@"
+"commit_id shortest prefix" = { fg = "#@foreground@", bold = true }
+"commit_id shortest rest" = "#@accent@"
+"change_id prefix" = { fg = "#@secondaryStrong@", bold = true }
+"change_id rest" = "#@secondary@"
+"change_id shortest prefix" = { fg = "#@secondaryStrong@", bold = true }
+"change_id shortest rest" = "#@secondary@"
+prefix = { bold = true }
+rest = "#@textMuted@"
+change_offset = { fg = "#@warning@", bold = true }
+"hidden prefix" = "#@muted@"
+
+# Metadata
+# Author/email are intentionally neutral, not warning-yellow.
+author = "#@textMuted@"
+"author email" = "#@textMuted@"
+"author email local" = "#@textMuted@"
+"author email domain" = "#@textMuted@"
+committer = "#@textMuted@"
+"committer email" = "#@textMuted@"
+"committer email local" = "#@textMuted@"
+"committer email domain" = "#@textMuted@"
+timestamp = "#@secondary@"
+separator = "#@muted@"
+elided = "#@muted@"
+
+# Refs / bookmarks / repo state
+bookmark = "#@secondary@"
+bookmarks = "#@secondary@"
+local_bookmarks = "#@secondary@"
+remote_bookmarks = "#@accent@"
+tag = "#@warning@"
+tags = "#@warning@"
+git_ref = "#@success@"
+git_refs = "#@success@"
+git_head = { fg = "#@success@", bold = true }
+working_copies = "#@success@"
+empty = "#@success@"
+root = "#@success@"
+placeholder = { fg = "#@muted@", italic = true }
+"description placeholder" = { fg = "#@muted@", italic = true }
+"empty description placeholder" = { fg = "#@muted@", italic = true }
+divergent = "#@warning@"
+"mutable divergent" = { fg = "#@danger@", bold = true }
+"mutable divergent change_id" = { fg = "#@danger@", bold = true }
+conflict = { fg = "#@danger@", bold = true }
+conflict_description = "#@warning@"
+"conflict_description difficult" = "#@danger@"
+
+# Working-copy variants
+working_copy = { fg = "#@foreground@", bold = true }
+"working_copy commit_id" = { fg = "#@accent@", bold = true }
+"working_copy commit_id prefix" = { fg = "#@foreground@", bold = true }
+"working_copy commit_id rest" = "#@accent@"
+"working_copy commit_id shortest prefix" = { fg = "#@foreground@", bold = true }
+"working_copy commit_id shortest rest" = "#@accent@"
+"working_copy change_id" = { fg = "#@secondary@", bold = true }
+"working_copy change_id prefix" = { fg = "#@secondaryStrong@", bold = true }
+"working_copy change_id rest" = "#@secondary@"
+"working_copy change_id shortest prefix" = { fg = "#@secondaryStrong@", bold = true }
+"working_copy change_id shortest rest" = "#@secondary@"
+"working_copy author" = "#@textMuted@"
+"working_copy author email" = "#@textMuted@"
+"working_copy author email local" = "#@textMuted@"
+"working_copy author email domain" = "#@textMuted@"
+"working_copy committer" = "#@textMuted@"
+"working_copy timestamp" = { fg = "#@secondary@", bold = true }
+"working_copy working_copies" = { fg = "#@success@", bold = true }
+"working_copy bookmark" = { fg = "#@secondary@", bold = true }
+"working_copy bookmarks" = { fg = "#@secondary@", bold = true }
+"working_copy local_bookmarks" = { fg = "#@secondary@", bold = true }
+"working_copy remote_bookmarks" = { fg = "#@accent@", bold = true }
+"working_copy tag" = { fg = "#@warning@", bold = true }
+"working_copy tags" = { fg = "#@warning@", bold = true }
+"working_copy git_ref" = { fg = "#@success@", bold = true }
+"working_copy git_refs" = { fg = "#@success@", bold = true }
+"working_copy divergent" = { fg = "#@warning@", bold = true }
+"working_copy mutable divergent" = { fg = "#@danger@", bold = true }
+"working_copy mutable divergent change_id" = { fg = "#@danger@", bold = true }
+"working_copy conflict" = { fg = "#@danger@", bold = true }
+"working_copy empty" = { fg = "#@success@", bold = true }
+"working_copy placeholder" = { fg = "#@muted@", bold = false, italic = true }
+"working_copy description placeholder" = { fg = "#@muted@", bold = false, italic = true }
+"working_copy empty description placeholder" = { fg = "#@muted@", bold = false, italic = true }
+
+# Status / summary / diffs
+"diff header" = "#@warning@"
+"diff file_header" = { fg = "#@accent@", bold = true }
+"diff hunk_header" = "#@secondary@"
+"diff context" = "#@foreground@"
+"diff context line_number" = { fg = "#@muted@", dim = false }
+"diff added" = { fg = "#@success@" }
+"diff removed" = { fg = "#@danger@" }
+"diff modified" = { fg = "#@accent@", bold = true }
+"diff untracked" = "#@secondary@"
+"diff renamed" = "#@secondary@"
+"diff copied" = "#@success@"
+"diff token" = { underline = false }
+"diff added token" = { fg = "#@foreground@", bg = "#@diffAdd@", underline = false }
+"diff removed token" = { fg = "#@foreground@", bg = "#@diffDelete@", underline = false }
+"diff modified token" = { fg = "#@foreground@", bg = "#@diffChange@", underline = false }
+"diff empty" = "#@muted@"
+"diff binary" = "#@secondary@"
+"diff access-denied" = { fg = "#@onColor@", bg = "#@danger@", bold = true }
+
+# Operation log
+"operation id" = "#@accent@"
+"operation user" = "#@textMuted@"
+"operation time" = "#@secondary@"
+"operation tags" = "#@secondary@"
+"operation current_operation" = { fg = "#@foreground@", bold = true }
+"operation current_operation id" = { fg = "#@accent@", bold = true }
+"operation current_operation user" = { fg = "#@textMuted@", bold = true }
+"operation current_operation time" = { fg = "#@secondary@", bold = true }
+"operation current_operation tags" = { fg = "#@secondary@", bold = true }
+
+# Graph nodes
+"node working_copy" = { fg = "#@success@", bold = true }
+"node current_operation" = { fg = "#@success@", bold = true }
+"node immutable" = { fg = "#@accent@", bold = true }
+"node conflicted" = { fg = "#@danger@", bold = true }
+"node elided" = "#@muted@"
+
+# Config list
+"config_list name" = "#@secondary@"
+"config_list value" = "#@warning@"
+"config_list source" = "#@accent@"
+"config_list path" = "#@secondary@"
+"config_list overridden" = "#@muted@"
+"config_list overridden name" = "#@muted@"
+"config_list overridden value" = "#@muted@"
+"config_list overridden source" = "#@muted@"
+"config_list overridden path" = "#@muted@"
+
+# Signatures
+"signature display" = "#@warning@"
+"signature key" = "#@accent@"
+"signature status good" = "#@success@"
+"signature status unknown" = "#@warning@"
+"signature status bad" = "#@danger@"
+"signature status invalid" = "#@danger@"
