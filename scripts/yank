@@ -34,15 +34,10 @@ if command -v xclip >/dev/null 2>&1; then
   exit 0
 fi
 
-if command -v wl-clip >/dev/null 2>&1; then
-  wl-clip <"$tmp"
-  exit 0
-fi
-
 if command -v clip.exe >/dev/null 2>&1; then
   clip.exe <"$tmp"
   exit 0
 fi
 
-echo "yank: no usable clipboard command found (tried wl-copy, pbcopy, xclip, wl-clip, clip.exe)" >&2
+echo "yank: no usable clipboard command found (tried wl-copy, pbcopy, xclip, clip.exe)" >&2
 exit 127
