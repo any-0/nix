@@ -21,6 +21,27 @@
     diffChange = "4a4029";
   };
 
+  # Twilight aubergine: periwinkle, orchid, sage, and honey on dark plum.
+  dusk = {
+    variant = "dark";
+
+    background = "241e2d";
+    foreground = "ece7f2";
+    surface = "2e2739";
+    surfaceRaised = "4a4158";
+    muted = "968aa6";
+
+    accent = "9fa8f2";
+    secondary = "cba3d2";
+    success = "8fd0a0";
+    warning = "e3b46b";
+    danger = "f28ca0";
+    selection = "3f3552";
+    diffAdd = "2c4434";
+    diffDelete = "4d2b38";
+    diffChange = "4a4030";
+  };
+
   light = {
     variant = "light";
 
