@@ -13,9 +13,9 @@ list_themes() {
 }
 
 refresh_clients() {
-  if [[ "$(uname -s)" == Linux ]]; then
-    pkill -USR1 -u "$UID" -x kitty 2>/dev/null || true
+  pkill -USR1 -x kitty 2>/dev/null || true
 
+  if [[ "$(uname -s)" == Linux ]]; then
     if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
       gsettings set org.gnome.desktop.interface color-scheme "$(<"$config_dir/current/color-scheme")"
     fi
