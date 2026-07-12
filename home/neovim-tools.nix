@@ -46,6 +46,16 @@ in
   ];
 
   programs.neovim.plugins = [
+    pkgs.vimPlugins.cmp-buffer
+    pkgs.vimPlugins.cmp-nvim-lsp
+    pkgs.vimPlugins.cmp-path
+    pkgs.vimPlugins.gitsigns-nvim
+    pkgs.vimPlugins.lualine-nvim
+    pkgs.vimPlugins.nvim-autopairs
+    pkgs.vimPlugins.nvim-cmp
+    pkgs.vimPlugins.nvim-lspconfig
+    pkgs.vimPlugins.nvim-web-devicons
     nvimTreesitter
+    pkgs.vimPlugins.vim-easymotion
   ];
 }

@@ -71,236 +71,212 @@ vim.keymap.set("n", "<Home>", function()
 end)
 
 
--- Lazy
+-- Plugins
 
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-    vim.fn.system({
-        "git", "clone", "--filter=blob:none",
-        "https://github.com/folke/lazy.nvim.git",
-        lazypath,
-    })
-end
-vim.opt.rtp:prepend(lazypath)
+vim.g.EasyMotion_keys = "asdghklqwertzuiopxycvbnmfj"
+vim.keymap.set({ "n", "x", "o" }, "<Space>", "<Plug>(easymotion-s)", { remap = true })
 
--- Lazy plugins
-
-require("lazy").setup({
-    {
-        "easymotion/vim-easymotion",
-        init = function()
-            vim.g.EasyMotion_keys = "asdghklqwertzuiopxycvbnmfj"
-            vim.keymap.set({ "n", "x", "o" }, "<Space>", "<Plug>(easymotion-s)", { remap = true })
-        end,
+require("lualine").setup({
+    options = {
+        icons_enabled = true,
+        theme = vim.g.eucalyptus_lualine_theme,
     },
-    {
-        "nvim-lualine/lualine.nvim",
-        dependencies = { "nvim-tree/nvim-web-devicons" },
-        config = function()
-            require("lualine").setup({
-                options = {
-                    icons_enabled = true,
-                    theme = vim.g.eucalyptus_lualine_theme
-                },
-            })
-        end,
+})
+
+require("gitsigns").setup({
+    signs = {
+        add = { text = "+" },
+        change = { text = "~" },
+        delete = { text = "-" },
+        topdelete = { text = "-" },
+        changedelete = { text = "±" },
     },
-    {
-        "lewis6991/gitsigns.nvim",
-        config = function()
-            require("gitsigns").setup({
-                signs = {
-                    add          = { text = "+" },
-                    change       = { text = "~" },
-                    delete       = { text = "-" },
-                    topdelete    = { text = "-" },
-                    changedelete = { text = "±" },
+    on_attach = function(bufnr)
+        local gs = require("gitsigns")
+        local opts = { buffer = bufnr }
+
+        vim.keymap.set("n", "]h", gs.next_hunk, opts)
+        vim.keymap.set("n", "[h", gs.prev_hunk, opts)
+        vim.keymap.set("n", "<leader>hp", gs.preview_hunk, opts)
+        vim.keymap.set("n", "<leader>hr", gs.reset_hunk, opts)
+        vim.keymap.set("n", "<leader>hb", gs.blame_line, opts)
+    end,
+})
+
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+vim.diagnostic.config({
+    virtual_text = false,
+    signs = true,
+    underline = true,
+    update_in_insert = false,
+    severity_sort = true,
+    float = { border = "rounded", source = true },
+})
+
+vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "Red" })
+vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn", { undercurl = true, sp = "Orange" })
+vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo", { undercurl = true, sp = "LightBlue" })
+vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint", { undercurl = true, sp = "LightGrey" })
+
+vim.lsp.config("pyright", {
+    cmd = { "pyright-langserver", "--stdio" },
+    capabilities = capabilities,
+    settings = {
+        python = {
+            analysis = {
+                typeCheckingMode = "basic",
+                diagnosticSeverityOverrides = {
+                    reportMissingImports = "warning",
+                    reportMissingModuleSource = "none",
+                    reportOptionalMemberAccess = "none",
+                    reportArgumentType = "warning",
+                    reportAttributeAccessIssue = "warning",
                 },
-                on_attach = function(bufnr)
-                    local gs = package.loaded.gitsigns
-                    local opts = { buffer = bufnr }
-
-                    vim.keymap.set("n", "]h", gs.next_hunk, opts)
-                    vim.keymap.set("n", "[h", gs.prev_hunk, opts)
-                    vim.keymap.set("n", "<leader>hp", gs.preview_hunk, opts)
-                    vim.keymap.set("n", "<leader>hr", gs.reset_hunk, opts)
-                    vim.keymap.set("n", "<leader>hb", gs.blame_line, opts)
-                end,
-            })
-        end,
-    },
-    {
-        "neovim/nvim-lspconfig",
-        dependencies = { "hrsh7th/cmp-nvim-lsp" },
-        config = function()
-            local capabilities = require("cmp_nvim_lsp").default_capabilities()
-
-            vim.diagnostic.config({
-                virtual_text = false,
-                signs = true,
-                underline = true,
-                update_in_insert = false,
-                severity_sort = true,
-                float = { border = "rounded", source = true },
-            })
-
-            -- Force undercurls for diagnostics
-            vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "Red" })
-            vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn", { undercurl = true, sp = "Orange" })
-            vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo", { undercurl = true, sp = "LightBlue" })
-            vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint", { undercurl = true, sp = "LightGrey" })
-
-            vim.lsp.config("pyright", {
-                cmd = { "pyright-langserver", "--stdio" },
-                capabilities = capabilities,
-                settings = {
-                    python = {
-                        analysis = {
-                            typeCheckingMode = "basic",
-                            diagnosticSeverityOverrides = {
-                                reportMissingImports = "warning",
-                                reportMissingModuleSource = "none",
-                                reportOptionalMemberAccess = "none",
-                                reportArgumentType = "warning",
-                                reportAttributeAccessIssue = "warning",
-                            },
-                        },
-                    },
-                },
-            })
-
-            vim.lsp.config("clangd", {
-                cmd = { "clangd" },
-                capabilities = capabilities,
-                filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
-            })
-            vim.lsp.config("arduino_language_server", {
-                cmd = {
-                    "arduino-language-server",
-                    "-cli", "arduino-cli",
-                    "-cli-config", os.getenv("ARDUINO_CLI_CONFIG") or (vim.fn.getcwd() .. "/arduino-cli.yaml"),
-                    "-clangd", "clangd",
-                    "-fqbn", os.getenv("ARDUINO_FQBN") or "arduino:avr:uno",
-                },
-                capabilities = capabilities,
-            })
-            vim.lsp.config("ts_ls", {
-                cmd = { "typescript-language-server", "--stdio" },
-                capabilities = capabilities,
-            })
-            vim.lsp.config("rust_analyzer", {
-                cmd = { "rust-analyzer" },
-                capabilities = capabilities,
-            })
-            vim.lsp.config("dockerls", {
-                cmd = { "docker-langserver", "--stdio" },
-                capabilities = capabilities,
-            })
-            vim.lsp.config("docker_compose_language_service", {
-                cmd = { "docker-compose-langserver", "--stdio" },
-                capabilities = capabilities,
-            })
-            vim.lsp.config("bashls", {
-                cmd = { "bash-language-server", "start" },
-                capabilities = capabilities,
-            })
-            vim.lsp.config("texlab", {
-                cmd = { "texlab" },
-                capabilities = capabilities,
-            })
-
-            vim.lsp.enable("pyright")
-            vim.lsp.enable("clangd")
-            vim.lsp.enable("arduino_language_server")
-            vim.lsp.enable("ts_ls")
-            vim.lsp.enable("rust_analyzer")
-            vim.lsp.enable("dockerls")
-            vim.lsp.enable("docker_compose_language_service")
-            vim.lsp.enable("bashls")
-            vim.lsp.enable("texlab")
-
-            vim.api.nvim_create_autocmd("LspAttach", {
-                callback = function(ev)
-                    local opts = { buffer = ev.buf }
-                    vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-                    vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-                    vim.keymap.set("n", "gl", vim.diagnostic.open_float, opts)
-                    vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
-                    vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
-                    vim.keymap.set("n", "gs", "<cmd>LspClangdSwitchSourceHeader<CR>", opts)
-                end,
-            })
-        end,
-    },
-
-    -- Completion
-    {
-        "hrsh7th/nvim-cmp",
-        dependencies = {
-            "hrsh7th/cmp-nvim-lsp",
-            "hrsh7th/cmp-buffer",
-            "hrsh7th/cmp-path",
+            },
         },
-        config = function()
-            local cmp = require("cmp")
-            cmp.setup({
-                window = {
-                    completion = {
-                        side_padding = 0,
-                        scrollbar = false,
-                    },
-                    documentation = {
-                        max_width = 50,
-                        max_height = 12,
-                    },
-                },
-                formatting = {
-                    fields = { "abbr" },
-                    format = function(_, item)
-                        local max = 28
-                        if vim.fn.strchars(item.abbr) > max then
-                            item.abbr = vim.fn.strcharpart(item.abbr, 0, max - 1) .. "…"
-                        end
-                        return item
-                    end,
-                },
-                mapping = cmp.mapping.preset.insert({
-                    ["<C-Space>"] = cmp.mapping.complete(),
-                    ["<CR>"] = cmp.mapping.confirm({ select = false }),
-                    ["<Tab>"] = cmp.mapping(function(fallback)
-                        if cmp.visible() then
-                            cmp.select_next_item()
-                        else
-                            fallback()
-                        end
-                    end, { "i", "s" }),
-                    ["<S-Tab>"] = cmp.mapping(function(fallback)
-                        if cmp.visible() then
-                            cmp.select_prev_item()
-                        else
-                            fallback()
-                        end
-                    end, { "i", "s" }),
-                }),
-                sources = {
-                    { name = "nvim_lsp" },
-                    { name = "buffer" },
-                    { name = "path" },
-                },
-            })
+    },
+})
+
+vim.lsp.config("clangd", {
+    cmd = { "clangd" },
+    capabilities = capabilities,
+    filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+})
+vim.lsp.config("arduino_language_server", {
+    cmd = {
+        "arduino-language-server",
+        "-cli",
+        "arduino-cli",
+        "-cli-config",
+        os.getenv("ARDUINO_CLI_CONFIG") or (vim.fn.getcwd() .. "/arduino-cli.yaml"),
+        "-clangd",
+        "clangd",
+        "-fqbn",
+        os.getenv("ARDUINO_FQBN") or "arduino:avr:uno",
+    },
+    capabilities = capabilities,
+})
+vim.lsp.config("ts_ls", {
+    cmd = { "typescript-language-server", "--stdio" },
+    capabilities = capabilities,
+})
+vim.lsp.config("rust_analyzer", {
+    cmd = { "rust-analyzer" },
+    capabilities = capabilities,
+})
+vim.lsp.config("dockerls", {
+    cmd = { "docker-langserver", "--stdio" },
+    capabilities = capabilities,
+})
+vim.lsp.config("docker_compose_language_service", {
+    cmd = { "docker-compose-langserver", "--stdio" },
+    capabilities = capabilities,
+})
+vim.lsp.config("bashls", {
+    cmd = { "bash-language-server", "start" },
+    capabilities = capabilities,
+})
+vim.lsp.config("texlab", {
+    cmd = { "texlab" },
+    capabilities = capabilities,
+})
+vim.lsp.config("nil_ls", {
+    cmd = { "nil" },
+    capabilities = capabilities,
+})
+vim.lsp.config("lua_ls", {
+    cmd = { "lua-language-server" },
+    capabilities = capabilities,
+    settings = {
+        Lua = {
+            diagnostics = {
+                globals = { "vim" },
+            },
+        },
+    },
+})
+
+vim.lsp.enable({
+    "pyright",
+    "clangd",
+    "arduino_language_server",
+    "ts_ls",
+    "rust_analyzer",
+    "dockerls",
+    "docker_compose_language_service",
+    "bashls",
+    "texlab",
+    "nil_ls",
+    "lua_ls",
+})
+
+vim.api.nvim_create_autocmd("LspAttach", {
+    callback = function(ev)
+        local opts = { buffer = ev.buf }
+        vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+        vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+        vim.keymap.set("n", "gl", vim.diagnostic.open_float, opts)
+        vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
+        vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
+
+        local client = vim.lsp.get_client_by_id(ev.data.client_id)
+        if client and client.name == "clangd" then
+            vim.keymap.set("n", "gs", "<cmd>LspClangdSwitchSourceHeader<CR>", opts)
+        end
+    end,
+})
+
+local cmp = require("cmp")
+cmp.setup({
+    window = {
+        completion = {
+            side_padding = 0,
+            scrollbar = false,
+        },
+        documentation = {
+            max_width = 50,
+            max_height = 12,
+        },
+    },
+    formatting = {
+        fields = { "abbr" },
+        format = function(_, item)
+            local max = 28
+            if vim.fn.strchars(item.abbr) > max then
+                item.abbr = vim.fn.strcharpart(item.abbr, 0, max - 1) .. "…"
+            end
+            return item
         end,
     },
-    {
-        "windwp/nvim-autopairs",
-        event = "InsertEnter",
-        config = function()
-            require("nvim-autopairs").setup()
-            local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-            local cmp = require("cmp")
-            cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
-        end,
+    mapping = cmp.mapping.preset.insert({
+        ["<C-Space>"] = cmp.mapping.complete(),
+        ["<CR>"] = cmp.mapping.confirm({ select = false }),
+        ["<Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+                cmp.select_next_item()
+            else
+                fallback()
+            end
+        end, { "i", "s" }),
+        ["<S-Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+                cmp.select_prev_item()
+            else
+                fallback()
+            end
+        end, { "i", "s" }),
+    }),
+    sources = {
+        { name = "nvim_lsp" },
+        { name = "buffer" },
+        { name = "path" },
     },
-}, { lockfile = vim.fn.stdpath("data") .. "/lazy/lazy-lock.json", })
+})
+
+require("nvim-autopairs").setup()
+local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
 
 local ts_languages = {
     "arduino", "bash", "c", "cpp", "css",
@@ -340,7 +316,7 @@ vim.keymap.set('n', '<End>', function()
   local row    = math.floor(vim.o.lines - height - 4)
   local col    = math.floor(vim.o.columns - width)
   local buf = vim.api.nvim_create_buf(false, true)
-  local win = vim.api.nvim_open_win(buf, true, {
+  vim.api.nvim_open_win(buf, true, {
     relative = "editor",
     row = row,
     col = col,
@@ -353,8 +329,6 @@ vim.keymap.set('n', '<End>', function()
   vim.cmd("startinsert")
   vim.keymap.set("t", "<Esc>", "<C-\\><C-n>:close<CR>", { buffer = buf })
 end, { desc = "Run RUN_CMD in popup" })
-
--- require("word_anchors").setup()
 
 -- Rename tmux window to current file
 if os.getenv("TMUX") then
