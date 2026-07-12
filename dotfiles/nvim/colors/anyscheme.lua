@@ -76,6 +76,10 @@ local highlights = {
     PmenuSel     = { fg = "#FFFFFF", bg = c.cyan_ink },
     Search       = { fg = "#FFFFFF", bg = c.aqua_dark },
     IncSearch    = { fg = "#FFFFFF", bg = c.teal_deep },
+    EasyMotionTarget        = { fg = "#FFFFFF", bg = c.teal_deep, bold = true },
+    EasyMotionTarget2First  = { fg = "#FFFFFF", bg = c.cyan_ink, bold = true },
+    EasyMotionTarget2Second = { fg = "#FFFFFF", bg = c.emerald, bold = true },
+    EasyMotionShade         = { fg = c.comment },
     MatchParen   = { fg = c.emerald, bold = true, underline = true },
 
     Comment      = { fg = c.comment, italic = true },
