@@ -64,8 +64,6 @@ in
   xdg.configFile."nvim" = dotFile "nvim";
   home.file.".zshenv" = dotFile ".zshenv";
   home.file.".codex/AGENTS.md" = dotFile "codex/AGENTS.md";
-  home.file.".pi/agent/keybindings.json" = dotFile "pi/keybindings.json";
-  home.file.".pi/agent/extensions" = dotFile "pi/extensions";
 
   home.sessionVariables = {
     EZA_CONFIG_DIR = "${config.xdg.configHome}/eza";
