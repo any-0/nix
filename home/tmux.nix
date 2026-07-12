@@ -133,7 +133,7 @@ let
 
     sleep 1
     if [[ -e "$resurrect_dir/last" ]]; then
-      "$restore_script" >/dev/null 2>&1
+      "$restore_script" >/dev/null 2>&1 || true
     fi
 
     while tmux info >/dev/null 2>&1; do
@@ -143,7 +143,7 @@ let
       sleep "$sleep_for"
 
       tmux info >/dev/null 2>&1 || exit 0
-      "$save_script" quiet >/dev/null 2>&1
+      "$save_script" quiet >/dev/null 2>&1 || true
     done
   '';
 
