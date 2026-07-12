@@ -1,9 +1,10 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   home.packages = with pkgs; [
     coreutils
     wakeonlan
+    yabai
   ];
 
   home.sessionPath = [
@@ -95,5 +96,25 @@
 
   services.gpg-agent = {
     pinentry.package = pkgs.pinentry_mac;
+  };
+
+  xdg.configFile."yabai/yabairc" = {
+    executable = true;
+    text = ''
+      #!/usr/bin/env sh
+      ${lib.getExe pkgs.yabai} -m config focus_follows_mouse autofocus
+    '';
+  };
+
+  launchd.agents.yabai = {
+    enable = true;
+    config = {
+      ProgramArguments = [ (lib.getExe pkgs.yabai) ];
+      ProcessType = "Interactive";
+      KeepAlive = true;
+      RunAtLoad = true;
+      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/yabai.err.log";
+      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/yabai.out.log";
+    };
   };
 }
