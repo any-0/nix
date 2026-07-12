@@ -1,5 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "view is deprecated and is now called wew." >&2
-exec "$(dirname "$0")/wew" "$@"
+if [[ $# -ne 1 ]]; then
+  echo "usage: view <file>" >&2
+  exit 1
+fi
+
+case "$(uname -s)" in
+  Darwin)
+    nohup open "$1" >/dev/null 2>&1 &
+    ;;
+  Linux)
+    nohup xdg-open "$1" >/dev/null 2>&1 &
+    ;;
+  *)
+    echo "unsupported platform: $(uname -s)" >&2
+    exit 1
+    ;;
+esac
