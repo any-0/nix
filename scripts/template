@@ -21,6 +21,4 @@ TMP_FILE="$(mktemp)"
 } > "$TMP_FILE"
 mv "$TMP_FILE" .dev/flake.nix
 
-if command -v direnv >/dev/null 2>&1; then
-  direnv allow
-fi
+direnv allow

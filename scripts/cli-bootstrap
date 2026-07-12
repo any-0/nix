@@ -4,7 +4,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 BACKUP_EXT="${HM_BACKUP_EXT:-hm-bak}"
-EXPERIMENTAL_FEATURES_LINE="experimental-features = nix-command flakes"
 platform="$(uname -s)"
 
 if [[ $# -ge 1 ]]; then
@@ -41,20 +40,9 @@ if ! command -v nix >/dev/null 2>&1; then
   fi
 fi
 
-if [[ "$platform" == "Linux" ]] && [[ -z "${WSL_DISTRO_NAME:-}" ]] && ! grep -qi microsoft /proc/version 2>/dev/null; then
-  echo "Warning: CLI environment marker was not detected."
-  echo "Continuing anyway."
-fi
-
-if [[ -n "${NIX_CONFIG:-}" ]]; then
-  export NIX_CONFIG="${NIX_CONFIG}"$'\n'"${EXPERIMENTAL_FEATURES_LINE}"
-else
-  export NIX_CONFIG="${EXPERIMENTAL_FEATURES_LINE}"
-fi
-
 echo "Applying Home Manager profile '${PROFILE}' from '${REPO_DIR}'..."
 nix --extra-experimental-features "nix-command flakes" \
-  run github:nix-community/home-manager -- \
+  run github:nix-community/home-manager/release-26.05 -- \
   --impure switch -b "${BACKUP_EXT}" --flake "path:${REPO_DIR}#${PROFILE}"
 
 echo "Done."
