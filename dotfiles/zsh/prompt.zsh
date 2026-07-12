@@ -110,41 +110,18 @@ add-zsh-hook preexec _prompt_spacing_preexec
 zle -N accept-line _prompt_accept_line
 
 jj_prompt() {
-  local tmp done pid output waited
-  tmp="${TMPDIR:-/tmp}/zsh-jj-prompt.$$.$RANDOM"
-  done="${tmp}.done"
-
-  ( _jj_prompt_info >| "$tmp"; : >| "$done" ) &
-  pid=$!
-
-  for waited in {1..10}; do
-    if [[ -e "$done" ]]; then
-      wait "$pid" 2>/dev/null
-      output="$(<"$tmp")"
-      rm -f "$tmp" "$done"
-      [[ -n "$output" ]] && print -r -- "$output"
-      return
-    fi
-    sleep 0.02
-  done
-
-  if [[ -e "$done" ]]; then
-    wait "$pid" 2>/dev/null
-    output="$(<"$tmp")"
-    [[ -n "$output" ]] && print -r -- "$output"
-  else
-    kill "$pid" 2>/dev/null
-    wait "$pid" 2>/dev/null
-    print -r -- "  [...]"
-  fi
-  rm -f "$tmp" "$done"
-}
-
-_jj_prompt_info() {
-  local stat summary
+  local stat summary rc
   local added=0 removed=0
 
-  stat="$(jj --no-pager --color=never --quiet diff --stat 2>/dev/null)" || return
+  stat="$(timeout --kill-after=0.05s 0.2s jj --no-pager --color=never --quiet diff --stat 2>/dev/null)"
+  rc=$?
+
+  if (( rc == 124 || rc == 137 )); then
+    print -r -- "  [...]"
+    return
+  fi
+  (( rc == 0 )) || return
+
   summary="${${(f)stat}[-1]}"
 
   [[ "$summary" =~ '([0-9]+) insertion' ]] && added="$match[1]"
