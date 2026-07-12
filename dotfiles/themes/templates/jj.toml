@@ -3,16 +3,13 @@
 # Based on dotfiles/nvim/colors/anyscheme.lua.
 
 # Palette:
-# fg          #@foreground@
-# teal_deep   #@secondary@
-# cyan_ink    #@accent@
-# emerald     #@success@
-# aqua_dark   #@tertiary@
-# olive_bold  #@number@
-# comment     #@muted@
-# ui_gray     #@textMuted@  (darkened from nvim's #@uiGray@ for terminal readability)
-# error       #@danger@
-# warn        #@warning@
+# foreground  #@foreground@
+# accent      #@accent@
+# secondary   #@secondary@
+# success     #@success@
+# warning     #@warning@
+# danger      #@danger@
+# muted       #@muted@
 # diff_add    #@diffAdd@
 # diff_delete #@diffDelete@
 # diff_change #@diffChange@
@@ -34,26 +31,26 @@ change_id = "#@secondary@"
 "commit_id rest" = "#@accent@"
 "commit_id shortest prefix" = { fg = "#@foreground@", bold = true }
 "commit_id shortest rest" = "#@accent@"
-"change_id prefix" = { fg = "#@secondaryStrong@", bold = true }
+"change_id prefix" = { fg = "#@secondary@", bold = true }
 "change_id rest" = "#@secondary@"
-"change_id shortest prefix" = { fg = "#@secondaryStrong@", bold = true }
+"change_id shortest prefix" = { fg = "#@secondary@", bold = true }
 "change_id shortest rest" = "#@secondary@"
 prefix = { bold = true }
-rest = "#@textMuted@"
+rest = "#@muted@"
 change_offset = { fg = "#@warning@", bold = true }
 "hidden prefix" = "#@muted@"
 
 # Metadata
 # Author/email are intentionally neutral, not warning-yellow.
-author = "#@textMuted@"
-"author email" = "#@textMuted@"
-"author email local" = "#@textMuted@"
-"author email domain" = "#@textMuted@"
-committer = "#@textMuted@"
-"committer email" = "#@textMuted@"
-"committer email local" = "#@textMuted@"
-"committer email domain" = "#@textMuted@"
-timestamp = "#@tertiary@"
+author = "#@muted@"
+"author email" = "#@muted@"
+"author email local" = "#@muted@"
+"author email domain" = "#@muted@"
+committer = "#@muted@"
+"committer email" = "#@muted@"
+"committer email local" = "#@muted@"
+"committer email domain" = "#@muted@"
+timestamp = "#@secondary@"
 separator = "#@muted@"
 elided = "#@muted@"
 
@@ -62,8 +59,8 @@ bookmark = "#@secondary@"
 bookmarks = "#@secondary@"
 local_bookmarks = "#@secondary@"
 remote_bookmarks = "#@accent@"
-tag = "#@number@"
-tags = "#@number@"
+tag = "#@warning@"
+tags = "#@warning@"
 git_ref = "#@success@"
 git_refs = "#@success@"
 git_head = { fg = "#@success@", bold = true }
@@ -88,23 +85,23 @@ working_copy = { fg = "#@foreground@", bold = true }
 "working_copy commit_id shortest prefix" = { fg = "#@foreground@", bold = true }
 "working_copy commit_id shortest rest" = "#@accent@"
 "working_copy change_id" = { fg = "#@secondary@", bold = true }
-"working_copy change_id prefix" = { fg = "#@secondaryStrong@", bold = true }
+"working_copy change_id prefix" = { fg = "#@secondary@", bold = true }
 "working_copy change_id rest" = "#@secondary@"
-"working_copy change_id shortest prefix" = { fg = "#@secondaryStrong@", bold = true }
+"working_copy change_id shortest prefix" = { fg = "#@secondary@", bold = true }
 "working_copy change_id shortest rest" = "#@secondary@"
-"working_copy author" = "#@textMuted@"
-"working_copy author email" = "#@textMuted@"
-"working_copy author email local" = "#@textMuted@"
-"working_copy author email domain" = "#@textMuted@"
-"working_copy committer" = "#@textMuted@"
-"working_copy timestamp" = { fg = "#@tertiary@", bold = true }
+"working_copy author" = "#@muted@"
+"working_copy author email" = "#@muted@"
+"working_copy author email local" = "#@muted@"
+"working_copy author email domain" = "#@muted@"
+"working_copy committer" = "#@muted@"
+"working_copy timestamp" = { fg = "#@secondary@", bold = true }
 "working_copy working_copies" = { fg = "#@success@", bold = true }
 "working_copy bookmark" = { fg = "#@secondary@", bold = true }
 "working_copy bookmarks" = { fg = "#@secondary@", bold = true }
 "working_copy local_bookmarks" = { fg = "#@secondary@", bold = true }
 "working_copy remote_bookmarks" = { fg = "#@accent@", bold = true }
-"working_copy tag" = { fg = "#@number@", bold = true }
-"working_copy tags" = { fg = "#@number@", bold = true }
+"working_copy tag" = { fg = "#@warning@", bold = true }
+"working_copy tags" = { fg = "#@warning@", bold = true }
 "working_copy git_ref" = { fg = "#@success@", bold = true }
 "working_copy git_refs" = { fg = "#@success@", bold = true }
 "working_copy divergent" = { fg = "#@warning@", bold = true }
@@ -126,39 +123,39 @@ working_copy = { fg = "#@foreground@", bold = true }
 "diff removed" = { fg = "#@danger@" }
 "diff modified" = { fg = "#@accent@", bold = true }
 "diff untracked" = "#@secondary@"
-"diff renamed" = "#@tertiary@"
+"diff renamed" = "#@secondary@"
 "diff copied" = "#@success@"
 "diff token" = { underline = false }
 "diff added token" = { fg = "#@foreground@", bg = "#@diffAdd@", underline = false }
 "diff removed token" = { fg = "#@foreground@", bg = "#@diffDelete@", underline = false }
 "diff modified token" = { fg = "#@foreground@", bg = "#@diffChange@", underline = false }
 "diff empty" = "#@muted@"
-"diff binary" = "#@tertiary@"
-"diff access-denied" = { fg = "#@bright@", bg = "#@danger@", bold = true }
+"diff binary" = "#@secondary@"
+"diff access-denied" = { fg = "#@onColor@", bg = "#@danger@", bold = true }
 
 # Operation log
 "operation id" = "#@accent@"
-"operation user" = "#@textMuted@"
-"operation time" = "#@tertiary@"
+"operation user" = "#@muted@"
+"operation time" = "#@secondary@"
 "operation tags" = "#@secondary@"
 "operation current_operation" = { fg = "#@foreground@", bold = true }
 "operation current_operation id" = { fg = "#@accent@", bold = true }
-"operation current_operation user" = { fg = "#@textMuted@", bold = true }
-"operation current_operation time" = { fg = "#@tertiary@", bold = true }
+"operation current_operation user" = { fg = "#@muted@", bold = true }
+"operation current_operation time" = { fg = "#@secondary@", bold = true }
 "operation current_operation tags" = { fg = "#@secondary@", bold = true }
 
 # Graph nodes
 "node working_copy" = { fg = "#@success@", bold = true }
 "node current_operation" = { fg = "#@success@", bold = true }
-"node immutable" = { fg = "#@nodeImmutable@", bold = true }
+"node immutable" = { fg = "#@accent@", bold = true }
 "node conflicted" = { fg = "#@danger@", bold = true }
 "node elided" = "#@muted@"
 
 # Config list
 "config_list name" = "#@secondary@"
-"config_list value" = "#@number@"
+"config_list value" = "#@warning@"
 "config_list source" = "#@accent@"
-"config_list path" = "#@tertiary@"
+"config_list path" = "#@secondary@"
 "config_list overridden" = "#@muted@"
 "config_list overridden name" = "#@muted@"
 "config_list overridden value" = "#@muted@"

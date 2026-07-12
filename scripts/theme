@@ -15,15 +15,6 @@ list_themes() {
 refresh_clients() {
   pkill -USR1 -x kitty 2>/dev/null || true
 
-  if [[ "$(uname -s)" == Linux ]]; then
-    if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
-      gsettings set org.gnome.desktop.interface color-scheme "$(<"$config_dir/current/color-scheme")"
-    fi
-
-    quickshell ipc -c bar call theme reload >/dev/null 2>&1 || true
-    makoctl reload >/dev/null 2>&1 || true
-  fi
-
   if tmux info >/dev/null 2>&1; then
     tmux source-file "${XDG_CONFIG_HOME:-$HOME/.config}/tmux/dotfiles.conf"
     tmux refresh-client -S

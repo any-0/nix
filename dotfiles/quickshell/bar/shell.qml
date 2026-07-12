@@ -1,16 +1,7 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
 
 ShellRoot {
-    IpcHandler {
-        target: "theme"
-
-        function reload(): void {
-            Theme.reload();
-        }
-    }
-
     Connections {
         target: Niri
 
