@@ -9,7 +9,7 @@ current_theme() {
 }
 
 list_themes() {
-  find -L "$theme_root" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort
+  find -L "$theme_root" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort
 }
 
 refresh_clients() {
