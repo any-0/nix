@@ -31,6 +31,8 @@ in
       #!/bin/sh
       export PATH="${pkgs.nodejs}/bin:$PATH"
       exec "${npmGlobalDir}/bin/codex" \
+        --sandbox danger-full-access \
+        --ask-for-approval on-request \
         -c 'allow_login_shell=false' \
         -c 'tui.keymap.editor.insert_newline=["ctrl-j","shift-enter","alt-enter"]' \
         "$@"
