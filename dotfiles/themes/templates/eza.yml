@@ -5,19 +5,19 @@ filekinds:
   directory: {foreground: "#@secondary@", is_bold: true}
   symlink: {foreground: "#@accent@"}
   pipe: {foreground: "#@muted@"}
-  block_device: {foreground: "#@secondary@", is_bold: true}
-  char_device: {foreground: "#@secondary@", is_bold: true}
+  block_device: {foreground: "#@tertiary@", is_bold: true}
+  char_device: {foreground: "#@tertiary@", is_bold: true}
   socket: {foreground: "#@accent@", is_bold: true}
-  special: {foreground: "#@secondary@"}
+  special: {foreground: "#@tertiary@"}
   executable: {foreground: "#@success@", is_bold: true}
   mount_point: {foreground: "#@secondary@", is_bold: true, is_underline: true}
 
 perms:
-  user_read: {foreground: "#@warning@", is_bold: true}
+  user_read: {foreground: "#@number@", is_bold: true}
   user_write: {foreground: "#@accent@", is_bold: true}
   user_execute_file: {foreground: "#@success@", is_bold: true, is_underline: true}
   user_execute_other: {foreground: "#@success@", is_bold: true}
-  group_read: {foreground: "#@warning@"}
+  group_read: {foreground: "#@number@"}
   group_write: {foreground: "#@accent@"}
   group_execute: {foreground: "#@success@"}
   other_read: {foreground: "#@muted@"}
@@ -51,16 +51,16 @@ users:
 
 links:
   normal: {foreground: "#@accent@", is_bold: true}
-  multi_link_file: {foreground: "#@secondary@"}
+  multi_link_file: {foreground: "#@tertiary@"}
 
 git:
   new: {foreground: "#@success@"}
   modified: {foreground: "#@accent@"}
-  deleted: {foreground: "#@accent@"}
+  deleted: {foreground: "#@deleted@"}
   renamed: {foreground: "#@secondary@"}
-  typechange: {foreground: "#@secondary@"}
+  typechange: {foreground: "#@tertiary@"}
   ignored: {foreground: "#@muted@", is_dimmed: true}
-  conflicted: {foreground: "#@accent@", is_bold: true}
+  conflicted: {foreground: "#@conflicted@", is_bold: true}
 
 git_repo:
   branch_main: {foreground: "#@foreground@"}
@@ -72,19 +72,19 @@ security_context:
   colon: {foreground: "#@muted@", is_dimmed: true}
   user: {foreground: "#@secondary@"}
   role: {foreground: "#@success@"}
-  typ: {foreground: "#@secondary@"}
+  typ: {foreground: "#@tertiary@"}
   range: {foreground: "#@accent@"}
 
 file_type:
   image: {foreground: "#@accent@"}
   video: {foreground: "#@accent@", is_bold: true}
   music: {foreground: "#@success@"}
-  lossless: {foreground: "#@warning@", is_bold: true}
+  lossless: {foreground: "#@number@", is_bold: true}
   crypto: {foreground: "#@success@", is_bold: true}
-  document: {foreground: "#@secondary@"}
+  document: {foreground: "#@tertiary@"}
   compressed: {foreground: "#@accent@"}
   temp: {foreground: "#@muted@"}
-  compiled: {foreground: "#@secondary@"}
+  compiled: {foreground: "#@tertiary@"}
   build: {foreground: "#@secondary@", is_bold: true, is_underline: true}
   source: {foreground: "#@accent@"}
 
@@ -93,10 +93,10 @@ date: {foreground: "#@muted@"}
 inode: {foreground: "#@accent@"}
 blocks: {foreground: "#@secondary@"}
 header: {foreground: "#@foreground@", is_underline: true}
-octal: {foreground: "#@secondary@"}
-flags: {foreground: "#@secondary@"}
+octal: {foreground: "#@tertiary@"}
+flags: {foreground: "#@tertiary@"}
 
 symlink_path: {foreground: "#@accent@"}
-control_char: {foreground: "#@accent@"}
-broken_symlink: {foreground: "#@accent@", is_bold: true}
+control_char: {foreground: "#@controlChar@"}
+broken_symlink: {foreground: "#@brokenSymlink@", is_bold: true}
 broken_path_overlay: {foreground: "#@muted@", is_underline: true}
