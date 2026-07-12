@@ -11,7 +11,7 @@ vim.opt.wrap = false
 vim.opt.linebreak = true
 vim.opt.breakindent = true
 vim.opt.termguicolors = true
-vim.opt.fillchars:append { eob = " " }
+vim.opt.fillchars:append({ eob = " " })
 vim.opt.swapfile = false
 vim.opt.clipboard = "unnamedplus"
 vim.opt.ignorecase = true
@@ -36,11 +36,11 @@ vim.cmd([[
 
 -- Persistent undo
 
-vim.opt.undofile   = true
+vim.opt.undofile = true
 vim.opt.undolevels = 1000
 vim.opt.undoreload = 1000
-local undo_root = vim.fn.stdpath('state') .. '/undo'
-vim.opt.undodir = undo_root .. '//'
+local undo_root = vim.fn.stdpath("state") .. "/undo"
+vim.opt.undodir = undo_root .. "//"
 
 -- Keymaps
 
@@ -69,7 +69,6 @@ vim.keymap.set("n", "<Tab>", "<C-i>")
 vim.keymap.set("n", "<Home>", function()
     vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end)
-
 
 -- Plugins
 
@@ -279,12 +278,31 @@ local cmp_autopairs = require("nvim-autopairs.completion.cmp")
 cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
 
 local ts_languages = {
-    "arduino", "bash", "c", "cpp", "css",
-    "diff", "dockerfile", "gitignore", "html",
-    "javascript", "json", "kdl", "kitty",
-    "latex", "lua", "make", "markdown", "nix",
-    "python", "rust", "tmux", "toml",
-    "typescript", "tsx", "yaml"
+    "arduino",
+    "bash",
+    "c",
+    "cpp",
+    "css",
+    "diff",
+    "dockerfile",
+    "gitignore",
+    "html",
+    "javascript",
+    "json",
+    "kdl",
+    "kitty",
+    "latex",
+    "lua",
+    "make",
+    "markdown",
+    "nix",
+    "python",
+    "rust",
+    "tmux",
+    "toml",
+    "typescript",
+    "tsx",
+    "yaml",
 }
 
 vim.api.nvim_create_autocmd("FileType", {
@@ -297,37 +315,37 @@ vim.api.nvim_create_autocmd("FileType", {
 
 require("python_ruff_format").setup()
 
-vim.keymap.set('n', '<End>', function()
-  local cmd = os.getenv("RUN_CMD")
-  if not cmd then
-    vim.notify("RUN_CMD not set", vim.log.levels.WARN)
-    return
-  end
+vim.keymap.set("n", "<End>", function()
+    local cmd = os.getenv("RUN_CMD")
+    if not cmd then
+        vim.notify("RUN_CMD not set", vim.log.levels.WARN)
+        return
+    end
 
-  local dir = os.getenv("DIRENV_DIR")
-  if dir then
-    dir = dir:gsub("^-", "")
-  else
-    dir = vim.fn.getcwd()
-  end
+    local dir = os.getenv("DIRENV_DIR")
+    if dir then
+        dir = dir:gsub("^-", "")
+    else
+        dir = vim.fn.getcwd()
+    end
 
-  local width  = math.floor(vim.o.columns * 0.4)
-  local height = math.floor(vim.o.lines * 0.4)
-  local row    = math.floor(vim.o.lines - height - 4)
-  local col    = math.floor(vim.o.columns - width)
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_open_win(buf, true, {
-    relative = "editor",
-    row = row,
-    col = col,
-    width = width,
-    height = height,
-    border = "rounded",
-    style = "minimal",
-  })
-  vim.fn.termopen({ "bash", "-c", "cd " .. vim.fn.shellescape(dir) .. " && " .. cmd })
-  vim.cmd("startinsert")
-  vim.keymap.set("t", "<Esc>", "<C-\\><C-n>:close<CR>", { buffer = buf })
+    local width = math.floor(vim.o.columns * 0.4)
+    local height = math.floor(vim.o.lines * 0.4)
+    local row = math.floor(vim.o.lines - height - 4)
+    local col = math.floor(vim.o.columns - width)
+    local buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_open_win(buf, true, {
+        relative = "editor",
+        row = row,
+        col = col,
+        width = width,
+        height = height,
+        border = "rounded",
+        style = "minimal",
+    })
+    vim.fn.termopen({ "bash", "-c", "cd " .. vim.fn.shellescape(dir) .. " && " .. cmd })
+    vim.cmd("startinsert")
+    vim.keymap.set("t", "<Esc>", "<C-\\><C-n>:close<CR>", { buffer = buf })
 end, { desc = "Run RUN_CMD in popup" })
 
 -- Rename tmux window to current file
@@ -335,7 +353,9 @@ if os.getenv("TMUX") then
     vim.api.nvim_create_autocmd("BufEnter", {
         callback = function()
             local name = vim.fn.expand("%:t")
-            if name == "" then name = "[nvim]" end
+            if name == "" then
+                name = "[nvim]"
+            end
             vim.fn.system("tmux rename-window " .. vim.fn.shellescape(name))
         end,
     })
