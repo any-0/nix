@@ -5,25 +5,6 @@ let
     exec "${lib.getExe scriptPackages.yank}"
   '';
 
-  tmuxSessionKeyFormat = pkgs.writeShellScript "tmux-session-key-format" ''
-    set -euo pipefail
-
-    key_file="''${1:-}"
-    format='#{e|+|:#{line},1}'
-
-    if [[ -r "$key_file" ]]; then
-      while read -r key name _; do
-        [[ -n "''${key:-}" ]] || continue
-        [[ "$key" != \#* ]] || continue
-        [[ -n "''${name:-}" ]] || continue
-
-        format="#{?#{&&:#{session_format},#{==:#{session_name},$name}},$key,$format}"
-      done < "$key_file"
-    fi
-
-    printf '%s' "$format"
-  '';
-
   tmuxZoxideSessionCreate = pkgs.writeShellScript "tmux-zoxide-session-create" ''
     set -euo pipefail
 
@@ -125,13 +106,13 @@ let
     tmux command-prompt -I "$default_name" -p "session name:" \
       "run-shell -b \"exec '${tmuxZoxideSessionCreate}' \\\"%%%\\\"\""
   '';
-  tmuxAlignedSave = pkgs.writeShellScript "tmux-aligned-save" ''
+  tmuxPersistence = pkgs.writeShellScript "tmux-persistence" ''
     set -euo pipefail
 
     export PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.tmux ]}:$PATH"
 
     server_pid="$(tmux display-message -p '#{pid}')"
-    state_dir="''${XDG_RUNTIME_DIR:-/tmp}/tmux-aligned-save-''${UID:-$(id -u)}"
+    state_dir="''${XDG_RUNTIME_DIR:-/tmp}/tmux-persistence-''${UID:-$(id -u)}"
     pid_file="$state_dir/$server_pid.pid"
 
     mkdir -p "$state_dir"
@@ -146,7 +127,14 @@ let
     printf '%s\n' "$$" > "$pid_file"
     trap 'rm -f "$pid_file"' EXIT
 
+    resurrect_dir="${config.home.homeDirectory}/.tmux/resurrect"
+    restore_script="${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/restore.sh"
     save_script="${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/scripts/save.sh"
+
+    sleep 1
+    if [[ -e "$resurrect_dir/last" ]]; then
+      "$restore_script" >/dev/null 2>&1
+    fi
 
     while tmux info >/dev/null 2>&1; do
       now="$(date +%s)"
@@ -155,7 +143,7 @@ let
       sleep "$sleep_for"
 
       tmux info >/dev/null 2>&1 || exit 0
-      "$save_script" quiet >/dev/null 2>&1 || true
+      "$save_script" quiet >/dev/null 2>&1
     done
   '';
 
@@ -169,20 +157,15 @@ in
     plugins = with pkgs.tmuxPlugins; [
       sensible
       resurrect
-      continuum
     ];
 
     extraConfig = ''
       set -g default-shell "${pkgs.zsh}/bin/zsh"
       set -g @tmux-clipboard-command "${tmuxClipboardCommand}"
       set -g @tmux-zoxide-session "${tmuxZoxideSession}"
-      set -g @tmux-session-keys-file "${config.xdg.configHome}/tmux/session-keys.conf"
-      run-shell 'tmux set-option -gq @tmux-session-key-format "$(${tmuxSessionKeyFormat} "${config.xdg.configHome}/tmux/session-keys.conf")"'
-      set -g clock-mode-style 24
-      set -g @continuum-restore "on"
-      set -g @continuum-save-interval "0"
+      set -g @resurrect-dir "${config.home.homeDirectory}/.tmux/resurrect"
       set -g @resurrect-capture-pane-contents "on"
-      run-shell -b "${tmuxAlignedSave}"
+      run-shell -b "${tmuxPersistence}"
       source-file "${config.xdg.configHome}/tmux/dotfiles.conf"
     '';
   };
