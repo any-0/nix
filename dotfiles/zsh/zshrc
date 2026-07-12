@@ -60,7 +60,10 @@ fi
 
 # zoxide fzf picker
 function zz() {
-    cd "$(zoxide query -l | fzf)"
+    local destination
+    destination="$(zoxide query -l | fzf)" || return
+    [[ -n "$destination" ]] || return
+    cd -- "$destination"
 }
 
 # Aliases
@@ -88,14 +91,12 @@ format() {
 export GPG_TTY=$(tty)
 export EDITOR=nvim
 _user_path() {
-    path=("$HOME/nix/scripts" "$HOME/.local/bin" "$HOME/.local/share/npm-global/bin" "$HOME/.opencode/bin" $path)
+    path=("$HOME/nix/scripts" "$HOME/.local/bin" "$HOME/.local/share/npm-global/bin" $path)
 }
 _user_path
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd _user_path
 add-zsh-hook chpwd _user_path
-export QSYS_ROOTDIR="/opt/intelquartus/quartus/sopc_builder/bin"
-export SALT_LICENSE_FILE="$SALT_LICENSE_FILE;$HOME/.altera.quartus/questa_lic.dat"
 source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/eza-colors.zsh"
 
 # Tmux

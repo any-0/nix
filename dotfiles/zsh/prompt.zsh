@@ -10,18 +10,6 @@ prompt_arrow_style() {
   print "%F{245}"
 }
 
-direnv_active() {
-  [[ -n "$DIRENV_DIR" ]] || return 1
-
-  direnv status --json 2>/dev/null | jq -e '
-    .state.foundRC != null
-    and .state.loadedRC != null
-    and .state.foundRC.path == .state.loadedRC.path
-    and .state.foundRC.allowed == 0
-    and .state.loadedRC.allowed == 0
-  ' >/dev/null
-}
-
 prompt_user() {
   local user="${USER:-${LOGNAME:-}}"
   [[ -n "$user" ]] || user="$(command id -un 2>/dev/null)"
