@@ -1,4 +1,4 @@
-{ pkgs, dot, dotFile, ... }:
+{ pkgs, activeThemeFile, dotFile, ... }:
 
 {
   home.pointerCursor = {
@@ -17,6 +17,9 @@
 
   xdg.configFile."quickshell/bar" = dotFile "quickshell/bar";
   xdg.configFile."niri" = dotFile "niri";
+  xdg.configFile."fuzzel/fuzzel.ini" = activeThemeFile "fuzzel.ini";
+  xdg.configFile."mako/config" = activeThemeFile "mako.conf";
+  xdg.configFile."swaylock/config" = activeThemeFile "swaylock.conf";
   xdg.configFile."zen/odpbn0jp.Default Profile/user.js".text = ''
     user_pref("zen.window-sync.enabled", false);
   '';

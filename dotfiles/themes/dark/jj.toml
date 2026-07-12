@@ -1,0 +1,174 @@
+[colors]
+# anyscheme for jj: dark-background, high-contrast, not washed out.
+# Based on dotfiles/nvim/colors/anyscheme.lua.
+
+# Palette:
+# fg          #F2F2F4
+# teal_deep   #5BC8AF
+# cyan_ink    #7AA2F7
+# emerald     #8BD49C
+# aqua_dark   #6FD6C5
+# olive_bold  #B8CC7A
+# comment     #8B8B95
+# ui_gray     #9A9AA2  (darkened from nvim's #555563 for terminal readability)
+# error       #FF7A90
+# warn        #E0AF68
+# diff_add    #244333
+# diff_delete #4A2932
+# diff_change #4A4029
+
+# Diagnostics / command output
+error = { fg = "#FF7A90", bold = true }
+error_source = "#F2F2F4"
+"error heading" = { fg = "#FF7A90", bold = true }
+"error_source heading" = { fg = "#F2F2F4", bold = true }
+warning = { fg = "#E0AF68", bold = true }
+"warning heading" = { fg = "#E0AF68", bold = true }
+hint = "#7AA2F7"
+"hint heading" = { fg = "#7AA2F7", bold = true }
+
+# IDs. jj splits short IDs into prefix/rest labels, so color those explicitly.
+commit_id = "#7AA2F7"
+change_id = "#5BC8AF"
+"commit_id prefix" = { fg = "#F2F2F4", bold = true }
+"commit_id rest" = "#7AA2F7"
+"commit_id shortest prefix" = { fg = "#F2F2F4", bold = true }
+"commit_id shortest rest" = "#7AA2F7"
+"change_id prefix" = { fg = "#3F9183", bold = true }
+"change_id rest" = "#5BC8AF"
+"change_id shortest prefix" = { fg = "#3F9183", bold = true }
+"change_id shortest rest" = "#5BC8AF"
+prefix = { bold = true }
+rest = "#9A9AA2"
+change_offset = { fg = "#E0AF68", bold = true }
+"hidden prefix" = "#8B8B95"
+
+# Metadata
+# Author/email are intentionally neutral, not warning-yellow.
+author = "#9A9AA2"
+"author email" = "#9A9AA2"
+"author email local" = "#9A9AA2"
+"author email domain" = "#9A9AA2"
+committer = "#9A9AA2"
+"committer email" = "#9A9AA2"
+"committer email local" = "#9A9AA2"
+"committer email domain" = "#9A9AA2"
+timestamp = "#6FD6C5"
+separator = "#8B8B95"
+elided = "#8B8B95"
+
+# Refs / bookmarks / repo state
+bookmark = "#5BC8AF"
+bookmarks = "#5BC8AF"
+local_bookmarks = "#5BC8AF"
+remote_bookmarks = "#7AA2F7"
+tag = "#B8CC7A"
+tags = "#B8CC7A"
+git_ref = "#8BD49C"
+git_refs = "#8BD49C"
+git_head = { fg = "#8BD49C", bold = true }
+working_copies = "#8BD49C"
+empty = "#8BD49C"
+root = "#8BD49C"
+placeholder = { fg = "#8B8B95", italic = true }
+"description placeholder" = { fg = "#8B8B95", italic = true }
+"empty description placeholder" = { fg = "#8B8B95", italic = true }
+divergent = "#E0AF68"
+"mutable divergent" = { fg = "#FF7A90", bold = true }
+"mutable divergent change_id" = { fg = "#FF7A90", bold = true }
+conflict = { fg = "#FF7A90", bold = true }
+conflict_description = "#E0AF68"
+"conflict_description difficult" = "#FF7A90"
+
+# Working-copy variants
+working_copy = { fg = "#F2F2F4", bold = true }
+"working_copy commit_id" = { fg = "#7AA2F7", bold = true }
+"working_copy commit_id prefix" = { fg = "#F2F2F4", bold = true }
+"working_copy commit_id rest" = "#7AA2F7"
+"working_copy commit_id shortest prefix" = { fg = "#F2F2F4", bold = true }
+"working_copy commit_id shortest rest" = "#7AA2F7"
+"working_copy change_id" = { fg = "#5BC8AF", bold = true }
+"working_copy change_id prefix" = { fg = "#3F9183", bold = true }
+"working_copy change_id rest" = "#5BC8AF"
+"working_copy change_id shortest prefix" = { fg = "#3F9183", bold = true }
+"working_copy change_id shortest rest" = "#5BC8AF"
+"working_copy author" = "#9A9AA2"
+"working_copy author email" = "#9A9AA2"
+"working_copy author email local" = "#9A9AA2"
+"working_copy author email domain" = "#9A9AA2"
+"working_copy committer" = "#9A9AA2"
+"working_copy timestamp" = { fg = "#6FD6C5", bold = true }
+"working_copy working_copies" = { fg = "#8BD49C", bold = true }
+"working_copy bookmark" = { fg = "#5BC8AF", bold = true }
+"working_copy bookmarks" = { fg = "#5BC8AF", bold = true }
+"working_copy local_bookmarks" = { fg = "#5BC8AF", bold = true }
+"working_copy remote_bookmarks" = { fg = "#7AA2F7", bold = true }
+"working_copy tag" = { fg = "#B8CC7A", bold = true }
+"working_copy tags" = { fg = "#B8CC7A", bold = true }
+"working_copy git_ref" = { fg = "#8BD49C", bold = true }
+"working_copy git_refs" = { fg = "#8BD49C", bold = true }
+"working_copy divergent" = { fg = "#E0AF68", bold = true }
+"working_copy mutable divergent" = { fg = "#FF7A90", bold = true }
+"working_copy mutable divergent change_id" = { fg = "#FF7A90", bold = true }
+"working_copy conflict" = { fg = "#FF7A90", bold = true }
+"working_copy empty" = { fg = "#8BD49C", bold = true }
+"working_copy placeholder" = { fg = "#8B8B95", bold = false, italic = true }
+"working_copy description placeholder" = { fg = "#8B8B95", bold = false, italic = true }
+"working_copy empty description placeholder" = { fg = "#8B8B95", bold = false, italic = true }
+
+# Status / summary / diffs
+"diff header" = "#E0AF68"
+"diff file_header" = { fg = "#7AA2F7", bold = true }
+"diff hunk_header" = "#5BC8AF"
+"diff context" = "#F2F2F4"
+"diff context line_number" = { fg = "#8B8B95", dim = false }
+"diff added" = { fg = "#8BD49C" }
+"diff removed" = { fg = "#FF7A90" }
+"diff modified" = { fg = "#7AA2F7", bold = true }
+"diff untracked" = "#5BC8AF"
+"diff renamed" = "#6FD6C5"
+"diff copied" = "#8BD49C"
+"diff token" = { underline = false }
+"diff added token" = { fg = "#F2F2F4", bg = "#244333", underline = false }
+"diff removed token" = { fg = "#F2F2F4", bg = "#4A2932", underline = false }
+"diff modified token" = { fg = "#F2F2F4", bg = "#4A4029", underline = false }
+"diff empty" = "#8B8B95"
+"diff binary" = "#6FD6C5"
+"diff access-denied" = { fg = "#FFFFFF", bg = "#FF7A90", bold = true }
+
+# Operation log
+"operation id" = "#7AA2F7"
+"operation user" = "#9A9AA2"
+"operation time" = "#6FD6C5"
+"operation tags" = "#5BC8AF"
+"operation current_operation" = { fg = "#F2F2F4", bold = true }
+"operation current_operation id" = { fg = "#7AA2F7", bold = true }
+"operation current_operation user" = { fg = "#9A9AA2", bold = true }
+"operation current_operation time" = { fg = "#6FD6C5", bold = true }
+"operation current_operation tags" = { fg = "#5BC8AF", bold = true }
+
+# Graph nodes
+"node working_copy" = { fg = "#8BD49C", bold = true }
+"node current_operation" = { fg = "#8BD49C", bold = true }
+"node immutable" = { fg = "#6297D0", bold = true }
+"node conflicted" = { fg = "#FF7A90", bold = true }
+"node elided" = "#8B8B95"
+
+# Config list
+"config_list name" = "#5BC8AF"
+"config_list value" = "#B8CC7A"
+"config_list source" = "#7AA2F7"
+"config_list path" = "#6FD6C5"
+"config_list overridden" = "#8B8B95"
+"config_list overridden name" = "#8B8B95"
+"config_list overridden value" = "#8B8B95"
+"config_list overridden source" = "#8B8B95"
+"config_list overridden path" = "#8B8B95"
+
+# Signatures
+"signature display" = "#E0AF68"
+"signature key" = "#7AA2F7"
+"signature status good" = "#8BD49C"
+"signature status unknown" = "#E0AF68"
+"signature status bad" = "#FF7A90"
+"signature status invalid" = "#FF7A90"

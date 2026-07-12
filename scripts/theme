@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+theme_root="$(cd -- "$script_dir/../dotfiles/themes" && pwd)"
+config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/theme"
+
+current_theme() {
+  basename -- "$(readlink -- "$config_dir/current")"
+}
+
+list_themes() {
+  find "$theme_root" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort
+}
+
+refresh_clients() {
+  if [[ "$(uname -s)" == Linux ]]; then
+    pkill -USR1 -u "$UID" -x kitty 2>/dev/null || true
+
+    if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
+      gsettings set org.gnome.desktop.interface color-scheme "$(<"$config_dir/current/color-scheme")"
+    fi
+
+    quickshell ipc -c bar call theme reload >/dev/null 2>&1 || true
+    makoctl reload >/dev/null 2>&1 || true
+  fi
+
+  if tmux info >/dev/null 2>&1; then
+    tmux source-file "${XDG_CONFIG_HOME:-$HOME/.config}/tmux/dotfiles.conf"
+    tmux refresh-client -S
+  fi
+}
+
+activate_theme() {
+  local name="$1"
+  local theme_dir="$theme_root/$name"
+  local next_link="$config_dir/.current.$$"
+
+  [[ "$name" =~ ^[[:alnum:]][[:alnum:]_.-]*$ ]] || {
+    printf 'invalid theme name: %s\n' "$name" >&2
+    exit 2
+  }
+  [[ -d "$theme_dir" ]] || {
+    printf 'unknown theme: %s\n' "$name" >&2
+    exit 2
+  }
+
+  mkdir -p "$config_dir"
+  trap 'rm -f "$next_link"' EXIT
+  ln -s "$theme_dir" "$next_link"
+  mv -Tf "$next_link" "$config_dir/current"
+  trap - EXIT
+
+  refresh_clients
+  printf '%s\n' "$name"
+}
+
+case "${1:-current}" in
+  current)
+    current_theme
+    ;;
+  list)
+    list_themes
+    ;;
+  next)
+    mapfile -t themes < <(list_themes)
+    current="$(current_theme)"
+    for index in "${!themes[@]}"; do
+      if [[ "${themes[$index]}" == "$current" ]]; then
+        activate_theme "${themes[$(((index + 1) % ${#themes[@]}))]}"
+        exit
+      fi
+    done
+    printf 'active theme is not installed: %s\n' "$current" >&2
+    exit 2
+    ;;
+  -h|--help)
+    printf 'usage: theme [current|list|next|NAME]\n'
+    ;;
+  *)
+    activate_theme "$1"
+    ;;
+esac
