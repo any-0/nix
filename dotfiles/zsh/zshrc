@@ -91,7 +91,7 @@ format() {
 export GPG_TTY=$(tty)
 export EDITOR=nvim
 _user_path() {
-    path=("$HOME/nix/scripts" "$HOME/.local/bin" "$HOME/.local/share/npm-global/bin" $path)
+    path=("$HOME/.local/bin" "$HOME/.local/share/npm-global/bin" $path)
 }
 _user_path
 autoload -Uz add-zsh-hook

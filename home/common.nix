@@ -2,14 +2,14 @@
 
 let
   dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
-  scriptsDir = "${config.home.homeDirectory}/nix/scripts";
   localBinDir = "${config.home.homeDirectory}/.local/bin";
   npmGlobalBinDir = "${config.home.homeDirectory}/.local/share/npm-global/bin";
   dot = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${path}";
   dotFile = path: { source = dot path; force = true; };
+  scriptPackages = import ./scripts.nix { inherit config lib pkgs; };
 in
 {
-  _module.args = { inherit dot dotFile scriptsDir; };
+  _module.args = { inherit dot dotFile scriptPackages; };
   imports = [
     ./npm-tools.nix
     ./neovim-tools.nix
@@ -70,7 +70,6 @@ in
     DIRENV_LOG_FORMAT = "";
   };
   home.sessionPath = [
-    scriptsDir
     localBinDir
     npmGlobalBinDir
   ];
@@ -80,7 +79,7 @@ in
     enableZshIntegration = true;
   };
 
-  home.packages = with pkgs; [
+  home.packages = (with pkgs; [
     zsh
     ripgrep
     fd
@@ -100,6 +99,6 @@ in
     gh
     jujutsu
     jjui
-  ];
+  ]) ++ builtins.attrValues scriptPackages;
 
 }

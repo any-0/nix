@@ -1,8 +1,8 @@
-{ config, pkgs, lib, dot, scriptsDir, ... }:
+{ config, pkgs, lib, dot, scriptPackages, ... }:
 
 let
   tmuxClipboardCommand = pkgs.writeShellScript "tmux-clipboard" ''
-    exec "${scriptsDir}/yank"
+    exec "${lib.getExe scriptPackages.yank}"
   '';
 
   tmuxSessionKeyFormat = pkgs.writeShellScript "tmux-session-key-format" ''

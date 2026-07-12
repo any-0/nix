@@ -592,7 +592,7 @@ binds {
     Mod+Shift+R { switch-preset-column-width; }
     Mod+Ctrl+R { reset-window-height; }
     Mod+F { fullscreen-window; }
-    Mod+Shift+F { spawn "sh" "-c" "exec \"$HOME/nix/scripts/screenshot\""; }
+    Mod+Shift+F { spawn "screenshot"; }
     Mod+Shift+M { maximize-column; }
 
     // Expand the focused column to space not taken up by other fully visible columns.
@@ -642,7 +642,7 @@ binds {
     Print { screenshot; }
     Ctrl+Print { screenshot-screen; }
     Alt+Print { screenshot-window; }
-    Mod+Print { spawn "sh" "-c" "exec \"$HOME/nix/scripts/screenshot\""; }
+    Mod+Print { spawn "screenshot"; }
 
     // Applications such as remote-desktop clients and software KVM switches may
     // request that niri stops processing the keyboard shortcuts defined here
