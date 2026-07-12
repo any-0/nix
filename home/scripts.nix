@@ -30,7 +30,7 @@ let
     switch = mkBashScript "switch" [ pkgs.coreutils pkgs.nh pkgs.nix ];
     theme = mkBashScript "theme" (
       [ pkgs.coreutils pkgs.gnugrep pkgs.tmux ]
-      ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.glib pkgs.mako pkgs.procps pkgs.quickshell ]
+      ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.procps ]
     );
     template = mkBashScript "template" [ pkgs.coreutils pkgs.direnv pkgs.git pkgs.nix ];
     view = mkBashScript "view" (
