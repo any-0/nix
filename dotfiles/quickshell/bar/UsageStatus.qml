@@ -4,31 +4,50 @@ Item {
     id: root
 
     required property var anchorWindow
+    required property string providerName
+    required property string providerIcon
+    required property string usageLabel
+    required property bool ready
+    required property bool loading
+    required property string errorText
+    required property string plan
+    required property int fiveHourPercentLeft
+    required property string fiveHourPace
+    required property string fiveHourReset
+    required property int weeklyPercentLeft
+    required property string weeklyPace
+    required property string weeklyReset
+    required property int monthlyPercentLeft
+    required property string monthlyReset
+    required property bool footerVisible
+    required property string footerLabel
+    required property string footerValue
+    required property var refreshAction
 
-    implicitWidth: claudeButton.implicitWidth
+    implicitWidth: usageButton.implicitWidth
     implicitHeight: 30
     width: implicitWidth
     height: 30
 
     BarButton {
-        id: claudeButton
+        id: usageButton
 
         anchors.centerIn: parent
-        icon: "✶"
-        label: Status.claudeLabel
-        iconColor: Status.claudeReady ? Theme.accent : Status.claudeLoading ? Theme.textMuted : Theme.danger
-        labelColor: Status.claudeReady ? Theme.text : Status.claudeLoading ? Theme.textMuted : Theme.danger
+        icon: root.providerIcon
+        label: root.usageLabel
+        iconColor: root.ready ? Theme.accent : root.loading ? Theme.textMuted : Theme.danger
+        labelColor: root.ready ? Theme.text : root.loading ? Theme.textMuted : Theme.danger
         onClicked: {
-            if (button === Qt.RightButton) Status.refreshClaudeUsage();
-            else Popups.toggle(claudePopup);
+            if (button === Qt.RightButton) root.refreshAction();
+            else Popups.toggle(usagePopup);
         }
     }
 
     MenuPopup {
-        id: claudePopup
+        id: usagePopup
 
         anchorWindow: root.anchorWindow
-        anchorItem: claudeButton
+        anchorItem: usageButton
         menuWidth: 360
 
         Row {
@@ -39,7 +58,7 @@ Item {
             Text {
                 width: parent.width - refreshButton.width - parent.spacing
                 height: parent.height
-                text: Status.claudePlan.length > 0 ? "CLAUDE · " + Status.claudePlan.toUpperCase() : "CLAUDE"
+                text: root.plan.length > 0 ? root.providerName.toUpperCase() + " · " + root.plan.toUpperCase() : root.providerName.toUpperCase()
                 color: Theme.text
                 font.family: Theme.fontFamily
                 font.pixelSize: 13
@@ -57,7 +76,7 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: Status.claudeLoading ? "…" : "󰑓"
+                    text: root.loading ? "…" : "󰑓"
                     color: Theme.textMuted
                     font.family: Theme.fontFamily
                     font.pixelSize: 13
@@ -69,16 +88,16 @@ Item {
 
                     anchors.fill: parent
                     hoverEnabled: true
-                    onClicked: Status.refreshClaudeUsage()
+                    onClicked: root.refreshAction()
                 }
             }
         }
 
         Text {
             width: parent.width
-            visible: !Status.claudeReady
-            text: Status.claudeLoading ? "Checking usage…" : Status.claudeError
-            color: Status.claudeLoading ? Theme.textMuted : Theme.danger
+            visible: !root.ready
+            text: root.loading ? "Checking usage…" : root.errorText
+            color: root.loading ? Theme.textMuted : Theme.danger
             font.family: Theme.fontFamily
             font.pixelSize: 12
             wrapMode: Text.WordWrap
@@ -86,49 +105,41 @@ Item {
 
         UsageRow {
             title: "5H LIMIT"
-            percentLeft: Status.claudeFiveHourPercentLeft
-            pace: Status.claudePaceText(
-                Status.claudeFiveHourUsedPercent,
-                Status.claudeFiveHourResetAt,
-                Status.claudeFiveHourWindowSeconds,
-                true)
-            reset: Status.claudeFiveHourReset
+            percentLeft: root.fiveHourPercentLeft
+            pace: root.fiveHourPace
+            reset: root.fiveHourReset
         }
 
         UsageRow {
             title: "WEEKLY"
-            percentLeft: Status.claudeWeeklyPercentLeft
-            pace: Status.claudePaceText(
-                Status.claudeWeeklyUsedPercent,
-                Status.claudeWeeklyResetAt,
-                Status.claudeWeeklyWindowSeconds,
-                false)
-            reset: Status.claudeWeeklyReset
+            percentLeft: root.weeklyPercentLeft
+            pace: root.weeklyPace
+            reset: root.weeklyReset
         }
 
         UsageRow {
             title: "MONTHLY"
-            visible: Status.claudeMonthlyPercentLeft >= 0
-            percentLeft: Status.claudeMonthlyPercentLeft
-            reset: Status.claudeMonthlyReset
+            visible: root.monthlyPercentLeft >= 0
+            percentLeft: root.monthlyPercentLeft
+            reset: root.monthlyReset
         }
 
         Rectangle {
             width: parent.width
             height: 1
-            visible: Status.claudeCredits >= 0
+            visible: root.footerVisible
             color: Theme.track
         }
 
         Row {
             width: parent.width
             height: 24
-            visible: Status.claudeCredits >= 0
+            visible: root.footerVisible
 
             Text {
                 width: parent.width / 2
                 height: parent.height
-                text: "Extra usage"
+                text: root.footerLabel
                 color: Theme.textMuted
                 font.family: Theme.fontFamily
                 font.pixelSize: 11
@@ -139,7 +150,7 @@ Item {
             Text {
                 width: parent.width / 2
                 height: parent.height
-                text: Status.claudeCredits < 0 ? "Unknown" : Status.claudeCredits.toFixed(2)
+                text: root.footerValue
                 color: Theme.text
                 font.family: Theme.fontFamily
                 font.pixelSize: 12
@@ -183,7 +194,7 @@ Item {
                 Text {
                     width: parent.width * 0.24
                     height: parent.height
-                    text: Status.codexPercentText(percentLeft)
+                    text: Status.usagePercentText(percentLeft)
                     color: Theme.text
                     font.family: Theme.fontFamily
                     font.pixelSize: 11
