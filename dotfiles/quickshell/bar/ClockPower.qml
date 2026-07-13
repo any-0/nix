@@ -46,12 +46,66 @@ Item {
         anchors.centerIn: parent
         spacing: 4
 
-        ClaudeUsage {
+        UsageStatus {
             anchorWindow: root.anchorWindow
+            providerName: "Claude"
+            providerIcon: "✶"
+            usageLabel: Status.claudeLabel
+            ready: Status.claudeReady
+            loading: Status.claudeLoading
+            errorText: Status.claudeError
+            plan: Status.claudePlan
+            fiveHourPercentLeft: Status.claudeFiveHourPercentLeft
+            fiveHourPace: Status.usagePaceText(
+                Status.claudeFiveHourUsedPercent,
+                Status.claudeFiveHourResetAt,
+                Status.claudeFiveHourWindowSeconds,
+                true)
+            fiveHourReset: Status.claudeFiveHourReset
+            weeklyPercentLeft: Status.claudeWeeklyPercentLeft
+            weeklyPace: Status.usagePaceText(
+                Status.claudeWeeklyUsedPercent,
+                Status.claudeWeeklyResetAt,
+                Status.claudeWeeklyWindowSeconds,
+                false)
+            weeklyReset: Status.claudeWeeklyReset
+            monthlyPercentLeft: Status.claudeMonthlyPercentLeft
+            monthlyReset: Status.claudeMonthlyReset
+            footerVisible: Status.claudeCredits >= 0
+            footerLabel: "Extra usage"
+            footerValue: Status.claudeCredits < 0 ? "Unknown" : Status.claudeCredits.toFixed(2)
+            refreshAction: function() { Status.refreshClaudeUsage(); }
         }
 
-        CodexUsage {
+        UsageStatus {
             anchorWindow: root.anchorWindow
+            providerName: "Codex"
+            providerIcon: "✦"
+            usageLabel: Status.codexLabel
+            ready: Status.codexReady
+            loading: Status.codexLoading
+            errorText: Status.codexError
+            plan: Status.codexPlan
+            fiveHourPercentLeft: Status.codexFiveHourPercentLeft
+            fiveHourPace: Status.usagePaceText(
+                Status.codexFiveHourUsedPercent,
+                Status.codexFiveHourResetAt,
+                Status.codexFiveHourWindowSeconds,
+                true)
+            fiveHourReset: Status.codexFiveHourReset
+            weeklyPercentLeft: Status.codexWeeklyPercentLeft
+            weeklyPace: Status.usagePaceText(
+                Status.codexWeeklyUsedPercent,
+                Status.codexWeeklyResetAt,
+                Status.codexWeeklyWindowSeconds,
+                false)
+            weeklyReset: Status.codexWeeklyReset
+            monthlyPercentLeft: Status.codexMonthlyPercentLeft
+            monthlyReset: Status.codexMonthlyReset
+            footerVisible: Status.codexCredits >= 0 || Status.codexResetCredits >= 0
+            footerLabel: Status.codexResetCredits >= 0 ? "Usage resets" : "Credits"
+            footerValue: Status.codexResetCredits >= 0 ? String(Status.codexResetCredits) : Status.codexCreditsText()
+            refreshAction: function() { Status.refreshCodexUsage(); }
         }
 
         Item {

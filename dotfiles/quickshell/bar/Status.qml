@@ -40,12 +40,96 @@ Singleton {
     readonly property string networkIcon: networkOffline ? "󰤭" : networkWifi ? wifiIcon(wifiNetwork ? wifiNetwork.signalStrength : 1) : "󰒍"
     readonly property string networkLabel: networkOffline ? "Disconnected" : networkWifi && wifiNetwork ? wifiNetwork.name : "Ethernet"
     readonly property string networkInterface: networkDevice ? networkDevice.name : ""
+    property var networkLastTrafficSample: null
+    property string networkUpRate: "—"
+    property string networkDownRate: "—"
+    readonly property string networkThroughputText: "󰁝 " + networkUpRate + "  󰁅 " + networkDownRate
 
     function wifiIcon(strength) {
         if (strength >= 0.75) return "󰤨";
         if (strength >= 0.5) return "󰤥";
         if (strength >= 0.25) return "󰤢";
         return "󰤟";
+    }
+
+    function humanNetworkRate(bytes) {
+        if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + " MB/s";
+        if (bytes >= 1024) return Math.round(bytes / 1024) + " KB/s";
+        return Math.round(bytes) + " B/s";
+    }
+
+    function resetNetworkThroughput() {
+        networkLastTrafficSample = null;
+        networkUpRate = "—";
+        networkDownRate = "—";
+    }
+
+    function readNetworkTrafficSample(interfaceName) {
+        const lines = networkStatsFile.text().split("\n");
+
+        for (const line of lines) {
+            const parts = line.split(":");
+            if (parts.length !== 2 || parts[0].trim() !== interfaceName) continue;
+
+            const fields = parts[1].trim().split(/\s+/);
+            return {
+                "time": Date.now(),
+                "interfaceName": interfaceName,
+                "rx": Number(fields[0]),
+                "tx": Number(fields[8])
+            };
+        }
+
+        return null;
+    }
+
+    function updateNetworkThroughput() {
+        if (networkInterface.length === 0) {
+            resetNetworkThroughput();
+            return;
+        }
+
+        networkStatsFile.reload();
+        networkStatsFile.waitForJob();
+
+        const sample = readNetworkTrafficSample(networkInterface);
+        if (!sample) {
+            resetNetworkThroughput();
+            return;
+        }
+
+        if (!networkLastTrafficSample || networkLastTrafficSample.interfaceName !== networkInterface) {
+            networkLastTrafficSample = sample;
+            networkUpRate = "—";
+            networkDownRate = "—";
+            return;
+        }
+
+        const seconds = Math.max(0.001, (sample.time - networkLastTrafficSample.time) / 1000);
+        networkUpRate = humanNetworkRate(Math.max(0, (sample.tx - networkLastTrafficSample.tx) / seconds));
+        networkDownRate = humanNetworkRate(Math.max(0, (sample.rx - networkLastTrafficSample.rx) / seconds));
+        networkLastTrafficSample = sample;
+    }
+
+    onNetworkInterfaceChanged: resetNetworkThroughput()
+
+    FileView {
+        id: networkStatsFile
+
+        path: "/proc/net/dev"
+        preload: false
+        blockLoading: true
+        blockAllReads: true
+        watchChanges: false
+        printErrors: false
+    }
+
+    Timer {
+        interval: 1000
+        repeat: true
+        running: true
+        triggeredOnStart: true
+        onTriggered: root.updateNetworkThroughput()
     }
 
     Instantiator {
@@ -191,7 +275,7 @@ Singleton {
     readonly property int claudePercentUsed: claudeReady ? 100 - claudeLowestPercentLeft : 0
     readonly property string claudeLabel: claudeReady ? String(claudePercentUsed) + "%" : claudeLoading ? "..." : "!"
 
-    function codexPercentText(value) {
+    function usagePercentText(value) {
         return value >= 0 ? String(value) + "% left" : "Unknown";
     }
 
@@ -201,7 +285,7 @@ Singleton {
         return codexCredits.toFixed(1);
     }
 
-    function codexDurationText(seconds) {
+    function usageDurationText(seconds) {
         const rounded = Math.max(0, Math.round(seconds));
         if (rounded < 60) return String(rounded) + "s";
         if (rounded < 3600) return String(Math.floor(rounded / 60)) + "m";
@@ -215,7 +299,7 @@ Singleton {
         return hoursLeft > 0 ? String(days) + "d " + String(hoursLeft) + "h" : String(days) + "d";
     }
 
-    function codexPaceText(usedPercent, resetAtSeconds, windowSeconds, sessionWindow) {
+    function usagePaceText(usedPercent, resetAtSeconds, windowSeconds, sessionWindow) {
         if (usedPercent < 0 || resetAtSeconds <= 0 || windowSeconds <= 0) return "";
 
         const nowSeconds = Date.now() / 1000;
@@ -241,11 +325,7 @@ Singleton {
         }
 
         const prefix = sessionWindow ? "projected empty in " : "runs out in ";
-        return left + " · " + expectedText + " · " + prefix + codexDurationText(eta);
-    }
-
-    function claudePaceText(usedPercent, resetAtSeconds, windowSeconds, sessionWindow) {
-        return codexPaceText(usedPercent, resetAtSeconds, windowSeconds, sessionWindow);
+        return left + " · " + expectedText + " · " + prefix + usageDurationText(eta);
     }
 
     function refreshCodexUsage() {
