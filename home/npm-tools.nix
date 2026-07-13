@@ -73,6 +73,15 @@ in
     else
       verboseEcho "npm global packages up to date; skipping install"
     fi
+
+    completion_dir="$npm_prefix/share/zsh/site-functions"
+    $DRY_RUN_CMD mkdir -p "$completion_dir"
+    $DRY_RUN_CMD ${pkgs.runtimeShell} -c \
+      'PATH="$1:$PATH" "$2" completion zsh > "$3"' \
+      generate-codex-completion \
+      "${pkgs.nodejs}/bin" \
+      "$npm_prefix/bin/codex" \
+      "$completion_dir/_codex"
   '';
 
   home.packages = with pkgs; [

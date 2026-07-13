@@ -2,13 +2,13 @@
 set -euo pipefail
 
 if [[ $# -ne 1 ]]; then
-  echo "usage: view <file>" >&2
+  echo "usage: open <file>" >&2
   exit 1
 fi
 
 case "$(uname -s)" in
   Darwin)
-    nohup open "$1" >/dev/null 2>&1 &
+    nohup /usr/bin/open "$1" >/dev/null 2>&1 &
     ;;
   Linux)
     nohup xdg-open "$1" >/dev/null 2>&1 &

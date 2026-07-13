@@ -1,0 +1,166 @@
+#compdef switch theme template envdiff get open cli-bootstrap direnv claude-usage codex-usage hf run yank mount-nas-smb umount-nas-smb format
+
+_julian_no_arguments() {
+  _message 'no arguments'
+}
+
+_julian_switch() {
+  local context state state_descr line
+  local -a modes
+
+  if [[ "$OSTYPE" == darwin* ]]; then
+    modes=(
+      'switch:apply the macOS Home Manager configuration'
+      'build:build the macOS Home Manager configuration'
+    )
+  else
+    modes=(
+      'switch:activate the configuration'
+      'boot:build and select the configuration for next boot'
+      'test:activate the configuration without adding a boot entry'
+      'build:build the configuration'
+    )
+  fi
+
+  _arguments '1:mode:->mode'
+  [[ "$state" == mode ]] && _describe 'mode' modes
+}
+
+_julian_theme() {
+  local context state state_descr line
+  local -a actions themes
+  actions=(
+    'current:print the active theme'
+    'list:list installed themes'
+    'next:activate the next installed theme'
+  )
+  themes=("${(@f)$(theme list 2>/dev/null)}")
+
+  _arguments '1:action or theme:->theme'
+  if [[ "$state" == theme ]]; then
+    _describe 'action' actions
+    _describe 'installed theme' themes
+  fi
+}
+
+_julian_template() {
+  local context state state_descr line
+  local -a templates
+  templates=("${(@f)$(
+    nix flake show --json "path:$HOME/nix/templates" 2>/dev/null |
+      jq -r '.inventory.templates.output.children | to_entries[] | "\(.key):\(.value.shortDescription)"'
+  )}")
+
+  _arguments '1:template:->template'
+  [[ "$state" == template ]] && _describe 'template' templates
+}
+
+_julian_envdiff() {
+  _arguments \
+    '(-c --current)'{-c,--current}'[compare against the current nix repo HEAD]' \
+    '(-h --help)'{-h,--help}'[show usage]'
+}
+
+_julian_cli_bootstrap() {
+  local context state state_descr line
+  local -a profiles=(
+    'mac:macOS Home Manager configuration'
+    'cli:headless Linux Home Manager configuration'
+    'desktop:desktop Linux Home Manager configuration'
+  )
+
+  _arguments '1:profile:->profile'
+  [[ "$state" == profile ]] && _describe 'Home Manager profile' profiles
+}
+
+_julian_direnv() {
+  local context state state_descr line
+  local -a commands shells
+  commands=(
+    'allow:allow an .envrc or .env file'
+    'permit:alias for allow'
+    'grant:alias for allow'
+    'block:block an .envrc or .env file'
+    'deny:alias for block'
+    'disallow:alias for block'
+    'revoke:alias for block'
+    'edit:edit and allow an .envrc or .env file'
+    'exec:execute a command inside a loaded environment'
+    'export:print environment changes for a shell'
+    'fetchurl:fetch a URL into the direnv content-addressed store'
+    'help:show help'
+    'hook:print the shell hook'
+    'prune:remove old allowed files'
+    'reload:reload the current environment'
+    'status:show direnv status'
+    'stdlib:print the direnv standard library'
+    'version:print or check the direnv version'
+    'log:write a direnv log message'
+  )
+  shells=(zsh systemd bash elvish gha murex vim pwsh fish gzenv json tcsh)
+
+  _arguments -C '1:command:->command' '*::argument:->argument'
+  case "$state" in
+    command)
+      _describe 'command' commands
+      ;;
+    argument)
+      case "$words[2]" in
+        allow|permit|grant|block|deny|disallow|revoke|edit)
+          _files
+          ;;
+        exec)
+          if (( CURRENT == 3 )); then
+            _directories
+          elif (( CURRENT == 4 )); then
+            _command_names
+          else
+            _default
+          fi
+          ;;
+        export|hook)
+          _values 'shell' $shells
+          ;;
+        status)
+          compadd -- --json
+          ;;
+        log)
+          compadd -- --status --error
+          ;;
+      esac
+      ;;
+  esac
+}
+
+case "$service" in
+  switch)
+    _julian_switch
+    ;;
+  theme)
+    _julian_theme
+    ;;
+  template)
+    _julian_template
+    ;;
+  envdiff)
+    _julian_envdiff
+    ;;
+  get)
+    _arguments '*:source path:_files'
+    ;;
+  open)
+    _arguments '1:file:_files'
+    ;;
+  cli-bootstrap)
+    _julian_cli_bootstrap
+    ;;
+  direnv)
+    _julian_direnv
+    ;;
+  hf|run)
+    _message 'free-form argument'
+    ;;
+  claude-usage|codex-usage|yank|mount-nas-smb|umount-nas-smb|format)
+    _julian_no_arguments
+    ;;
+esac
