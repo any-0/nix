@@ -114,7 +114,6 @@ in
     zoxide
     eza
     bc
-    lazygit
     gh
     jujutsu
     jjui
