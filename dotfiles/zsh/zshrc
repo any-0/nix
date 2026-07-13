@@ -1,5 +1,17 @@
 # Make Nix profile completions available when Home Manager's zsh wrapper is disabled.
 typeset -U path cdpath fpath manpath
+fpath=(
+  "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/completions"
+  "$HOME/.local/share/npm-global/share/zsh/site-functions"
+  $fpath
+)
+
+# Homebrew is external to Home Manager, but provides completions for installed
+# commands such as brew, docker, colima, and limactl.
+if [[ -d /opt/homebrew/share/zsh/site-functions ]]; then
+  fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
+fi
+
 for profile in ${(z)NIX_PROFILES}; do
   fpath+=(
     "$profile/share/zsh/site-functions"
@@ -68,7 +80,6 @@ function zz() {
 
 # Aliases
 alias ls='eza -l --icons --sort ext'
-compdef _files eza
 alias v='nvim'
 alias dc='cd'
 alias :q='exit'

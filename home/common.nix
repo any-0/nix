@@ -60,6 +60,7 @@ in
 
   xdg.configFile."zsh/.zshrc" = dotFile "zsh/zshrc";
   xdg.configFile."zsh/.zshenv" = dotFile ".zshenv";
+  xdg.configFile."zsh/completions" = dotFile "zsh/completions";
   xdg.configFile."zsh/prompt.zsh" = dotFile "zsh/prompt.zsh";
   xdg.configFile."zsh/eza-colors.zsh" = dotFile "zsh/eza-colors.zsh";
   xdg.configFile."eza/theme.yml" = activeThemeFile "eza.yml";
@@ -117,6 +118,7 @@ in
     gh
     jujutsu
     jjui
+    nix-zsh-completions
   ]) ++ builtins.attrValues scriptPackages;
 
 }

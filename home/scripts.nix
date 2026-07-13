@@ -23,7 +23,7 @@ let
       ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.procps ]
     );
     template = mkBashScript "template" [ pkgs.coreutils pkgs.direnv pkgs.git pkgs.nix ];
-    view = mkBashScript "view" (
+    open = mkBashScript "open" (
       [ pkgs.coreutils ]
       ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.xdg-utils ]
     );
