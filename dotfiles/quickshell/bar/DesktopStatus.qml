@@ -1,8 +1,6 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Wayland._WlrLayerShell
-import Quickshell.Wayland._BackgroundEffect
 
 // Always-on overlay that owns the three status icons (network / volume /
 // bluetooth). Like DesktopClock, the bar never draws these glyphs — it only
@@ -133,93 +131,6 @@ PanelWindow {
         }
     }
 
-    // ---- Network throughput sampling ----
-    // Runs permanently (a 1s /proc read is negligible) so real numbers are
-    // already available when the cards unfold.
-
-    property var lastTrafficSample: null
-    property string upRate: "—"
-    property string downRate: "—"
-
-    function humanRate(bytes) {
-        if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + " MB/s";
-        if (bytes >= 1024) return Math.round(bytes / 1024) + " KB/s";
-        return Math.round(bytes) + " B/s";
-    }
-
-    function resetThroughput() {
-        lastTrafficSample = null;
-        upRate = "—";
-        downRate = "—";
-    }
-
-    function readTrafficSample(interfaceName) {
-        const lines = netDevFile.text().split("\n");
-
-        for (const line of lines) {
-            const parts = line.split(":");
-            if (parts.length !== 2 || parts[0].trim() !== interfaceName) continue;
-
-            const fields = parts[1].trim().split(/\s+/);
-            return {
-                "time": Date.now(),
-                "iface": interfaceName,
-                "rx": Number(fields[0]),
-                "tx": Number(fields[8])
-            };
-        }
-
-        return null;
-    }
-
-    function updateThroughput() {
-        const iface = Status.networkInterface;
-        if (iface.length === 0) {
-            resetThroughput();
-            return;
-        }
-
-        netDevFile.reload();
-        netDevFile.waitForJob();
-
-        const sample = readTrafficSample(iface);
-        if (!sample) {
-            resetThroughput();
-            return;
-        }
-
-        if (!lastTrafficSample || lastTrafficSample.iface !== iface) {
-            lastTrafficSample = sample;
-            upRate = "—";
-            downRate = "—";
-            return;
-        }
-
-        const seconds = Math.max(0.001, (sample.time - lastTrafficSample.time) / 1000);
-        upRate = humanRate(Math.max(0, (sample.tx - lastTrafficSample.tx) / seconds));
-        downRate = humanRate(Math.max(0, (sample.rx - lastTrafficSample.rx) / seconds));
-        lastTrafficSample = sample;
-    }
-
-    FileView {
-        id: netDevFile
-
-        path: "/proc/net/dev"
-        preload: false
-        blockLoading: true
-        blockAllReads: true
-        watchChanges: false
-        printErrors: false
-    }
-
-    Timer {
-        interval: 1000
-        repeat: true
-        running: true
-        triggeredOnStart: true
-        onTriggered: window.updateThroughput()
-    }
-
     // ---- Cards ----
 
     StatusCard {
@@ -249,7 +160,7 @@ PanelWindow {
                 }
 
                 Text {
-                    text: window.downRate
+                    text: Status.networkDownRate
                     color: Theme.text
                     font.family: Theme.fontFamily
                     font.pixelSize: 20
@@ -270,7 +181,7 @@ PanelWindow {
                 }
 
                 Text {
-                    text: window.upRate
+                    text: Status.networkUpRate
                     color: Theme.text
                     font.family: Theme.fontFamily
                     font.pixelSize: 20
