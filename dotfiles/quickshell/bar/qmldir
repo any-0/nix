@@ -1,0 +1,19 @@
+module qs
+Bar 1.0 Bar.qml
+BarButton 1.0 BarButton.qml
+BluetoothMenu 1.0 BluetoothMenu.qml
+ClockPower 1.0 ClockPower.qml
+DesktopClock 1.0 DesktopClock.qml
+DesktopStatus 1.0 DesktopStatus.qml
+MenuPopup 1.0 MenuPopup.qml
+MenuRow 1.0 MenuRow.qml
+NetworkMenu 1.0 NetworkMenu.qml
+singleton Niri 1.0 Niri.qml
+singleton Popups 1.0 Popups.qml
+SectionLabel 1.0 SectionLabel.qml
+singleton Status 1.0 Status.qml
+StatusPill 1.0 StatusPill.qml
+singleton Theme 1.0 Theme.qml
+ToggleSwitch 1.0 ToggleSwitch.qml
+UsageStatus 1.0 UsageStatus.qml
+Workspaces 1.0 Workspaces.qml

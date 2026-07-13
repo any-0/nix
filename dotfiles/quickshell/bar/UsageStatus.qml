@@ -37,7 +37,7 @@ Item {
         label: root.usageLabel
         iconColor: root.ready ? Theme.accent : root.loading ? Theme.textMuted : Theme.danger
         labelColor: root.ready ? Theme.text : root.loading ? Theme.textMuted : Theme.danger
-        onClicked: {
+        onClicked: button => {
             if (button === Qt.RightButton) root.refreshAction();
             else Popups.toggle(usagePopup);
         }
