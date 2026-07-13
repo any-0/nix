@@ -56,7 +56,7 @@ PanelWindow {
 
     // Input goes only to the card rects, and only while the cards are out;
     // everything else clicks through to the desktop.
-    mask: desktopEmpty ? cardsRegion : emptyRegion
+    mask: cardsSettled ? cardsRegion : emptyRegion
 
     Region {
         id: emptyRegion
