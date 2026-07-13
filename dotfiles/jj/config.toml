@@ -8,5 +8,6 @@ email = "julianorlich1@gmail.com"
 color = "auto"
 editor = "nvim"
 
-[revsets]
-log = "::"
+[aliases]
+move = ["bookmark", "move", "--to", "@-"]
+push = ["git", "push", "--bookmark"]
