@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell.Io
 import Quickshell.Networking
 
 MenuPopup {
@@ -11,13 +10,10 @@ MenuPopup {
     property var connectedWiredDevices: []
     property var rawWifiNetworks: []
     property var wifiNetworks: []
-    property var lastTrafficSample: null
-    property string throughputText: "󰁝 —  󰁅 —"
 
     readonly property var wifiDevice: wifiDevices.length > 0 ? wifiDevices[0] : null
     readonly property var currentDevice: connectedDevices.length > 0 ? connectedDevices[0] : null
     readonly property var currentNetwork: connectedNetworks.length > 0 ? connectedNetworks[0] : null
-    readonly property string currentInterface: currentDevice ? currentDevice.name : ""
     readonly property bool disconnected: currentDevice === null
     readonly property string connectionLabel: disconnected ? "Disconnected" : currentDevice.type === DeviceType.Wifi && currentNetwork ? currentNetwork.name : "Ethernet"
 
@@ -94,85 +90,6 @@ MenuPopup {
         if (include) next.push(network);
         rawWifiNetworks = next;
         refreshWifiNetworks();
-    }
-
-    function resetThroughput() {
-        lastTrafficSample = null;
-        throughputText = "󰁝 —  󰁅 —";
-    }
-
-    function humanRate(bytes) {
-        if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + " MB/s";
-        if (bytes >= 1024) return Math.round(bytes / 1024) + " KB/s";
-        return Math.round(bytes) + " B/s";
-    }
-
-    function readTrafficSample(interfaceName) {
-        const lines = netDevFile.text().split("\n");
-
-        for (const line of lines) {
-            const parts = line.split(":");
-            if (parts.length !== 2 || parts[0].trim() !== interfaceName) continue;
-
-            const fields = parts[1].trim().split(/\s+/);
-            return {
-                "time": Date.now(),
-                "rx": Number(fields[0]),
-                "tx": Number(fields[8])
-            };
-        }
-
-        return null;
-    }
-
-    function updateThroughput() {
-        if (currentInterface.length === 0) {
-            resetThroughput();
-            return;
-        }
-
-        netDevFile.reload();
-        netDevFile.waitForJob();
-
-        const sample = readTrafficSample(currentInterface);
-        if (!sample) {
-            resetThroughput();
-            return;
-        }
-
-        if (!lastTrafficSample) {
-            lastTrafficSample = sample;
-            throughputText = "󰁝 —  󰁅 —";
-            return;
-        }
-
-        const seconds = Math.max(0.001, (sample.time - lastTrafficSample.time) / 1000);
-        const up = Math.max(0, (sample.tx - lastTrafficSample.tx) / seconds);
-        const down = Math.max(0, (sample.rx - lastTrafficSample.rx) / seconds);
-        lastTrafficSample = sample;
-        throughputText = "󰁝 " + humanRate(up) + "  󰁅 " + humanRate(down);
-    }
-
-    onVisibleChanged: resetThroughput()
-    onCurrentInterfaceChanged: resetThroughput()
-
-    FileView {
-        id: netDevFile
-
-        path: "/proc/net/dev"
-        preload: false
-        blockLoading: true
-        blockAllReads: true
-        watchChanges: false
-        printErrors: false
-    }
-
-    Timer {
-        interval: 1000
-        repeat: true
-        running: menu.visible
-        triggeredOnStart: true
-        onTriggered: menu.updateThroughput()
     }
 
     Item {
@@ -301,7 +218,7 @@ MenuPopup {
     }
 
     MenuRow {
-        label: menu.throughputText
+        label: Status.networkThroughputText
         muted: true
         clickable: false
     }
