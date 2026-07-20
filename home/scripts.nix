@@ -17,7 +17,7 @@ let
     get = mkBashScript "get" [ pkgs.coreutils pkgs.fd pkgs.fzf pkgs.rsync ];
     hf = mkBashScript "hf" [ pkgs.coreutils pkgs.fzf pkgs.gnugrep pkgs.gnused yank ];
     run = mkBashScript "run" [ pkgs.bash ];
-    switch = mkBashScript "switch" [ pkgs.coreutils pkgs.nh pkgs.nix ];
+    switch = mkBashScript "switch" [ pkgs.coreutils pkgs.nh ];
     theme = mkBashScript "theme" (
       [ pkgs.coreutils pkgs.gnugrep pkgs.tmux ]
       ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.procps ]
