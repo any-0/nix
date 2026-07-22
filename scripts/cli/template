@@ -14,6 +14,8 @@ TEMPLATE_DATE="$(date +%Y-%m-%d)"
 
 nix flake init -t "path:${REPO_DIR}/templates#${TEMPLATE_NAME}"
 
+cp "${REPO_DIR}/templates/dev-flake.lock" .dev/flake.lock
+
 cp "${REPO_DIR}/templates/dev-readme.md" .dev/README.md
 printf '\nGenerated from %s, template `%s`, %s.\n' \
   "$REPO_URL" "$TEMPLATE_NAME" "$TEMPLATE_DATE" >> .dev/README.md

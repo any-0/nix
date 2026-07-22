@@ -1,4 +1,4 @@
-#compdef switch theme template envdiff get open cli-bootstrap direnv claude-usage codex-usage hf run yank mount-nas-smb umount-nas-smb format
+#compdef switch theme template get open cli-bootstrap direnv claude-usage codex-usage hf run yank mount-nas-smb umount-nas-smb format
 
 _julian_no_arguments() {
   _message 'no arguments'
@@ -53,12 +53,6 @@ _julian_template() {
 
   _arguments '1:template:->template'
   [[ "$state" == template ]] && _describe 'template' templates
-}
-
-_julian_envdiff() {
-  _arguments \
-    '(-c --current)'{-c,--current}'[compare against the current nix repo HEAD]' \
-    '(-h --help)'{-h,--help}'[show usage]'
 }
 
 _julian_cli_bootstrap() {
@@ -141,9 +135,6 @@ case "$service" in
     ;;
   template)
     _julian_template
-    ;;
-  envdiff)
-    _julian_envdiff
     ;;
   get)
     _arguments '*:source path:_files'
