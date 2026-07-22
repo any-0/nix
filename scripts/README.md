@@ -8,7 +8,7 @@ These are shell commands meant to be run by hand.
 
 - **`switch [switch|boot|test|build]`** — rebuild and apply the current machine's configuration. Picks `homeConfigurations.mac` on macOS, `nixosConfigurations.<hostname>` on NixOS, or `homeConfigurations.cli` on other Linux.
 - **`cli-bootstrap [profile]`** — installs Nix if missing and applies a Home Manager profile (`mac` on macOS, `cli` on other Linux by default). Used for first-time setup on a new machine.
-- **`template <name>`** — scaffolds a `.dev` dev-shell into the current directory from `../templates`, stamping the template name and this repo's revision into `.dev/flake.nix`, then runs `direnv allow`.
+- **`template <name>`** — scaffolds a `.dev` dev-shell into the current directory from `../templates`, records its origin in `.dev/README.md`, then runs `direnv allow`.
 - **`envdiff [--current]`** — diffs a project's `.dev/flake.nix`, `.dev/flake.lock`, and `.envrc` against the template files they were generated from, to see if the template has since evolved.
 - **`run`** — runs `$RUN_CMD` (set per-project via `.envrc`) from the direnv project root. Lets each template define its own "run the thing" command.
 - **`theme`** — switches the system-wide color theme (terminal, tmux, etc. all reload to match) and reports the active theme.

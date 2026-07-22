@@ -24,7 +24,7 @@ let
       [ pkgs.coreutils pkgs.gnugrep pkgs.tmux ]
       ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.procps ]
     );
-    template = mkCli "template" [ pkgs.coreutils pkgs.direnv pkgs.git pkgs.nix ];
+    template = mkCli "template" [ pkgs.coreutils pkgs.direnv pkgs.nix ];
     open = mkCli "open" (
       [ pkgs.coreutils ]
       ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.xdg-utils ]
