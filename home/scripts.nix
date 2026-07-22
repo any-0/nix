@@ -15,7 +15,6 @@ let
     claude-usage = mkInternal "claude-usage" [ pkgs.coreutils pkgs.curl pkgs.jq ];
     cli-bootstrap = mkCli "cli-bootstrap" [ pkgs.coreutils pkgs.curl pkgs.nix ];
     codex-usage = mkInternal "codex-usage" [ pkgs.coreutils pkgs.curl pkgs.jq ];
-    envdiff = mkCli "envdiff" [ pkgs.coreutils pkgs.diffutils pkgs.git pkgs.gnused ];
     get = mkCli "get" [ pkgs.coreutils pkgs.fd pkgs.fzf pkgs.rsync ];
     hf = mkCli "hf" [ pkgs.coreutils pkgs.fzf pkgs.gnugrep pkgs.gnused yank ];
     run = mkCli "run" [ pkgs.bash ];

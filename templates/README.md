@@ -1,6 +1,6 @@
 # Templates
 
-Project scaffolds started with `template <name>`. Each template provides a `.dev` directory holding a `flake.nix` with all tooling needed for the project, so the dev environment is fully declarative and reproducible. All templates use the same lock file. An `.envrc` is included to activate the environment with `direnv` on entering the directory.
+Project scaffolds started with `template <name>`. Each template provides a `.dev` directory holding a `flake.nix` with all tooling needed for the project, so the dev environment is fully declarative and reproducible. All templates pin the same lock, kept centrally at `templates/dev-flake.lock` (named to avoid Nix mistaking it for `templates/flake.nix`'s own lock file) and copied into `.dev/flake.lock` on init. An `.envrc` is included to activate the environment with `direnv` on entering the directory.
 
 Running `template <name>` copies `templates/dev-readme.md` into the new project as `.dev/README.md`, appended with its source, template name, and generation date.
 
