@@ -32,7 +32,7 @@ let
 in
 {
   # nvim declares LSP clients; global tools here are for editor basics/ad-hoc files.
-  # Toolchain-specific LSPs live in templates/*/.dev/flake.nix.
+  # Toolchain-specific LSPs live in templates/*/.nix/flake.nix.
   home.packages = with pkgs; [
     tree-sitter
     stylua

@@ -45,4 +45,4 @@ A new project is started with:
 ```sh
 template python
 ```
-This initializes the template in the current directory, records where and when it was generated in `.dev/README.md`, and runs `direnv allow`.
+This initializes the template in the current directory, records where and when it was generated in `.nix/README.md`, and runs `direnv allow`.
