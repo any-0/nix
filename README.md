@@ -39,10 +39,10 @@ Local interactive shells automatically attach to an existing tmux session or cre
 
 ## Templates
 
-This repository also includes development templates. The way my templates are set up is that there is a `.dev` directory that stores a `flake.nix` with all required tooling for development, thus making it trivial to recreate the environment. All templates share a `flake.lock`. The templates also include a `.envrc` to instantly activate the environment using `direnv` when the directory is entered.
+This repository also includes development templates, documented in [`templates/README.md`](templates/README.md).
 
 A new project is started with:
 ```sh
 template python
 ```
-This initializes the template in the current directory, stamps the template name and repository revision into `.dev/flake.nix`, and runs `direnv allow`. Available templates are `arduino`, `blank`, `c`, `latex`/`tex`, `python`, `pyts`, and `rust`.
+This initializes the template in the current directory, records where and when it was generated in `.dev/README.md`, and runs `direnv allow`.

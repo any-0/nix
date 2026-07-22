@@ -8,17 +8,14 @@ fi
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
+REPO_URL="https://g.any-0.com/nix.git"
 TEMPLATE_NAME="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
-TEMPLATE_REV="$(git -C "$REPO_DIR" rev-parse HEAD)"
+TEMPLATE_DATE="$(date +%Y-%m-%d)"
 
 nix flake init -t "path:${REPO_DIR}/templates#${TEMPLATE_NAME}"
 
-TMP_FILE="$(mktemp)"
-{
-  printf '# template: %s\n' "$TEMPLATE_NAME"
-  printf '# template-rev: %s\n' "$TEMPLATE_REV"
-  cat .dev/flake.nix
-} > "$TMP_FILE"
-mv "$TMP_FILE" .dev/flake.nix
+cp "${REPO_DIR}/templates/dev-readme.md" .dev/README.md
+printf '\nGenerated from %s, template `%s`, %s.\n' \
+  "$REPO_URL" "$TEMPLATE_NAME" "$TEMPLATE_DATE" >> .dev/README.md
 
 direnv allow
