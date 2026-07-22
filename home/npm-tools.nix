@@ -46,7 +46,7 @@ in
       export PATH="${pkgs.nodejs}/bin:$PATH"
       export CLAUDE_BASH_NO_LOGIN=1
       export DISABLE_AUTOUPDATER=1
-      exec "${npmGlobalDir}/bin/claude" "$@"
+      exec "${npmGlobalDir}/bin/claude" --dangerously-skip-permissions "$@"
     '';
   };
 
