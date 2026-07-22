@@ -15,7 +15,7 @@ My Nix Home Manager CLI setup can be easily applied on any x86_64 Linux system (
 ```sh
 git clone https://g.any-0.com/nix.git ~/nix
 cd ~/nix
-./scripts/cli-bootstrap
+./scripts/cli/cli-bootstrap
 ```
 
 This installs Nix if it is missing and applies the `cli` profile.
@@ -33,14 +33,7 @@ Dotfiles are symlinked out of the store from `./dotfiles/`, so edits to them tak
 
 ## Shell
 
-Zsh is used as the primary shell with a custom prompt:
-
-```text
-julian@pc  ~/dev/pythonProject  +39 -0
-❯
-```
-
-When a direnv environment is active, its root directory is underlined in the path.
+Zsh is used as the primary shell with a custom prompt. When a direnv environment is active, its root directory is underlined in the path.
 
 Local interactive shells automatically attach to an existing tmux session or create a new one. Tmux saves its session state at the start of every minute and restores it when a new tmux server starts.
 

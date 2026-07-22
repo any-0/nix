@@ -7,7 +7,7 @@ if [[ $# -lt 1 ]]; then
 fi
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+REPO_DIR="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
 TEMPLATE_NAME="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
 TEMPLATE_REV="$(git -C "$REPO_DIR" rev-parse HEAD)"
 
