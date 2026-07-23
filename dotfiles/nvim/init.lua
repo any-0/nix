@@ -20,7 +20,7 @@ vim.opt.list = true
 vim.opt.listchars = { trail = "·" }
 vim.opt.sidescrolloff = 8
 vim.opt.scrolloff = 10
-vim.opt.statuscolumn = " %s %l  │  "
+vim.opt.statuscolumn = " %s %=%l  │  "
 vim.opt.signcolumn = "yes"
 vim.cmd.colorscheme("anyscheme")
 vim.opt.pumheight = 8
