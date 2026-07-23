@@ -102,6 +102,22 @@ require("gitsigns").setup({
     end,
 })
 
+local easymotion_gitsigns = vim.api.nvim_create_augroup("EasyMotionGitsigns", { clear = true })
+vim.api.nvim_create_autocmd("User", {
+    group = easymotion_gitsigns,
+    pattern = "EasyMotionPromptBegin",
+    callback = function()
+        require("gitsigns").detach()
+    end,
+})
+vim.api.nvim_create_autocmd("User", {
+    group = easymotion_gitsigns,
+    pattern = "EasyMotionPromptEnd",
+    callback = function()
+        require("gitsigns").attach()
+    end,
+})
+
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 vim.diagnostic.config({
