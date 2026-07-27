@@ -105,6 +105,7 @@ in
     fzf
     wget
     curl
+    ffmpeg
     jq
     unzip
     zip
