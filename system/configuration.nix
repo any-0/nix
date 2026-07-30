@@ -16,5 +16,8 @@
     ./nix-ld.nix
   ];
 
+  hardware.steam-hardware.enable = true;
+  hardware.uinput.enable = true;
+
   system.stateVersion = "25.11"; # never change
 }

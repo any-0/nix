@@ -5,13 +5,13 @@
     discord
   ];
 
-  programs.steam = {
-    enable = true;
-    protontricks.enable = true;
-    extraCompatPackages = with pkgs; [
-      proton-ge-bin
-    ];
-  };
+programs.steam = {
+  enable = true;
+  protontricks.enable = true;
+  extest.enable = true;
 
-  programs.gamemode.enable = true;
+  extraCompatPackages = with pkgs; [
+    proton-ge-bin
+  ];
+};  programs.gamemode.enable = true;
 }

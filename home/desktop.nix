@@ -12,7 +12,6 @@
   home.sessionVariables = {
     XCURSOR_THEME = "Bibata-Modern-Ice";
     XCURSOR_SIZE = "24";
-    NIXOS_OZONE_WL = "1";
   };
 
   xdg.configFile."quickshell/bar" = dotFile "quickshell/bar";
