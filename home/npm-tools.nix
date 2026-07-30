@@ -41,6 +41,7 @@ in
 
   home.file.".local/bin/claude" = {
     executable = true;
+    force = true;
     text = ''
       #!/bin/sh
       export PATH="${pkgs.nodejs}/bin:$PATH"
