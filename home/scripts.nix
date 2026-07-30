@@ -12,6 +12,7 @@ let
   mkCli = mkBashScript "cli";
   mkInternal = mkBashScript "internal";
   scripts = rec {
+    bell = mkCli "bell" [ ];
     claude-usage = mkInternal "claude-usage" [ pkgs.coreutils pkgs.curl pkgs.jq ];
     cli-bootstrap = mkCli "cli-bootstrap" [ pkgs.coreutils pkgs.curl pkgs.nix ];
     codex-usage = mkInternal "codex-usage" [ pkgs.coreutils pkgs.curl pkgs.jq ];
