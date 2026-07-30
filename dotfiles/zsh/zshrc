@@ -40,7 +40,8 @@ HISTSIZE=50000
 SAVEHIST=50000
 HISTFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/history"
 mkdir -p "${HISTFILE:h}"
-setopt HIST_IGNORE_DUPS APPEND_HISTORY SHARE_HISTORY
+setopt HIST_IGNORE_DUPS APPEND_HISTORY INC_APPEND_HISTORY
+unsetopt SHARE_HISTORY
 
 # Prompt
 source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/prompt.zsh"
@@ -80,11 +81,11 @@ function zz() {
 
 # Aliases
 alias ls='eza -l --icons --sort ext'
-alias v='nvim'
+alias vim='nvim'
 alias dc='cd'
 alias :q='exit'
 alias :q!='exit'
-alias p='python3'
+alias py='python3'
 alias python='python3'
 alias shit='shutdown now'
 alias kys='tmux kill-server'
