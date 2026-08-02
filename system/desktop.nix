@@ -1,4 +1,4 @@
-{ config, lib, pkgs, username, ... }:
+{ config, pkgs, username, ... }:
 
 {
   fonts.packages = with pkgs; [
@@ -6,7 +6,10 @@
     nerd-fonts.iosevka-term-slab
   ];
 
-  programs.niri.enable = true;
+  programs.niri = {
+    enable = true;
+    useNautilus = false;
+  };
   services.greetd = {
     enable = true;
     restart = true;
@@ -26,14 +29,6 @@
   hardware.graphics.enable = true;
   hardware.enableRedistributableFirmware = true;
   services.seatd.enable = true;
-
-  xdg.portal = {
-    enable = true;
-    wlr.enable = true;
-    extraPortals = with pkgs; [ xdg-desktop-portal-gtk ];
-    config.common.default = [ "wlr" "gtk" ];
-    config.niri.default = lib.mkForce [ "wlr" "gtk" ];
-  };
 
   console.keyMap = "de";
 

@@ -100,12 +100,6 @@
       };
 
       homeConfigurations = {
-        desktop = mkHome {
-          inherit system username homeDirectory;
-          modules = desktopModules;
-          enableGc = true;
-        };
-
         cli = mkHome {
           inherit system;
           username = cliUsername;

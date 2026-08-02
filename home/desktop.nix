@@ -20,6 +20,8 @@
     user_pref("zen.window-sync.enabled", false);
   '';
 
+  services.polkit-gnome.enable = true;
+
   home.packages = with pkgs; [
     evince
     fuzzel
@@ -29,8 +31,6 @@
     grim
     slurp
     obs-studio
-    polkit_gnome
-    spice-vdagent
     vlc
     wl-clipboard
     kitty
