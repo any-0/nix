@@ -46,8 +46,8 @@ in
     enable = true;
     defaultEditor = true;
     sideloadInitLua = true;
-    withPython3 = true;
-    withRuby = true;
+    withPython3 = false;
+    withRuby = false;
   };
 
   programs.gpg.enable = true;
