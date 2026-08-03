@@ -80,7 +80,7 @@ function zz() {
 }
 
 # Aliases
-alias ls='eza -l --icons --sort ext'
+alias ls='eza --oneline --icons'
 alias vim='nvim'
 alias dc='cd'
 alias :q='exit'
@@ -132,11 +132,10 @@ for km in emacs viins; do
     bindkey -M "$km" '^[[5C' forward-word
 done
 
-# Auto-start tmux for local shells.
+# Auto-start tmux for interactive shells.
 if [[ -o interactive ]] \
     && [[ -z "$TMUX" ]] \
-    && [[ "$TERM" != "dumb" ]] \
-    && [[ -z "${SSH_CONNECTION:-}${SSH_CLIENT:-}${SSH_TTY:-}" ]]; then
+    && [[ "$TERM" != "dumb" ]]; then
     tmux_auto
 fi
 
