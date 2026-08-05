@@ -70,6 +70,7 @@ in
   xdg.configFile."theme/themes".source = themeRoot;
 
   xdg.configFile."nvim" = dotFile "nvim";
+  xdg.configFile."opencode/plugins/terminal-bell.js" = dotFile "opencode/plugins/terminal-bell.js";
   home.file.".zshenv" = dotFile ".zshenv";
   home.file.".codex/AGENTS.md" = dotFile "codex/AGENTS.md";
 
