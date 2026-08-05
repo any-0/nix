@@ -34,6 +34,8 @@ in
         --sandbox danger-full-access \
         --ask-for-approval on-request \
         -c 'allow_login_shell=false' \
+        -c 'features.multi_agent_v2.enabled=true' \
+        -c 'features.multi_agent_v2.max_concurrent_threads_per_session=8' \
         -c 'tui.theme="current"' \
         -c 'tui.keymap.editor.insert_newline=["ctrl-j","shift-enter","alt-enter"]' \
         "$@"

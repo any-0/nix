@@ -314,7 +314,6 @@ local ts_languages = {
     "nix",
     "python",
     "rust",
-    "tmux",
     "toml",
     "typescript",
     "tsx",
@@ -363,21 +362,3 @@ vim.keymap.set("n", "<End>", function()
     vim.cmd("startinsert")
     vim.keymap.set("t", "<Esc>", "<C-\\><C-n>:close<CR>", { buffer = buf })
 end, { desc = "Run RUN_CMD in popup" })
-
--- Rename tmux window to current file
-if os.getenv("TMUX") then
-    vim.api.nvim_create_autocmd("BufEnter", {
-        callback = function()
-            local name = vim.fn.expand("%:t")
-            if name == "" then
-                name = "[nvim]"
-            end
-            vim.fn.system("tmux rename-window " .. vim.fn.shellescape(name))
-        end,
-    })
-    vim.api.nvim_create_autocmd("VimLeave", {
-        callback = function()
-            vim.fn.system("tmux set-window-option automatic-rename on")
-        end,
-    })
-end

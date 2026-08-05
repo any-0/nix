@@ -23,12 +23,19 @@ refresh_clients() {
   cp "$config_dir/current/claude.json" "$claude_next"
   mv -f "$codex_next" "$codex_theme_dir/current.tmTheme"
   mv -f "$claude_next" "$claude_theme_dir/current.json"
-  pkill -USR1 -x kitty 2>/dev/null || true
-
-  if tmux info >/dev/null 2>&1; then
-    tmux source-file "${XDG_CONFIG_HOME:-$HOME/.config}/tmux/dotfiles.conf"
-    tmux refresh-client -S
+  # kitty is not managed by this flake on every host, so reload it only where it
+  # is actually installed, and never let a client that refuses to reload fail a
+  # switch that has already happened.
+  if command -v kitty >/dev/null 2>&1 && command -v pgrep >/dev/null 2>&1; then
+    while IFS= read -r kitty_pid; do
+      kitty_socket="/tmp/kitty-${USER}-${kitty_pid}"
+      [[ -S "$kitty_socket" ]] || continue
+      kitty @ --to "unix:$kitty_socket" set-colors --all --configured \
+        "$config_dir/current/kitty.conf" || true
+    done < <(pgrep -x kitty)
   fi
+
+  mux set-theme "$config_dir/current/mux.toml" 2>/dev/null || true
 }
 
 activate_theme() {

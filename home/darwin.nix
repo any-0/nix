@@ -1,5 +1,9 @@
 { config, lib, pkgs, ... }:
 
+let
+  iosevkaTermSlab = pkgs.callPackage ../dotfiles/fonts/iosevka-termslab-custom { };
+  fontDir = "${iosevkaTermSlab}/share/fonts/truetype";
+in
 {
   home.packages = with pkgs; [
     coreutils
@@ -10,6 +14,25 @@
   home.sessionPath = [
     "${pkgs.coreutils}/bin"
   ];
+
+  home.activation.installIosevkaTermSlab = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    font_dir="${config.home.homeDirectory}/Library/Fonts"
+    ${lib.getExe' pkgs.coreutils "mkdir"} -p "$font_dir"
+
+    for font in \
+      IosevkaTermSlabNerdFontMono-Custom-Regular.ttf \
+      IosevkaTermSlabNerdFontMono-Bold.ttf \
+      IosevkaTermSlabNerdFontMono-Italic.ttf \
+      IosevkaTermSlabNerdFontMono-BoldItalic.ttf
+    do
+      ${lib.getExe' pkgs.coreutils "rm"} -f "$font_dir/$font"
+      ${lib.getExe' pkgs.coreutils "cp"} "${fontDir}/$font" "$font_dir/$font"
+    done
+
+    /usr/bin/atsutil databases -removeUser || true
+    /usr/bin/killall fontd || true
+    /usr/bin/atsutil fonts -list >/dev/null
+  '';
 
   xdg.configFile."zsh/.zprofile".text = ''
     unset __HM_SESS_VARS_SOURCED

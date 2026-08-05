@@ -88,7 +88,7 @@ alias :q!='exit'
 alias py='python3'
 alias python='python3'
 alias shit='shutdown now'
-alias kys='tmux kill-server'
+alias kys='mux kill-server'
 alias hms='switch'
 
 format() {
@@ -111,18 +111,8 @@ add-zsh-hook precmd _user_path
 add-zsh-hook chpwd _user_path
 source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/eza-colors.zsh"
 
-# Tmux
-tmux_auto() {
-    [[ -n "$TMUX" ]] && return 0
-    command -v tmux &>/dev/null || return 0
-
-    local session="${TMUX_AUTO_SESSION:-Main}"
-
-    tmux attach-session 2>/dev/null || tmux new-session -A -s "$session"
-}
-
-# Ctrl-T for tmux
-bindkey -s '^T' '^Utmux_auto\n'
+# Ctrl-T for mux
+bindkey -s '^T' '^Umux\n'
 
 # Word-jump navigation (Ctrl + Left/Right)
 for km in emacs viins; do
@@ -132,11 +122,14 @@ for km in emacs viins; do
     bindkey -M "$km" '^[[5C' forward-word
 done
 
-# Auto-start tmux for interactive shells.
+# Auto-start mux for interactive shells. Skip when mux is missing, so a shell on
+# a half-applied profile still comes up instead of greeting every login with a
+# command-not-found.
 if [[ -o interactive ]] \
-    && [[ -z "$TMUX" ]] \
-    && [[ "$TERM" != "dumb" ]]; then
-    tmux_auto
+    && [[ -z "$MUX" ]] \
+    && [[ "$TERM" != "dumb" ]] \
+    && command -v mux &>/dev/null; then
+    mux
 fi
 
 #Edit command in nvim
@@ -151,5 +144,5 @@ bindkey -M emacs '^D' ctrl_d_noop
 bindkey -M viins '^D' ctrl_d_noop
 
 # Force Ctrl-T mapping last, in case other scripts override it.
-bindkey -s -M emacs '^T' '^Utmux_auto\n'
-bindkey -s -M viins '^T' '^Utmux_auto\n'
+bindkey -s -M emacs '^T' '^Umux\n'
+bindkey -s -M viins '^T' '^Umux\n'

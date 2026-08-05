@@ -7,7 +7,7 @@
     background = "202026";
     foreground = "f2f2f4";
     surface = "292932";
-    surfaceRaised = "454550";
+    surfaceRaised = "858590";
     muted = "8b8b95";
 
     accent = "7aa2f7";
@@ -28,7 +28,7 @@
     background = "241e2d";
     foreground = "ece7f2";
     surface = "2e2739";
-    surfaceRaised = "4a4158";
+    surfaceRaised = "8a8198";
     muted = "968aa6";
 
     accent = "9fa8f2";
@@ -48,7 +48,7 @@
     background = "fcf9f0";
     foreground = "000000";
     surface = "e8e8e8";
-    surfaceRaised = "cccccc";
+    surfaceRaised = "9c9c9c";
     muted = "888888";
 
     accent = "0074b1";

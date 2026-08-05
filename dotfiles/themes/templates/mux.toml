@@ -1,0 +1,17 @@
+variant = "@variant@"
+
+[palette]
+background = "#@background@"
+foreground = "#@foreground@"
+surface = "#@surface@"
+surface_raised = "#@surfaceRaised@"
+muted = "#@muted@"
+accent = "#@accent@"
+secondary = "#@secondary@"
+success = "#@success@"
+warning = "#@warning@"
+danger = "#@danger@"
+selection = "#@selection@"
+diff_add = "#@diffAdd@"
+diff_delete = "#@diffDelete@"
+diff_change = "#@diffChange@"

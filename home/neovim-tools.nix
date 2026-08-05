@@ -23,7 +23,6 @@ let
     nix
     python
     rust
-    tmux
     toml
     tsx
     typescript
