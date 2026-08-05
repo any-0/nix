@@ -7,9 +7,8 @@ let
     else
       { top = 1000; bottom = -277; railTop = 1000; railBottom = -345; armsInside = true; };
 
-  # Both logos come from their vendor's own vector rather than a trace, which
-  # halves the outlines the glyphs carry - claude 411 points to 198, the OpenAI
-  # blossom 457 to 172 - and gives the artwork a recorded origin. Fetching them
+  # Logos come from their vendor's own vector rather than a trace, which keeps
+  # the artwork faithful and gives each source a recorded origin. Fetching them
   # is what keeps that origin in one place; nothing here needs a copy in-tree.
 
   # Anthropic publishes no brand-asset page, so this comes from Simple Icons,
@@ -27,6 +26,12 @@ let
   openaiLogos = fetchurl {
     url = "https://cdn.openai.com/brand/OpenAI-Logos-2025.zip";
     hash = "sha256-ssTNHoa752vcSUanLQFO+kVSQMF39IeP1ozJuIxx0uw=";
+  };
+
+  # OpenCode's mark is pinned to the same Simple Icons release as Claude's.
+  opencodeLogo = fetchurl {
+    url = "https://raw.githubusercontent.com/simple-icons/simple-icons/16.28.0/icons/opencode.svg";
+    hash = "sha256-b30gMgC6BRzbqnJsTeCnKc7j8c7EeVPxiTmdlRr1jEw=";
   };
 in
 stdenvNoCC.mkDerivation {
@@ -58,6 +63,7 @@ stdenvNoCC.mkDerivation {
       "$font_dir/IosevkaTermSlabNerdFontMono-Custom-Regular.ttf" \
       "${claudeLogo}" \
       "$logo_dir/OpenAI-black-monoblossom.svg" \
+      "${opencodeLogo}" \
       ${toString connectorCell.top} \
       ${toString connectorCell.bottom} \
       ${toString connectorCell.railTop} \

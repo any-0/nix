@@ -11,16 +11,17 @@
   U+E022..U+E024  SSH terminal, split across three cells
   U+E025..U+E027  Rust logo, split across three cells
   U+E028..U+E02A  Python logo, split across three cells
+  U+E02B..U+E02D  OpenCode logo, split across three cells
 
 Source: IosevkaTermSlabNerdFontMono-Regular.ttf from the Nerd Fonts release.
 
   fontforge -script create-private-use-glyphs.py \
       IosevkaTermSlabNerdFontMono-Regular.ttf \
       ~/Library/Fonts/IosevkaTermSlabNerdFontMono-Custom-Regular.ttf \
-      claude.svg OpenAI-black-monoblossom.svg 1090 -410 1600 -700 false
+      claude.svg OpenAI-black-monoblossom.svg opencode.svg 1090 -410 1600 -700 false
 
-The two logo SVGs are the vendors' own artwork, fetched by default.nix rather
-than kept in the tree - see the comments there for where each comes from.
+The logo SVGs are fetched by default.nix rather than kept in the tree - see the
+comments there for where each comes from.
 
 The rails deliberately overhang the nominal ascent/descent, because a glyph
 drawn to the ascent stops short of the cell edge and the bars do not join
@@ -47,10 +48,10 @@ import sys
 import fontforge
 
 source_path, output_path = sys.argv[1:3]
-claude_svg, openai_svg = sys.argv[3:5]
-connector_cell_top, connector_cell_bottom = map(int, sys.argv[5:7])
-rail_top, rail_bottom = map(int, sys.argv[7:9])
-arms_inside = sys.argv[9] == "true"
+claude_svg, openai_svg, opencode_svg = sys.argv[3:6]
+connector_cell_top, connector_cell_bottom = map(int, sys.argv[6:8])
+rail_top, rail_bottom = map(int, sys.argv[8:10])
+arms_inside = sys.argv[10] == "true"
 
 PSNAME = "IosevkaTermSlabNFMCustomR7-Regular"
 FULLNAME = "IosevkaTermSlab Nerd Font Mono Custom R7"
@@ -313,6 +314,7 @@ make_rail(0xE011)
 make_connector_half(0xE018, connector_cell_top, -1 if arms_inside else 0)
 make_logo_sequence(0xE012, claude_svg)
 make_logo_sequence(0xE015, openai_svg)
+make_logo_sequence(0xE02B, opencode_svg)
 make_drawn_sequence(0xE019, nix_flake_contours())
 make_drawn_sequence(0xE01C, eye_contours())
 make_font_glyph_sequence(0xE01F, 0xE6AE)

@@ -6,6 +6,7 @@ let
     "@earendil-works/pi-coding-agent"
     "@openai/codex"
     "@anthropic-ai/claude-code"
+    "opencode-ai"
   ];
   piRuntimePath = lib.makeBinPath (
     [ pkgs.nodejs ] ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.bubblewrap ]
@@ -22,6 +23,15 @@ in
       #!/bin/sh
       export PATH="${piRuntimePath}:$PATH"
       exec "${npmGlobalDir}/bin/pi" "$@"
+    '';
+  };
+
+  home.file.".local/bin/opencode" = {
+    executable = true;
+    text = ''
+      #!/bin/sh
+      export PATH="${pkgs.nodejs}/bin:$PATH"
+      exec "${npmGlobalDir}/bin/opencode" "$@"
     '';
   };
 
