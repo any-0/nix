@@ -1,9 +1,6 @@
 autoload -Uz add-zsh-hook
 
 typeset -g __prompt_spacing_ran_command=0
-typeset -g __prompt_first_line_cols=0
-typeset -g __prompt_time_col=1
-typeset -g __prompt_path_plain=""
 typeset -g __prompt_path_prompt=""
 
 prompt_arrow_style() {
@@ -22,7 +19,6 @@ prompt_path_segments() {
   cwd="$PWD"
   cwd_display="${cwd/#$HOME/~}"
 
-  __prompt_path_plain="$cwd_display"
   __prompt_path_prompt="${cwd_display//\%/%%}"
 
   if envrc="$(direnv status --json 2>/dev/null | jq -r '.state.loadedRC.path // empty' 2>/dev/null)"; then
@@ -50,41 +46,13 @@ prompt_path_segments() {
 }
 
 update_prompt() {
-  local arrow_style jj_segment user_segment first_left first_plain rendered_first_line sent_at cols pad_count padding
+  local arrow_style jj_segment user_segment first_line
   arrow_style="$(prompt_arrow_style)"
   jj_segment="$(jj_prompt)"
   user_segment="$(prompt_user)"
   prompt_path_segments
-  first_left="${user_segment}@%m  ${__prompt_path_prompt}${jj_segment}"
-  first_plain="${user_segment}@%m  ${__prompt_path_plain//\%/%%}${jj_segment}"
-  rendered_first_line="${(%)first_plain}"
-  __prompt_first_line_cols="${#rendered_first_line}"
-
-  sent_at="$(date '+%Y-%m-%d %H:%M:%S')"
-  cols="${COLUMNS:-80}"
-  (( __prompt_time_col = cols - ${#sent_at} + 1 ))
-  (( __prompt_time_col < __prompt_first_line_cols + 2 )) && __prompt_time_col=$((__prompt_first_line_cols + 2))
-  (( pad_count = __prompt_time_col - __prompt_first_line_cols - 1 ))
-  padding="${(l:${pad_count}:: :)}"
-
-  PS1="%F{245}${first_left}${padding}${sent_at}%f"$'\n'"%B${arrow_style}❯%f%b "
-  RPROMPT=""
-}
-
-_prompt_accept_line() {
-  local sent_at col up input_prompt_cols
-  sent_at="$(date '+%Y-%m-%d %H:%M:%S')"
-
-  # Stamp the timestamp onto the first prompt line when the command is sent.
-  # RPROMPT appears on the editing line for multiline prompts, so draw this
-  # directly at the right edge one visual prompt line above the command.
-  input_prompt_cols=2
-  (( up = (input_prompt_cols + CURSOR) / ${COLUMNS:-80} + 1 ))
-  col="$__prompt_time_col"
-
-  printf '\033[s\033[%dA\033[%dG\033[38;5;245m%s\033[0m\033[u' \
-    "$up" "$col" "$sent_at"
-  zle .accept-line
+  first_line="${user_segment}@%m  ${__prompt_path_prompt}${jj_segment}"
+  PS1="%F{245}${first_line}%f"$'\n'"%B${arrow_style}❯%f%b "
 }
 
 _prompt_spacing_precmd() {
@@ -107,7 +75,6 @@ _prompt_spacing_preexec() {
 
 add-zsh-hook precmd _prompt_spacing_precmd
 add-zsh-hook preexec _prompt_spacing_preexec
-zle -N accept-line _prompt_accept_line
 
 jj_prompt() {
   local stat summary rc

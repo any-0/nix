@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, mux, cachix, ... }:
 
 let
   dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
@@ -11,14 +11,14 @@ let
     source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.configHome}/theme/current/${path}";
     force = true;
   };
-  scriptPackages = import ./scripts.nix { inherit config lib pkgs; };
+  scriptPackages = import ./scripts.nix { inherit config lib mux pkgs; };
 in
 {
   _module.args = { inherit activeThemeFile dot dotFile scriptPackages; };
   imports = [
     ./npm-tools.nix
     ./neovim-tools.nix
-    ./tmux.nix
+    ./mux.nix
   ];
 
   home.stateVersion = "25.11"; # never change
@@ -122,6 +122,7 @@ in
     eza
     bc
     gh
+    cachix
     jujutsu
     jjui
     nix-zsh-completions

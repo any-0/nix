@@ -8,8 +8,8 @@ let
     "eza.yml" = ./templates/eza.yml;
     "jj.toml" = ./templates/jj.toml;
     "kitty.conf" = ./templates/kitty.conf;
+    "mux.toml" = ./templates/mux.toml;
     "nvim.lua" = ./templates/nvim.lua;
-    "tmux.conf" = ./templates/tmux.conf;
   };
 
   channel = color: index: lib.fromHexString (builtins.substring (index * 2) 2 color);
@@ -46,7 +46,9 @@ let
     in
     pkgs.linkFarm "theme-${name}" files;
 in
-pkgs.linkFarm "themes" (lib.mapAttrsToList (name: palette: {
-  inherit name;
-  path = renderTheme name palette;
-}) palettes)
+pkgs.linkFarm "themes" (lib.mapAttrsToList
+  (name: palette: {
+    inherit name;
+    path = renderTheme name palette;
+  })
+  palettes)

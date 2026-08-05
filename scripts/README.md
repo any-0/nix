@@ -10,10 +10,10 @@ These are shell commands meant to be run by hand.
 - **`cli-bootstrap [profile]`** - installs Nix if missing and applies a Home Manager profile (`mac` on macOS, `cli` on other Linux by default). Used for first-time setup on a new machine.
 - **`template <name>`** - scaffolds a `.nix` dev-shell into the current directory from `../templates`, records its origin in `.nix/README.md`, then runs `direnv allow`.
 - **`run`** - runs `$RUN_CMD` (set per-project via `.envrc`) from the direnv project root. Lets each template define its own "run the thing" command.
-- **`theme`** - switches the system-wide color theme (terminal, tmux, etc. all reload to match) and reports the active theme.
+- **`theme`** - switches the system-wide color theme and reloads supported clients to match.
 - **`get [path...]`** - copies files in. With no args, interactively fzf-picks from `$HOME` (or `$GET_BASE`) and copies selections into the current directory; with args, rsyncs the given paths in.
 - **`open <file>`** - cross-platform `open`/`xdg-open` wrapper.
-- **`yank`** - copies stdin to the system clipboard. Also used internally by `hf` and by tmux's copy-mode binding.
+- **`yank`** - copies stdin to the system clipboard. Also used internally by `hf` and by mux's Vim mode.
 - **`hf [query]`** - fuzzy-search zsh history (optionally pre-filtered) and yank the selected line.
 
 ## `internal/`

@@ -1,0 +1,38 @@
+#compdef mux
+
+local context state state_descr line
+local -a commands
+commands=(
+  'kill-server:stop the daemon and its panes'
+  'list-sessions:print one line per session'
+  'ls:alias for list-sessions'
+  'list-windows:print one line per window of the current session'
+  'list-panes:print one line per pane of the current window'
+  'choose-tree:open the session tree'
+  'detach:detach the active client'
+  'new-window:create a window'
+  'new-session:create and select a session'
+  'rename-session:rename the current session'
+  'rename-window:name the current window, or clear its name'
+  'split-window:split the active pane'
+  'select-pane:focus an adjacent pane'
+  'resize-pane:move the nearest divider'
+  'zoom-pane:toggle the active pane over the whole window'
+  'break-pane:move the active pane into a window of its own'
+  'join-pane:move the active pane into another window'
+  'swap-window:exchange the current window with another window'
+  'select-window:select window 1 through 9'
+  'vim-mode:enter Vim mode'
+  'set-theme:apply colors to attached clients'
+  'kill-pane:kill the active pane'
+  'kill-session:kill the current session'
+  'set-session-root:use the active shell directory as session root'
+  'jump-to-bell:jump to the first pending bell'
+)
+
+_arguments -C \
+  '--config[apply user bindings after built-in defaults]:config file:_files' \
+  '--session[attach to or create a named session]:session name:' \
+  '(-h --help)'{-h,--help}'[show help]' \
+  '1:command:->command'
+[[ "$state" == command ]] && _describe 'command' commands

@@ -10,19 +10,19 @@ The configuration also documents the entire setup. Every managed package and set
 
 ## Features
 
-I use tmux heavily, so it starts by default in Zsh. I use `Alt` + `a` as the leader, with `Alt` + `s` opening the session tree and `Alt` + `w` starting copy mode. Tmux saves its session state at the start of every minute and restores it when a new tmux server starts, so all of my pane histories persist until the lines leave scrollback or I kill that pane. My tmux includes a top bar that changes color based on the tmux mode, to make things like copy mode more readable.
+I use my own terminal multiplexer, mux, so it starts by default in Zsh. I use `Alt` + `a` as the leader, with `Alt` + `s` opening the session tree and `Alt` + `w` starting Vim mode. Its daemon owns the PTYs, and it journals pane output and layout changes as they happen so sessions and scrollback recover after the daemon or machine restarts.
 
 I use Zsh as my shell, with a minimal prompt that gives me info about the git/jj state and if I am in a direnv.
 
 My development environments usually use jj with colocated git, and include a `.nix` directory with a flake that declares that project's dev shell. The flake is activated with a root-level `.envrc`.
 
-The color scheme of the CLI can be configured using the `theme` command. Themes can be defined in `dotfiles/themes/palettes.nix` and get applied to eza, jj, kitty, neovim, and tmux.
+The color scheme of the CLI can be configured using the `theme` command. Themes can be defined in `dotfiles/themes/palettes.nix` and get applied to eza, jj, kitty, and neovim.
 
 ## Tools
 
-**tmux**
+**mux**
 
-In tmux, all CLI processes are owned by the tmux server instead of the terminal emulator. That keeps everything running even when the terminal is closed or an SSH connection is lost. Tmux also has sessions, windows, and panes, making it easy to run many shells at the same time. Switching between sessions and windows is very fast and lightweight. I also heavily use its copy mode to scroll/search the current buffer and copy from it.
+Mux is a small terminal multiplexer built around my workflow. Its daemon owns CLI processes instead of the terminal emulator, so they keep running when the terminal closes or an SSH connection is lost. It provides sessions, windows, panes, a session tree, and a Vim mode for navigating, searching, and copying scrollback.
 
 **jj instead of git**
 

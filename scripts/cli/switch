@@ -17,7 +17,7 @@ case "${MODE}" in
     ;;
 esac
 
-common_nix_args=(--extra-experimental-features "nix-command flakes" --no-write-lock-file --option warn-dirty false)
+common_nix_args=(--extra-experimental-features "nix-command flakes" --no-write-lock-file --option warn-dirty false --override-input mux github:any-0/mux)
 home_nix_args=("${common_nix_args[@]}" --impure)
 
 case "${OS}" in
