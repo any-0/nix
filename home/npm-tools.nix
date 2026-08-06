@@ -34,6 +34,7 @@ in
         --sandbox danger-full-access \
         --ask-for-approval on-request \
         -c 'allow_login_shell=false' \
+        -c 'tui.theme="current"' \
         -c 'tui.keymap.editor.insert_newline=["ctrl-j","shift-enter","alt-enter"]' \
         "$@"
     '';
@@ -47,7 +48,10 @@ in
       export PATH="${pkgs.nodejs}/bin:$PATH"
       export CLAUDE_BASH_NO_LOGIN=1
       export DISABLE_AUTOUPDATER=1
-      exec "${npmGlobalDir}/bin/claude" --dangerously-skip-permissions "$@"
+      exec "${npmGlobalDir}/bin/claude" \
+        --dangerously-skip-permissions \
+        --settings '{"theme":"custom:current"}' \
+        "$@"
     '';
   };
 

@@ -84,13 +84,19 @@ in
 
   home.activation.initializeTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     theme_dir="${config.xdg.configHome}/theme"
-    ${lib.getExe' pkgs.coreutils "mkdir"} -p "$theme_dir"
+    codex_theme_dir="${config.home.homeDirectory}/.codex/themes"
+    claude_theme_dir="${config.home.homeDirectory}/.claude/themes"
+    ${lib.getExe' pkgs.coreutils "mkdir"} -p "$theme_dir" "$codex_theme_dir" "$claude_theme_dir"
 
     theme_name=light
     if [[ -L "$theme_dir/current" ]]; then
       theme_name="$(${lib.getExe' pkgs.coreutils "basename"} "$(${lib.getExe' pkgs.coreutils "readlink"} "$theme_dir/current")")"
     fi
     ${lib.getExe' pkgs.coreutils "ln"} -sfn "$theme_dir/themes/$theme_name" "$theme_dir/current"
+    ${lib.getExe' pkgs.coreutils "cp"} "$theme_dir/current/codex.tmTheme" "$codex_theme_dir/.current.tmTheme"
+    ${lib.getExe' pkgs.coreutils "cp"} "$theme_dir/current/claude.json" "$claude_theme_dir/.current.json"
+    ${lib.getExe' pkgs.coreutils "mv"} -f "$codex_theme_dir/.current.tmTheme" "$codex_theme_dir/current.tmTheme"
+    ${lib.getExe' pkgs.coreutils "mv"} -f "$claude_theme_dir/.current.json" "$claude_theme_dir/current.json"
   '';
 
   services.gpg-agent = {

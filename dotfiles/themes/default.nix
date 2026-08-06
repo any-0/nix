@@ -3,6 +3,8 @@
 let
   palettes = import ./palettes.nix;
   templates = {
+    "claude.json" = ./templates/claude.json;
+    "codex.tmTheme" = ./templates/codex.tmTheme;
     "eza.yml" = ./templates/eza.yml;
     "jj.toml" = ./templates/jj.toml;
     "kitty.conf" = ./templates/kitty.conf;
@@ -27,7 +29,7 @@ let
       bright = "ffffff";
       onColor = if palette.variant == "dark" then palette.background else bright;
       roles = palette // {
-        inherit bright onColor;
+        inherit bright name onColor;
         onColorMuted = mix 0.2 onColor (mix 0.14 palette.secondary "000000");
       }
       // tabShades "accent" palette.accent

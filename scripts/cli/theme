@@ -13,6 +13,16 @@ list_themes() {
 }
 
 refresh_clients() {
+  local codex_theme_dir="$HOME/.codex/themes"
+  local claude_theme_dir="$HOME/.claude/themes"
+  local codex_next="$codex_theme_dir/.current.tmTheme.$$"
+  local claude_next="$claude_theme_dir/.current.json.$$"
+
+  mkdir -p "$codex_theme_dir" "$claude_theme_dir"
+  cp "$config_dir/current/codex.tmTheme" "$codex_next"
+  cp "$config_dir/current/claude.json" "$claude_next"
+  mv -f "$codex_next" "$codex_theme_dir/current.tmTheme"
+  mv -f "$claude_next" "$claude_theme_dir/current.json"
   pkill -USR1 -x kitty 2>/dev/null || true
 
   if tmux info >/dev/null 2>&1; then
