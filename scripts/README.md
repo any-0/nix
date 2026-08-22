@@ -8,7 +8,7 @@ These are shell commands meant to be run by hand.
 
 - **`switch [switch|boot|test|build]`** - rebuild and apply the current machine's configuration. Picks `homeConfigurations.mac` on macOS, `nixosConfigurations.<hostname>` on NixOS, or `homeConfigurations.cli` on other Linux.
 - **`cli-bootstrap [profile]`** - installs Nix if missing and applies a Home Manager profile (`mac` on macOS, `cli` on other Linux by default). Used for first-time setup on a new machine.
-- **`template <name>`** - scaffolds a `.nix` dev-shell into the current directory from `../templates`, records its origin in `.nix/README.md`, then runs `direnv allow`.
+- **`template <name> [-d <dirname>]`** - scaffolds a `.nix` dev-shell from `../templates`, records its origin in `.nix/README.md`, then runs `direnv allow`. With `-d`, it first creates and initializes that directory; otherwise it uses the current directory.
 - **`run`** - runs `$RUN_CMD` (set per-project via `.envrc`) from the direnv project root. Lets each template define its own "run the thing" command.
 - **`theme`** - switches the system-wide color theme and reloads supported clients to match.
 - **`get [path...]`** - copies files in. With no args, interactively fzf-picks from `$HOME` (or `$GET_BASE`) and copies selections into the current directory; with args, rsyncs the given paths in.

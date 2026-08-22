@@ -1,16 +1,44 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -lt 1 ]]; then
-  echo "usage: template <name>" >&2
+usage() {
+  echo "usage: template <name> [-d <dirname>]" >&2
   exit 1
-fi
+}
+
+TEMPLATE_NAME=""
+TARGET_DIR=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -d)
+      [[ $# -ge 2 && -n "$2" && -z "$TARGET_DIR" ]] || usage
+      TARGET_DIR="$2"
+      shift 2
+      ;;
+    -*)
+      usage
+      ;;
+    *)
+      [[ -z "$TEMPLATE_NAME" ]] || usage
+      TEMPLATE_NAME="$1"
+      shift
+      ;;
+  esac
+done
+
+[[ -n "$TEMPLATE_NAME" ]] || usage
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
 REPO_URL="https://g.any-0.com/nix.git"
-TEMPLATE_NAME="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+TEMPLATE_NAME="$(printf '%s' "$TEMPLATE_NAME" | tr '[:upper:]' '[:lower:]')"
 TEMPLATE_DATE="$(date +%Y-%m-%d)"
+
+if [[ -n "$TARGET_DIR" ]]; then
+  mkdir -- "$TARGET_DIR"
+  cd -- "$TARGET_DIR"
+fi
 
 nix flake init -t "path:${REPO_DIR}/templates#${TEMPLATE_NAME}"
 
