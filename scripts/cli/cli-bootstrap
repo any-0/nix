@@ -41,8 +41,8 @@ if ! command -v nix >/dev/null 2>&1; then
 fi
 
 echo "Applying Home Manager profile '${PROFILE}' from '${REPO_DIR}'..."
-nix --extra-experimental-features "nix-command flakes" \
-  run github:nix-community/home-manager/release-26.05 -- \
+NIX_CONFIG="${NIX_CONFIG-}"$'\nextra-experimental-features = nix-command flakes' \
+  nix run github:nix-community/home-manager/release-26.05 -- \
   --impure switch -b "${BACKUP_EXT}" --flake "path:${REPO_DIR}#${PROFILE}"
 
 echo "Done."

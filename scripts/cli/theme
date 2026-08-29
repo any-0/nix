@@ -15,14 +15,18 @@ list_themes() {
 refresh_clients() {
   local codex_theme_dir="$HOME/.codex/themes"
   local claude_theme_dir="$HOME/.claude/themes"
+  local opencode_theme_dir="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/themes"
   local codex_next="$codex_theme_dir/.current.tmTheme.$$"
   local claude_next="$claude_theme_dir/.current.json.$$"
+  local opencode_next="$opencode_theme_dir/.current.json.$$"
 
-  mkdir -p "$codex_theme_dir" "$claude_theme_dir"
+  mkdir -p "$codex_theme_dir" "$claude_theme_dir" "$opencode_theme_dir"
   cp "$config_dir/current/codex.tmTheme" "$codex_next"
   cp "$config_dir/current/claude.json" "$claude_next"
+  cp "$config_dir/current/opencode.json" "$opencode_next"
   mv -f "$codex_next" "$codex_theme_dir/current.tmTheme"
   mv -f "$claude_next" "$claude_theme_dir/current.json"
+  mv -f "$opencode_next" "$opencode_theme_dir/current.json"
   # kitty is not managed by this flake on every host, so reload it only where it
   # is actually installed, and never let a client that refuses to reload fail a
   # switch that has already happened.
