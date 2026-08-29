@@ -16,7 +16,7 @@ I use Zsh as my shell, with a minimal prompt that gives me info about the git/jj
 
 My development environments usually use jj with colocated git, and include a `.nix` directory with a flake that declares that project's dev shell. The flake is activated with a root-level `.envrc`.
 
-The color scheme of the CLI can be configured using the `theme` command. Themes can be defined in `dotfiles/themes/palettes.nix` and get applied to eza, jj, kitty, and neovim.
+The color scheme of the CLI can be configured using the `theme` command. Themes can be defined in `dotfiles/themes/palettes.nix` and get applied to eza, jj, kitty, neovim, and opencode.
 
 ## Tools
 

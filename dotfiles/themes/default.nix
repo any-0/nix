@@ -10,6 +10,7 @@ let
     "kitty.conf" = ./templates/kitty.conf;
     "mux.toml" = ./templates/mux.toml;
     "nvim.lua" = ./templates/nvim.lua;
+    "opencode.json" = ./templates/opencode.json;
   };
 
   channel = color: index: lib.fromHexString (builtins.substring (index * 2) 2 color);

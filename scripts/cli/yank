@@ -19,7 +19,7 @@ trap cleanup EXIT
 
 cat >"$tmp"
 
-if command -v wl-copy >/dev/null 2>&1; then
+if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null 2>&1; then
   wl-copy <"$tmp"
   exit 0
 fi
@@ -29,7 +29,7 @@ if command -v pbcopy >/dev/null 2>&1; then
   exit 0
 fi
 
-if command -v xclip >/dev/null 2>&1; then
+if [[ -n "${DISPLAY:-}" ]] && command -v xclip >/dev/null 2>&1; then
   xclip -selection clipboard <"$tmp"
   exit 0
 fi
@@ -39,5 +39,10 @@ if command -v clip.exe >/dev/null 2>&1; then
   exit 0
 fi
 
-echo "yank: no usable clipboard command found (tried wl-copy, pbcopy, xclip, clip.exe)" >&2
+if [[ -n "${SSH_TTY:-}" ]]; then
+  printf '\033]52;c;%s\a' "$(base64 --wrap=0 <"$tmp")" >/dev/tty
+  exit 0
+fi
+
+echo "yank: no usable clipboard found (tried Wayland, macOS, X11, WSL, and SSH terminals)" >&2
 exit 127

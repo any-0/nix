@@ -71,6 +71,10 @@ in
 
   xdg.configFile."nvim" = dotFile "nvim";
   xdg.configFile."opencode/plugins/terminal-bell.js" = dotFile "opencode/plugins/terminal-bell.js";
+  xdg.configFile."opencode/tui.json".text = builtins.toJSON {
+    "$schema" = "https://opencode.ai/tui.json";
+    theme = "current";
+  };
   home.file.".zshenv" = dotFile ".zshenv";
   home.file.".codex/AGENTS.md" = dotFile "codex/AGENTS.md";
 
@@ -83,11 +87,12 @@ in
     npmGlobalBinDir
   ];
 
-  home.activation.initializeTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  home.activation.initializeTheme = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     theme_dir="${config.xdg.configHome}/theme"
     codex_theme_dir="${config.home.homeDirectory}/.codex/themes"
     claude_theme_dir="${config.home.homeDirectory}/.claude/themes"
-    ${lib.getExe' pkgs.coreutils "mkdir"} -p "$theme_dir" "$codex_theme_dir" "$claude_theme_dir"
+    opencode_theme_dir="${config.xdg.configHome}/opencode/themes"
+    ${lib.getExe' pkgs.coreutils "mkdir"} -p "$theme_dir" "$codex_theme_dir" "$claude_theme_dir" "$opencode_theme_dir"
 
     theme_name=light
     if [[ -L "$theme_dir/current" ]]; then
@@ -96,8 +101,10 @@ in
     ${lib.getExe' pkgs.coreutils "ln"} -sfn "$theme_dir/themes/$theme_name" "$theme_dir/current"
     ${lib.getExe' pkgs.coreutils "cp"} "$theme_dir/current/codex.tmTheme" "$codex_theme_dir/.current.tmTheme"
     ${lib.getExe' pkgs.coreutils "cp"} "$theme_dir/current/claude.json" "$claude_theme_dir/.current.json"
+    ${lib.getExe' pkgs.coreutils "cp"} "$theme_dir/current/opencode.json" "$opencode_theme_dir/.current.json"
     ${lib.getExe' pkgs.coreutils "mv"} -f "$codex_theme_dir/.current.tmTheme" "$codex_theme_dir/current.tmTheme"
     ${lib.getExe' pkgs.coreutils "mv"} -f "$claude_theme_dir/.current.json" "$claude_theme_dir/current.json"
+    ${lib.getExe' pkgs.coreutils "mv"} -f "$opencode_theme_dir/.current.json" "$opencode_theme_dir/current.json"
   '';
 
   services.gpg-agent = {
