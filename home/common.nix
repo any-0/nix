@@ -83,7 +83,7 @@ in
     npmGlobalBinDir
   ];
 
-  home.activation.initializeTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  home.activation.initializeTheme = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     theme_dir="${config.xdg.configHome}/theme"
     codex_theme_dir="${config.home.homeDirectory}/.codex/themes"
     claude_theme_dir="${config.home.homeDirectory}/.claude/themes"
