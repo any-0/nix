@@ -13,7 +13,7 @@ These are shell commands meant to be run by hand.
 - **`theme`** - switches the system-wide color theme and reloads supported clients to match.
 - **`get [path...]`** - copies files in. With no args, interactively fzf-picks from `$HOME` (or `$GET_BASE`) and copies selections into the current directory; with args, rsyncs the given paths in.
 - **`open <file>`** - cross-platform `open`/`xdg-open` wrapper.
-- **`yank`** - copies stdin to the system clipboard. Also used internally by `hf` and by mux's Vim mode.
+- **`yank`** - copies stdin to the system clipboard, including through SSH terminals using OSC 52. Also used internally by `hf` and by mux's Vim mode.
 - **`hf [query]`** - fuzzy-search zsh history (optionally pre-filtered) and yank the selected line.
 
 ## `internal/`
