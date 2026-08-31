@@ -1,17 +1,36 @@
 # Templates
 
-Project scaffolds started with `template <name> [-d <dirname>]`. With `-d`, the directory is created and initialized; otherwise the current directory is used. Each template provides a `.nix` directory holding a `flake.nix` with all tooling needed for the project, so the dev environment is fully declarative and reproducible. All templates pin the same lock, kept centrally at `templates/.flake.lock` and copied into `.nix/flake.lock` on init. An `.envrc` is included to activate the environment with `direnv` on entering the directory.
+A template is a scaffold for a project. Start a template with the `template <name>
+[-d <dirname>]` command. The `-d` option makes the given directory first. Without
+the `-d` option, the command uses the current directory.
 
-Running `template <name>` copies `templates/dev-readme.md` into the new project as `.nix/README.md`, appended with its source, template name, and generation date.
+Each template supplies a `.nix` directory. This directory holds a `flake.nix` file.
+This file declares all tools for the project. Thus the development environment is
+declarative. The environment is also the same on each machine.
 
-Some templates also ship their own project-root `README.md` (e.g. `arduino`) with setup notes specific to that template; that file is separate and isn't touched when the dev-environment README is generated.
+All templates use the same lock file. The central lock file is
+`templates/.flake.lock`. The command copies this file to `.nix/flake.lock`.
 
-## Available templates
+Each template also supplies an `.envrc` file. direnv reads this file. direnv then
+starts the environment when you go into the directory.
 
-- **`arduino`** — Arduino project
-- **`blank`** — Blank project
-- **`c`** — C project
-- **`latex`** / **`tex`** — LaTeX project
-- **`python`** — Python project
-- **`pyts`** — TypeScript + Python project
-- **`rust`** — Rust project
+The `template <name>` command copies `templates/dev-readme.md` to `.nix/README.md`
+in the new project. The command adds three items to the end of the file:
+
+- The source
+- The name of the template
+- The date of the generation
+
+Some templates supply a second `README.md` file in the root directory of the
+project. The `arduino` template is an example. This file gives setup notes for that
+template only. The command does not change this file.
+
+## The available templates
+
+- **`arduino`** — An Arduino project
+- **`blank`** — An empty project
+- **`c`** — A C project
+- **`latex`** or **`tex`** — A LaTeX project
+- **`python`** — A Python project
+- **`pyts`** — A TypeScript project with Python
+- **`rust`** — A Rust project

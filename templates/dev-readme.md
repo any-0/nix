@@ -1,8 +1,23 @@
-# Dev environment
+# The development environment
 
-Instead of setting up development tools manually, [Nix](https://nixos.org/) builds the environment described in `.nix/flake.nix`. `.nix/flake.lock` records the versions to use. With Nix installed, recreating that exact environment on Linux, macOS, or Windows (through WSL) is trivial.
+You do not install the development tools manually. [Nix](https://nixos.org/) builds
+the environment from `.nix/flake.nix`. The `.nix/flake.lock` file records the
+version of each tool.
 
-[direnv](https://direnv.net/) is set up to load that environment automatically when you `cd` into this directory.
+Nix makes the same environment on Linux, on macOS, and on Windows with the Windows
+Subsystem for Linux (WSL). Install Nix first.
 
-- To add a package or change the toolchain, edit `.nix/flake.nix`, then run `direnv reload`.
-- `.nix/flake.lock` pins the exact versions in use. Regenerate it with `nix flake update` from inside `.nix/` if you need newer ones.
+[direnv](https://direnv.net/) starts the environment automatically. direnv does
+this when you go into this directory.
+
+## How to change the tools
+
+To add a package or to change a tool, do these steps:
+
+1. Edit `.nix/flake.nix`.
+2. Run `direnv reload`.
+
+## How to update the versions
+
+The `.nix/flake.lock` file holds the version of each package. To get newer
+versions, run `nix flake update` in the `.nix/` directory.

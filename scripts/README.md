@@ -1,23 +1,75 @@
 # Scripts
 
-`home/scripts.nix` wraps each of these into its own package and puts it on `PATH` after activation.
+`home/scripts.nix` makes a package for each script. The activation then puts each
+package on `PATH`.
 
-## `cli/`
+## The `cli/` directory
 
-These are shell commands meant to be run by hand.
+The user starts these commands manually.
 
-- **`switch [switch|boot|test|build]`** - rebuild and apply the current machine's configuration. Picks `homeConfigurations.mac` on macOS, `nixosConfigurations.<hostname>` on NixOS, or `homeConfigurations.cli` on other Linux.
-- **`cli-bootstrap [profile]`** - installs Nix if missing and applies a Home Manager profile (`mac` on macOS, `cli` on other Linux by default). Used for first-time setup on a new machine.
-- **`template <name> [-d <dirname>]`** - scaffolds a `.nix` dev-shell from `../templates`, records its origin in `.nix/README.md`, then runs `direnv allow`. With `-d`, it first creates and initializes that directory; otherwise it uses the current directory.
-- **`run`** - runs `$RUN_CMD` (set per-project via `.envrc`) from the direnv project root. Lets each template define its own "run the thing" command.
-- **`theme`** - switches the system-wide color theme and reloads supported clients to match.
-- **`get [path...]`** - copies files in. With no args, interactively fzf-picks from `$HOME` (or `$GET_BASE`) and copies selections into the current directory; with args, rsyncs the given paths in.
-- **`open <file>`** - cross-platform `open`/`xdg-open` wrapper.
-- **`yank`** - copies stdin to the system clipboard, including through SSH terminals using OSC 52. Also used internally by `hf` and by mux's Vim mode.
-- **`hf [query]`** - fuzzy-search zsh history (optionally pre-filtered) and yank the selected line.
+### `switch [switch|boot|test|build]`
 
-## `internal/`
+The `switch` command rebuilds the configuration of the current machine. The command
+then applies the configuration. The command selects one of these targets:
 
-Not meant to be run directly - called by other tooling (the quickshell status bar).
+- `homeConfigurations.mac` on macOS
+- `nixosConfigurations.<hostname>` on NixOS
+- `homeConfigurations.cli` on other Linux systems
 
-- **`claude-usage`** / **`codex-usage`** - print current usage/rate-limit stats for the Claude and Codex CLIs as JSON.
+### `cli-bootstrap [profile]`
+
+The `cli-bootstrap` command installs Nix if Nix is not on the machine. The command
+then applies a Home Manager profile. The default profile is `mac` on macOS. The
+default profile is `cli` on other Linux systems. Use this command for the first
+installation on a new machine.
+
+### `template <name> [-d <dirname>]`
+
+The `template` command copies a `.nix` development shell from the `../templates`
+directory. The command writes the source of the template into `.nix/README.md`. The
+command then runs `direnv allow`. The `-d` option makes the given directory first.
+Without the `-d` option, the command uses the current directory.
+
+### `run`
+
+The `run` command starts the command in the `$RUN_CMD` variable. Each project sets
+this variable in its `.envrc` file. The command starts in the root directory of the
+direnv project.
+
+### `theme`
+
+The `theme` command changes the color theme of the system. The command then reloads
+each supported client.
+
+### `get [path...]`
+
+The `get` command copies files into the current directory. Without an argument, the
+command shows an fzf menu of the files in `$HOME`. The `$GET_BASE` variable can
+replace `$HOME`. Select the files in the menu. The command then copies the files.
+With an argument, the command copies the given paths with rsync.
+
+### `open <file>`
+
+The `open` command starts `open` on macOS. The command starts `xdg-open` on Linux.
+
+### `yank`
+
+The `yank` command copies the standard input to the clipboard of the system. The
+command uses the OSC 52 terminal sequence for a copy through an SSH connection. The
+`hf` command and the Vim mode of mux also use `yank`.
+
+### `hf [query]`
+
+The `hf` command searches the Zsh history with a fuzzy match. Give a query to limit
+the results. Select a line. The command then copies the line to the clipboard.
+
+## The `internal/` directory
+
+Do not start these commands manually. Other software starts them. The quickshell
+status bar is an example.
+
+### `claude-usage` and `codex-usage`
+
+These two commands print the current usage data and the rate-limit data. The
+commands print the data in the JSON format. `claude-usage` reads the data of the
+Claude CLI. `codex-usage` reads the data of the Codex CLI.
