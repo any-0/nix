@@ -46,9 +46,8 @@ unsetopt SHARE_HISTORY
 # Prompt
 source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/prompt.zsh"
 
-# Emacs keymap (no vi mode) + steady block cursor
+# Emacs keymap (no vi mode)
 bindkey -e
-printf '\e[2 q'
 
 PROMPT_EOL_MARK=''
 WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
@@ -146,3 +145,6 @@ bindkey -M viins '^D' ctrl_d_noop
 # Force Ctrl-T mapping last, in case other scripts override it.
 bindkey -s -M emacs '^T' '^Umux\n'
 bindkey -s -M viins '^T' '^Umux\n'
+
+# History-based suggestions; accept with Right Arrow or End.
+source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/zsh-autosuggestions.zsh"

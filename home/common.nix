@@ -63,6 +63,8 @@ in
   xdg.configFile."zsh/completions" = dotFile "zsh/completions";
   xdg.configFile."zsh/prompt.zsh" = dotFile "zsh/prompt.zsh";
   xdg.configFile."zsh/eza-colors.zsh" = dotFile "zsh/eza-colors.zsh";
+  xdg.configFile."zsh/zsh-autosuggestions.zsh".source =
+    "${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh";
   xdg.configFile."eza/theme.yml" = activeThemeFile "eza.yml";
   xdg.configFile."kitty/kitty.conf" = dotFile "kitty/kitty.conf";
   xdg.configFile."jj/config.toml" = dotFile "jj/config.toml";
