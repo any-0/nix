@@ -1,0 +1,104 @@
+--- a/src/display_device.cpp
++++ b/src/display_device.cpp
+@@ -12,6 +12,7 @@
+ #include <display_device/json.h>
+ #include <display_device/retry_scheduler.h>
+ #include <display_device/settings_manager_interface.h>
++#include <cstdlib>
+ #include <mutex>
+ #include <regex>
+ 
+@@ -758,19 +759,14 @@
+   }
+ 
+   void configure_display(const config::video_t &video_config, const rtsp_stream::launch_session_t &session) {
+-    const auto result {parse_configuration(video_config, session)};
+-    if (const auto *parsed_config {std::get_if<SingleDisplayConfiguration>(&result)}; parsed_config) {
+-      configure_display(*parsed_config);
+-      return;
+-    }
+-
+-    if (const auto *disabled {std::get_if<configuration_disabled_tag_t>(&result)}; disabled) {
+-      revert_configuration();
+-      return;
++    std::lock_guard lock {DD_DATA.mutex};
++    const auto command = std::string {"@displayCommand@ connect "} +
++                         std::to_string(session.width) + " " +
++                         std::to_string(session.height) + " " +
++                         std::to_string(session.fps);
++    if (std::system(command.c_str()) != 0) {
++      BOOST_LOG(error) << "Failed to configure niri streaming displays";
+     }
+-
+-    // Error already logged for failed_to_parse_tag_t case, and we also don't
+-    // want to revert active configuration in case we have any
+   }
+ 
+   void configure_display(const SingleDisplayConfiguration &config) {
+@@ -792,7 +788,9 @@
+ 
+   void revert_configuration() {
+     std::lock_guard lock {DD_DATA.mutex};
+-    revert_configuration_unlocked(revert_option_e::try_indefinitely_with_delay);
++    if (std::system("@displayCommand@ disconnect") != 0) {
++      BOOST_LOG(error) << "Failed to restore niri desktop displays";
++    }
+   }
+ 
+   bool reset_persistence() {
+--- a/src/nvhttp.cpp
++++ b/src/nvhttp.cpp
+@@ -934,6 +934,7 @@
+     print_req<SunshineHTTPS>(request);
+ 
+     pt::ptree tree;
++    bool revert_display_configuration {false};
+     auto g = util::fail_guard([&]() {
+       std::ostringstream data;
+ 
+@@ -944,6 +945,9 @@
+       pt::write_xml(data, tree);
+       response->write(data.str());
+       response->close_connection_after_response = true;
++      if (revert_display_configuration) {
++        display_device::revert_configuration();
++      }
+     });
+ 
+     auto current_appid = proc::proc.running();
+@@ -977,6 +981,7 @@
+     const auto launch_session = make_launch_session(host_audio, args);
+ 
+     if (no_active_sessions) {
++      revert_display_configuration = true;
+       // We want to prepare display only if there are no active sessions at
+       // the moment. This should be done before probing encoders as it could
+       // change the active displays.
+@@ -1019,6 +1024,7 @@
+     tree.put("root.resume", 1);
+ 
+     rtsp_stream::launch_session_raise(launch_session);
++    revert_display_configuration = false;
+   }
+ 
+   void cancel(resp_https_t response, req_https_t request) {
+--- a/src/rtsp.cpp
++++ b/src/rtsp.cpp
+@@ -23,6 +23,7 @@
+ 
+ // local includes
+ #include "config.h"
++#include "display_device.h"
+ #include "globals.h"
+ #include "input.h"
+ #include "logging.h"
+@@ -512,6 +513,9 @@
+           auto discarded = launch_event.pop(0s);
+           if (discarded) {
+             BOOST_LOG(debug) << "Event timeout: "sv << discarded->unique_id;
++            if (session_count() == 0) {
++              display_device::revert_configuration();
++            }
+           }
+         }
+       });

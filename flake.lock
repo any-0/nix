@@ -21,6 +21,27 @@
         "type": "github"
       }
     },
+    "niri-virtual": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788486066,
+        "narHash": "sha256-NmsIOdV1MW1GJ54rXOhPmD3DZJVP+c1qyim9nfWxREE=",
+        "owner": "willybarret",
+        "repo": "niri",
+        "rev": "dc0505f043028a8cc1e007d5760953753dec2d3b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "willybarret",
+        "repo": "niri",
+        "rev": "dc0505f043028a8cc1e007d5760953753dec2d3b",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1789542786,
@@ -56,6 +77,7 @@
     "root": {
       "inputs": {
         "home-manager": "home-manager",
+        "niri-virtual": "niri-virtual",
         "nixpkgs": "nixpkgs",
         "nixpkgs-cachix": "nixpkgs-cachix",
         "zen-browser": "zen-browser"

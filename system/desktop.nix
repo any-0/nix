@@ -1,4 +1,4 @@
-{ config, pkgs, username, ... }:
+{ config, pkgs, username, niri-virtual, ... }:
 
 let
   iosevkaTermSlab = pkgs.callPackage ../dotfiles/fonts/iosevka-termslab-custom { };
@@ -9,6 +9,8 @@ let
   });
 in
 {
+  imports = [ ./remote-display.nix ];
+
   fonts.packages = [
     pkgs.jetbrains-mono
     iosevkaTermSlab
@@ -39,6 +41,17 @@ in
 
   programs.niri = {
     enable = true;
+    package = pkgs.niri.overrideAttrs (old: {
+      src = niri-virtual;
+      cargoDeps = pkgs.rustPlatform.importCargoLock {
+        lockFile = "${niri-virtual}/Cargo.lock";
+        allowBuiltinFetchGit = true;
+      };
+      env = old.env // { NIRI_BUILD_COMMIT = "dc0505f-virtual-outputs"; };
+      preCheck = ''
+        export XDG_RUNTIME_DIR="$(mktemp -d)"
+      '';
+    });
     useNautilus = false;
   };
   services.greetd = {
@@ -57,6 +70,26 @@ in
   };
 
   services.dbus.enable = true;
+  services.sunshine = {
+    enable = true;
+    autoStart = true;
+    capSysAdmin = true;
+    openFirewall = true;
+  };
+
+  # VNC is reachable only through SSH forwarding.
+  systemd.user.services.wayvnc = {
+    description = "Remote niri desktop over SSH";
+    wantedBy = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.wayvnc}/bin/wayvnc 127.0.0.1 5900";
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+  };
+
   hardware.graphics.enable = true;
   hardware.enableRedistributableFirmware = true;
   services.seatd.enable = true;

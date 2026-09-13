@@ -4,6 +4,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
 
+    niri-virtual = {
+      url = "github:willybarret/niri/dc0505f043028a8cc1e007d5760953753dec2d3b";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixpkgs-cachix.url = "github:NixOS/nixpkgs/nixos-25.11";
 
     home-manager.url = "github:nix-community/home-manager/release-26.05";
@@ -15,7 +20,7 @@
     };
   };
 
-  outputs = { nixpkgs, nixpkgs-cachix, home-manager, zen-browser, ... }:
+  outputs = { nixpkgs, nixpkgs-cachix, home-manager, zen-browser, niri-virtual, ... }:
     let
       system = "x86_64-linux";
       hostname = "pc";
@@ -86,7 +91,7 @@
       nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = {
-          inherit username homeDirectory;
+          inherit username homeDirectory niri-virtual;
         };
         modules = [
           ./system/configuration.nix
