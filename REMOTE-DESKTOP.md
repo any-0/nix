@@ -21,9 +21,11 @@ and should be reviewed when Sunshine updates.
 
 Apply with: sudo nixos-rebuild switch --flake ~/nix#pc
 
-The Mac PC.app launcher connects directly. Command-Tab switches to local apps
-without disconnecting; Control-Option-Shift-Q disconnects. The launcher uses
-the saved Moonlight bitrate, resolution, and frame rate.
+The Mac PC.app launcher connects directly and forwards Command as Linux Super.
+Control-Option-Shift-Z releases keyboard/mouse capture; then Command-Tab switches
+to Mac apps without disconnecting. Control-Option-Shift-D minimizes the stream,
+and Control-Option-Shift-Q disconnects. The launcher uses the saved Moonlight
+bitrate, resolution, and frame rate.
 
 The black-screen incident was reproduced outside Moonlight: a 40 Mbps UDP burst
 test lost 64% of packets. On retest, all 28,800 packets arrived and the native
