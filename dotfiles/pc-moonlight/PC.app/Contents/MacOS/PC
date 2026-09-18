@@ -2,6 +2,6 @@
 exec /usr/bin/open -n -a /Applications/Moonlight.app --args \
   stream 192.168.0.128 Desktop \
   --display-mode borderless \
-  --capture-system-keys never \
+  --capture-system-keys always \
   --absolute-mouse \
   --no-quit-after
