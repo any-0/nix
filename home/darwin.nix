@@ -5,6 +5,11 @@ let
   fontDir = "${iosevkaTermSlab}/share/fonts/truetype";
 in
 {
+  home.file."Applications/PC.app" = {
+    source = ../dotfiles/pc-moonlight/PC.app;
+    recursive = true;
+  };
+
   home.packages = with pkgs; [
     coreutils
     wakeonlan
