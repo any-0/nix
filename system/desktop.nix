@@ -2,6 +2,11 @@
 
 let
   iosevkaTermSlab = pkgs.callPackage ../dotfiles/fonts/iosevka-termslab-custom { };
+  # https://github.com/quickshell-mirror/quickshell/pull/808
+  # Bluetooth routes without volumeStep still need volume writes.
+  quickshellPatched = pkgs.quickshell.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [ ./patches/quickshell-route-volume.patch ];
+  });
 in
 {
   fonts.packages = [
@@ -60,6 +65,6 @@ in
 
   environment.systemPackages = with pkgs; [
     inkscape
-    quickshell
+    quickshellPatched
   ];
 }
