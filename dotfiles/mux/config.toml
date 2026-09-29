@@ -1,5 +1,5 @@
 clipboard_command = ["yank"]
-default_cursor_shape = "bar"
+default_cursor_shape = "underline"
 
 [vim]
 "§" = "first-nonblank"

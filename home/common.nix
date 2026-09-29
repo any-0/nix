@@ -136,6 +136,8 @@ in
     jujutsu
     jjui
     nix-zsh-completions
+    bat
+    cloc
   ]) ++ builtins.attrValues scriptPackages;
 
 }
