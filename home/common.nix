@@ -78,7 +78,6 @@ in
     theme = "current";
   };
   home.file.".zshenv" = dotFile ".zshenv";
-  home.file.".codex/AGENTS.md" = dotFile "codex/AGENTS.md";
 
   home.sessionVariables = {
     EZA_CONFIG_DIR = "${config.xdg.configHome}/eza";
