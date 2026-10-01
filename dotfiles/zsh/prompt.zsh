@@ -7,6 +7,17 @@ prompt_arrow_style() {
   print "%F{245}"
 }
 
+_prompt_accept_line() {
+  if [[ -n "$BUFFER" ]]; then
+    source "${XDG_CONFIG_HOME:-$HOME/.config}/theme/current/zsh.zsh"
+    PS1=${PS1/'%F{245}❯'/"%F{$__prompt_command_color}❯"}
+    zle reset-prompt
+  fi
+  zle .accept-line
+}
+
+zle -N accept-line _prompt_accept_line
+
 prompt_user() {
   local user="${USER:-${LOGNAME:-}}"
   [[ -n "$user" ]] || user="$(command id -un 2>/dev/null)"
