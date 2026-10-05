@@ -127,23 +127,23 @@ PanelWindow {
             }
         }
 
-        StorageStatus {
-            id: storageGroup
-            anchorWindow: bar
-            spacing: 14
-            visible: bar.showMetrics
-            anchors.left: hardwareGroup.right
-            anchors.leftMargin: 24
-            anchors.verticalCenter: parent.verticalCenter
-        }
-
         Workspaces {
             id: workspaceGroup
 
             screenName: bar.screenInfo.name
             x: bar.showMetrics
-                ? Math.max((parent.width - width) / 2, storageGroup.x + storageGroup.width + 24)
+                ? Math.max((parent.width - width) / 2, hardwareGroup.x + hardwareGroup.width + 24)
                 : (parent.width - width) / 2
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        StorageStatus {
+            id: storageGroup
+            anchorWindow: bar
+            spacing: 14
+            visible: bar.showMetrics
+            anchors.left: workspaceGroup.right
+            anchors.leftMargin: 24
             anchors.verticalCenter: parent.verticalCenter
         }
 

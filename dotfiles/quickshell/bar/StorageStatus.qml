@@ -4,8 +4,8 @@ Grid {
     id: root
     required property var anchorWindow
     property bool expanded: false
-    property real diskWidth: 72
-    columns: expanded ? 3 : 5
+    property real diskWidth: 104
+    columns: expanded ? 2 : 5
     rowSpacing: expanded ? 30 : 0
     spacing: 14
     height: implicitHeight
@@ -20,6 +20,14 @@ Grid {
         return bytes >= 1099511627776
             ? (bytes / 1099511627776).toFixed(2) + " TiB"
             : (bytes / 1073741824).toFixed(1) + " GiB";
+    }
+
+    // Used out of total, sharing the unit of the total: "3.5/3.6T", "501/916G".
+    function usage(sample) {
+        const tib = 1099511627776, gib = 1073741824;
+        return sample.total >= tib
+            ? (sample.used / tib).toFixed(1) + "/" + (sample.total / tib).toFixed(1) + "T"
+            : Math.round(sample.used / gib) + "/" + Math.round(sample.total / gib) + "G";
     }
 
     component Disk: Item {
@@ -44,7 +52,7 @@ Grid {
         Text {
             anchors.left: parent.left
             y: 5
-            text: root.expanded ? disk.label + "  /  " + (disk.label.startsWith("HOME") ? "NAS" : "SSD") : disk.label
+            text: root.expanded ? disk.label + "  /  " + (disk.description.startsWith("NAS") ? "NAS" : "SSD") : disk.label
             color: root.expanded ? Theme.textSecondary : Theme.textMuted
             font.family: Theme.barFontFamily
             font.pixelSize: root.expanded ? 15 : 9
@@ -54,7 +62,7 @@ Grid {
         Text {
             anchors.right: parent.right
             y: root.expanded ? 0 : 5
-            text: disk.sample ? Math.round(disk.fraction * 100) + "%" : "—"
+            text: disk.sample ? root.usage(disk.sample) : "—"
             color: Theme.textSecondary
             font.family: Theme.barFontFamily
             font.features: { "tnum": 1 }
