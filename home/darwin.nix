@@ -53,8 +53,8 @@ in
       set -euo pipefail
 
       user="''${SMB_USER:-${config.home.username}}"
-      hosts="''${SMB_HOSTS:-192.168.0.227}"
-      base="$HOME/mnt"
+      hosts="''${SMB_HOSTS:-192.168.0.112}"
+      base="$HOME/storage"
       server=""
 
       for host in $hosts; do
@@ -69,7 +69,7 @@ in
         exit 1
       fi
 
-      mkdir -p "$base/home1" "$base/home2"
+      mkdir -p "$base/media1" "$base/media2" "$base/backups"
 
       mount_share() {
         local share="$1"
@@ -81,11 +81,16 @@ in
         fi
 
         echo "mounting //$user@$server/$share -> $mountpoint"
-        /sbin/mount_smbfs "//$user@$server/$share" "$mountpoint"
+        /sbin/mount_smbfs "//$user''${password:+:$password}@$server/$share" "$mountpoint"
       }
 
-      mount_share home "$base/home1"
-      mount_share home2 "$base/home2"
+      # mount_smbfs does not consult the keychain itself. Store the password once with:
+      #   security add-internet-password -a "$user" -s <server> -r 'smb ' -w '<password>' -T /usr/bin/security
+      password="$(/usr/bin/security find-internet-password -a "$user" -s "$server" -w 2>/dev/null || true)"
+
+      mount_share media1 "$base/media1"
+      mount_share media2 "$base/media2"
+      mount_share backups "$base/backups"
     '';
   };
 
@@ -118,8 +123,9 @@ in
         echo "failed or timed out unmounting $mountpoint" >&2
       }
 
-      unmount_one "$HOME/mnt/home1"
-      unmount_one "$HOME/mnt/home2"
+      unmount_one "$HOME/storage/media1"
+      unmount_one "$HOME/storage/media2"
+      unmount_one "$HOME/storage/backups"
     '';
   };
 
@@ -133,6 +139,19 @@ in
       #!/usr/bin/env sh
       ${lib.getExe pkgs.yabai} -m config focus_follows_mouse autofocus
     '';
+  };
+
+  # Mount the NAS shares at login and every 5 minutes (no-op when already mounted).
+  # Password comes from the login keychain entry for julian@192.168.0.112.
+  launchd.agents.mount-nas-smb = {
+    enable = true;
+    config = {
+      ProgramArguments = [ "${config.home.homeDirectory}/.local/bin/mount-nas-smb" ];
+      RunAtLoad = true;
+      StartInterval = 300;
+      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/mount-nas-smb.err.log";
+      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/mount-nas-smb.out.log";
+    };
   };
 
   launchd.agents.yabai = {

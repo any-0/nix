@@ -1,7 +1,7 @@
 { homeDirectory, ... }:
 
 let
-  smbCredentials = "${homeDirectory}/nix/secrets/smb-nas.cred";
+  smbCredentials = "${homeDirectory}/.config/samba/nas.cred";
   smbMountOptions = [
     "credentials=${smbCredentials}"
     "uid=1000"
@@ -16,14 +16,20 @@ in
   boot.supportedFilesystems = [ "cifs" ];
 
   fileSystems = {
-    "/mnt/home1" = {
-      device = "//192.168.0.227/home";
+    "${homeDirectory}/storage/media1" = {
+      device = "//192.168.0.112/media1";
       fsType = "cifs";
       options = smbMountOptions;
     };
 
-    "/mnt/home2" = {
-      device = "//192.168.0.227/home2";
+    "${homeDirectory}/storage/media2" = {
+      device = "//192.168.0.112/media2";
+      fsType = "cifs";
+      options = smbMountOptions;
+    };
+
+    "${homeDirectory}/storage/backups" = {
+      device = "//192.168.0.112/backups";
       fsType = "cifs";
       options = smbMountOptions;
     };
