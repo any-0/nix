@@ -229,51 +229,26 @@ Singleton {
     property bool codexReady: false
     property string codexError: ""
     property string codexPlan: ""
+    property string codexUpdatedAt: ""
     property real codexCredits: -1
     property int codexResetCredits: -1
-    property int codexFiveHourPercentLeft: -1
     property int codexWeeklyPercentLeft: -1
     property int codexMonthlyPercentLeft: -1
-    property real codexFiveHourUsedPercent: -1
     property real codexWeeklyUsedPercent: -1
-    property real codexFiveHourResetAt: -1
     property real codexWeeklyResetAt: -1
-    property real codexFiveHourWindowSeconds: -1
     property real codexWeeklyWindowSeconds: -1
-    property string codexFiveHourReset: ""
     property string codexWeeklyReset: ""
     property string codexMonthlyReset: ""
-    property string codexRaw: ""
     readonly property int codexLowestPercentLeft: Math.min(
-        codexFiveHourPercentLeft >= 0 ? codexFiveHourPercentLeft : 100,
         codexWeeklyPercentLeft >= 0 ? codexWeeklyPercentLeft : 100,
         codexMonthlyPercentLeft >= 0 ? codexMonthlyPercentLeft : 100)
-    readonly property int codexPercentUsed: codexReady ? 100 - codexLowestPercentLeft : 0
-    readonly property string codexLabel: codexReady ? String(codexPercentUsed) + "%" : codexLoading ? "..." : "!"
-
-    property bool claudeLoading: false
-    property bool claudeReady: false
-    property string claudeError: ""
-    property string claudePlan: ""
-    property real claudeCredits: -1
-    property int claudeFiveHourPercentLeft: -1
-    property int claudeWeeklyPercentLeft: -1
-    property int claudeMonthlyPercentLeft: -1
-    property real claudeFiveHourUsedPercent: -1
-    property real claudeWeeklyUsedPercent: -1
-    property real claudeFiveHourResetAt: -1
-    property real claudeWeeklyResetAt: -1
-    property real claudeFiveHourWindowSeconds: -1
-    property real claudeWeeklyWindowSeconds: -1
-    property string claudeFiveHourReset: ""
-    property string claudeWeeklyReset: ""
-    property string claudeMonthlyReset: ""
-    readonly property int claudeLowestPercentLeft: Math.min(
-        claudeFiveHourPercentLeft >= 0 ? claudeFiveHourPercentLeft : 100,
-        claudeWeeklyPercentLeft >= 0 ? claudeWeeklyPercentLeft : 100,
-        claudeMonthlyPercentLeft >= 0 ? claudeMonthlyPercentLeft : 100)
-    readonly property int claudePercentUsed: claudeReady ? 100 - claudeLowestPercentLeft : 0
-    readonly property string claudeLabel: claudeReady ? String(claudePercentUsed) + "%" : claudeLoading ? "..." : "!"
+    readonly property string codexLabelReset: !codexReady ? ""
+        : codexWeeklyPercentLeft >= 0
+            && (codexMonthlyPercentLeft < 0 || codexWeeklyPercentLeft <= codexMonthlyPercentLeft)
+        ? codexWeeklyReset : codexMonthlyReset
+    readonly property string codexLabel: codexReady
+        ? (codexWeeklyPercentLeft >= 0 || codexMonthlyPercentLeft >= 0 ? String(codexLowestPercentLeft) + "%" : "—")
+        : codexLoading ? "..." : "!"
 
     function usagePercentText(value) {
         return value >= 0 ? String(value) + "% left" : "Unknown";
@@ -299,7 +274,7 @@ Singleton {
         return hoursLeft > 0 ? String(days) + "d " + String(hoursLeft) + "h" : String(days) + "d";
     }
 
-    function usagePaceText(usedPercent, resetAtSeconds, windowSeconds, sessionWindow) {
+    function usagePaceText(usedPercent, resetAtSeconds, windowSeconds) {
         if (usedPercent < 0 || resetAtSeconds <= 0 || windowSeconds <= 0) return "";
 
         const nowSeconds = Date.now() / 1000;
@@ -309,35 +284,20 @@ Singleton {
         const elapsed = Math.max(0, Math.min(windowSeconds, windowSeconds - timeUntilReset));
         if (elapsed <= 0 || usedPercent <= 0) return "";
 
-        const expected = Math.max(0, Math.min(100, elapsed / windowSeconds * 100));
-        if (expected < 3) return "";
-
-        const delta = usedPercent - expected;
-        const deltaValue = Math.round(Math.abs(delta));
-        const left = deltaValue === 0 ? "On pace" : delta > 0 ? String(deltaValue) + "% in deficit" : String(deltaValue) + "% in reserve";
         const rate = usedPercent / elapsed;
         const eta = (100 - usedPercent) / rate;
-        const expectedText = "expected " + String(Math.round(expected)) + "% used";
 
         if (eta >= timeUntilReset) {
-            if (delta < -15) return left + " · " + expectedText + " · lasts until reset · 1.5x headroom";
-            return left + " · " + expectedText + " · lasts until reset";
+            return "On track to last until reset";
         }
 
-        const prefix = sessionWindow ? "projected empty in " : "runs out in ";
-        return left + " · " + expectedText + " · " + prefix + usageDurationText(eta);
+        return "At this pace, runs out in " + usageDurationText(eta);
     }
 
     function refreshCodexUsage() {
         if (codexUsageProcess.running) return;
         codexLoading = true;
         codexUsageProcess.running = true;
-    }
-
-    function refreshClaudeUsage() {
-        if (claudeUsageProcess.running) return;
-        claudeLoading = true;
-        claudeUsageProcess.running = true;
     }
 
     function applyCodexUsage(line) {
@@ -352,52 +312,18 @@ Singleton {
         }
 
         codexReady = data.ok === true;
+        if (codexReady) codexUpdatedAt = data.updatedAt;
         codexError = data.error || "";
         codexPlan = data.plan || "";
         codexCredits = data.credits === null ? -1 : data.credits;
         codexResetCredits = data.resetCredits === null ? -1 : data.resetCredits;
-        codexFiveHourPercentLeft = data.fiveHourPercentLeft === null ? -1 : data.fiveHourPercentLeft;
         codexWeeklyPercentLeft = data.weeklyPercentLeft === null ? -1 : data.weeklyPercentLeft;
         codexMonthlyPercentLeft = data.monthlyPercentLeft === null ? -1 : data.monthlyPercentLeft;
-        codexFiveHourUsedPercent = data.fiveHourUsedPercent === null ? -1 : data.fiveHourUsedPercent;
         codexWeeklyUsedPercent = data.weeklyUsedPercent === null ? -1 : data.weeklyUsedPercent;
-        codexFiveHourResetAt = data.fiveHourResetAt === null ? -1 : data.fiveHourResetAt;
         codexWeeklyResetAt = data.weeklyResetAt === null ? -1 : data.weeklyResetAt;
-        codexFiveHourWindowSeconds = data.fiveHourWindowSeconds === null ? -1 : data.fiveHourWindowSeconds;
         codexWeeklyWindowSeconds = data.weeklyWindowSeconds === null ? -1 : data.weeklyWindowSeconds;
-        codexFiveHourReset = data.fiveHourReset || "";
         codexWeeklyReset = data.weeklyReset || "";
         codexMonthlyReset = data.monthlyReset || "";
-        codexRaw = data.raw || "";
-    }
-
-    function applyClaudeUsage(line) {
-        let data = null;
-
-        try {
-            data = JSON.parse(line);
-        } catch (error) {
-            claudeReady = false;
-            claudeError = "invalid claude usage output";
-            return;
-        }
-
-        claudeReady = data.ok === true;
-        claudeError = data.error || "";
-        claudePlan = data.plan || "";
-        claudeCredits = data.credits === null ? -1 : data.credits;
-        claudeFiveHourPercentLeft = data.fiveHourPercentLeft === null ? -1 : data.fiveHourPercentLeft;
-        claudeWeeklyPercentLeft = data.weeklyPercentLeft === null ? -1 : data.weeklyPercentLeft;
-        claudeMonthlyPercentLeft = data.monthlyPercentLeft === null ? -1 : data.monthlyPercentLeft;
-        claudeFiveHourUsedPercent = data.fiveHourUsedPercent === null ? -1 : data.fiveHourUsedPercent;
-        claudeWeeklyUsedPercent = data.weeklyUsedPercent === null ? -1 : data.weeklyUsedPercent;
-        claudeFiveHourResetAt = data.fiveHourResetAt === null ? -1 : data.fiveHourResetAt;
-        claudeWeeklyResetAt = data.weeklyResetAt === null ? -1 : data.weeklyResetAt;
-        claudeFiveHourWindowSeconds = data.fiveHourWindowSeconds === null ? -1 : data.fiveHourWindowSeconds;
-        claudeWeeklyWindowSeconds = data.weeklyWindowSeconds === null ? -1 : data.weeklyWindowSeconds;
-        claudeFiveHourReset = data.fiveHourReset || "";
-        claudeWeeklyReset = data.weeklyReset || "";
-        claudeMonthlyReset = data.monthlyReset || "";
     }
 
     Process {
@@ -411,17 +337,6 @@ Singleton {
         onExited: codexLoading = false
     }
 
-    Process {
-        id: claudeUsageProcess
-
-        command: ["claude-usage"]
-        stdout: SplitParser {
-            splitMarker: "\n"
-            onRead: line => root.applyClaudeUsage(line)
-        }
-        onExited: claudeLoading = false
-    }
-
     Timer {
         interval: 120000
         repeat: true
@@ -429,7 +344,6 @@ Singleton {
         triggeredOnStart: true
         onTriggered: {
             refreshCodexUsage();
-            refreshClaudeUsage();
         }
     }
 }

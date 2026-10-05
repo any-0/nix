@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Explicit paths only; a missing network mount must not report the root disk.
+df -B1 --output=source,size,used,avail -- "$1" | awk -v source="$2" '
+  NR == 2 {
+    if ($1 != source) exit 1
+    printf "{\"total\":%.0f,\"used\":%.0f,\"free\":%.0f}\n", $2, $3, $4
+  }'

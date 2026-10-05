@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Alpha Two
+GenericName=Second test application
+Icon=system-file-manager
+Exec=/usr/bin/touch /tmp/launcher-two
+Keywords=fixture;

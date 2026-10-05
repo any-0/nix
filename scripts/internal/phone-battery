@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+dbus() {
+    busctl --user --timeout=3 --auto-start=no --json=short "$@"
+}
+
+devices=$(dbus call org.kde.kdeconnect /modules/kdeconnect org.kde.kdeconnect.daemon devices bb true true)
+while IFS= read -r device; do
+    path="/modules/kdeconnect/devices/$device"
+    properties=$(dbus call org.kde.kdeconnect "$path" org.freedesktop.DBus.Properties GetAll s org.kde.kdeconnect.device) || continue
+    [[ $(jq -r '.data[0].type.data' <<< "$properties") == phone ]] || continue
+    battery=$(dbus call org.kde.kdeconnect "$path/battery" org.freedesktop.DBus.Properties GetAll s org.kde.kdeconnect.device.battery) || continue
+    jq -cn --argjson device "$properties" --argjson battery "$battery" '
+        $battery.data[0] as $b
+        | select(($b.charge.data | type) == "number")
+        | select($b.charge.data >= 0 and $b.charge.data <= 100)
+        | {name: $device.data[0].name.data, charge: $b.charge.data, charging: $b.isCharging.data}'
+done < <(jq -r '.data[0][]' <<< "$devices") | jq -sc .

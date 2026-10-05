@@ -7,6 +7,8 @@ PanelWindow {
     id: bar
 
     required property var screenInfo
+    property bool showMetrics: false
+    readonly property real deviceSpacing: 24
     property bool desktopClockVisible: false
     property real desktopClockSlotWidth: 0
     readonly property int barHeight: 30
@@ -44,7 +46,7 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: Theme.bg
+        color: Theme.barBg
     }
 
     MouseArea {
@@ -69,11 +71,79 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
         }
 
+        Row {
+            id: hardwareGroup
+            visible: bar.showMetrics
+            x: leftGroup.x + leftGroup.width + 24
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: bar.deviceSpacing
+
+            Column {
+                anchors.verticalCenter: parent.verticalCenter
+
+                Repeater {
+                    model: ["CPU", "GPU"]
+                    delegate: Text {
+                        required property string modelData
+                        text: modelData
+                        height: 12
+                        verticalAlignment: Text.AlignVCenter
+                        font.family: Theme.barFontFamily
+                        font.pixelSize: 10
+                        font.weight: Font.Medium
+                        color: Theme.textMuted
+                    }
+                }
+            }
+
+            HardwareStatus {}
+
+            Rectangle {
+                width: 1
+                height: 16
+                anchors.verticalCenter: parent.verticalCenter
+                color: Theme.track
+            }
+
+            HardwareReadout {
+                hostName: "SRV"
+                sample: RemoteMetrics.proxmox.sample
+                cpuUsage: sample ? sample.cpu : -1
+                cpuPower: sample && sample.cpuPower !== null ? sample.cpuPower : -1
+            }
+
+            Rectangle {
+                width: 1
+                height: 16
+                anchors.verticalCenter: parent.verticalCenter
+                color: Theme.track
+            }
+
+            HardwareReadout {
+                hostName: "NEO"
+                sample: RemoteMetrics.mac.sample
+                cpuUsage: sample ? sample.cpu : -1
+                cpuPower: sample && sample.cpuPower !== null ? sample.cpuPower : -1
+            }
+        }
+
+        StorageStatus {
+            id: storageGroup
+            anchorWindow: bar
+            spacing: 14
+            visible: bar.showMetrics
+            anchors.left: hardwareGroup.right
+            anchors.leftMargin: 24
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
         Workspaces {
             id: workspaceGroup
 
             screenName: bar.screenInfo.name
-            anchors.horizontalCenter: parent.horizontalCenter
+            x: bar.showMetrics
+                ? Math.max((parent.width - width) / 2, storageGroup.x + storageGroup.width + 24)
+                : (parent.width - width) / 2
             anchors.verticalCenter: parent.verticalCenter
         }
 

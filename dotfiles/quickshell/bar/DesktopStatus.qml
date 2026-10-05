@@ -139,6 +139,7 @@ PanelWindow {
         index: 0
         barIconCx: window.networkIconBarX
         icon: Status.networkIcon
+        barIconSize: Theme.networkIconSize
         iconColor: Status.networkOffline ? Theme.danger : Theme.text
         title: "NETWORK"
         headerTrailing: Status.networkLabel
@@ -197,6 +198,7 @@ PanelWindow {
         index: 1
         barIconCx: window.volumeIconBarX
         icon: Status.volumeIcon
+        barIconSize: Theme.volumeIconSize
         iconColor: Status.volumeMuted ? Theme.textMuted : Theme.text
         title: "VOLUME"
         iconClickable: true
@@ -272,6 +274,7 @@ PanelWindow {
         index: 2
         barIconCx: window.bluetoothIconBarX
         icon: "󰂯"
+        barIconSize: Theme.bluetoothIconSize
         iconColor: Status.bluetoothLowBattery ? Theme.danger : Status.bluetoothConnected ? Theme.accent : Theme.textMuted
         title: "BLUETOOTH"
         headerTrailing: Status.bluetoothBatteryText
@@ -358,14 +361,16 @@ PanelWindow {
     Text {
         text: Status.volumePercent + "%"
         color: Status.volumeMuted ? Theme.textMuted : Theme.text
-        font.family: Theme.fontFamily
-        font.pixelSize: Math.round(volumeCard.lerp(12, 16))
-        font.weight: Font.DemiBold
+        font.family: Theme.barFontFamily
+        font.pixelSize: Math.round(volumeCard.lerp(Theme.statusLabelSize, 16))
+        font.weight: Font.Medium
+        font.features: { "tnum": 1 }
         x: volumeCard.lerp(window.volumeLabelBarX - implicitWidth / 2, volumeCard.finalX + window.cardWidth - 18 - implicitWidth)
         y: volumeCard.lerp(window.barCenterY, volumeCard.finalY + 14 + 17) - implicitHeight / 2
     }
 
     component StatusCard: Item {
+        required property int barIconSize
         id: card
 
         required property int index
@@ -518,7 +523,7 @@ PanelWindow {
             text: card.icon
             color: card.iconColor
             font.family: Theme.fontFamily
-            font.pixelSize: Math.round(card.lerp(Theme.fontSize, 26))
+            font.pixelSize: Math.round(card.lerp(card.barIconSize, 26))
             font.weight: Font.DemiBold
             x: card.iconCx - implicitWidth / 2
             y: card.iconCy - implicitHeight / 2

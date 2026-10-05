@@ -5,6 +5,9 @@ Item {
 
     required property var anchorWindow
     property bool desktopMode: false
+    property bool ghostIcons: true
+    property bool showPhones: true
+    property bool showNotifications: true
     property bool desktopModeActive: false
 
     // Icon glyph centers relative to this item, for the desktop overlay
@@ -47,7 +50,8 @@ Item {
             id: networkButton
 
             icon: Status.networkIcon
-            iconGhost: true
+            iconFontSize: Theme.networkIconSize
+            iconGhost: root.ghostIcons
             danger: Status.networkOffline
             enabled: !root.desktopModeActive
             opacity: root.desktopModeActive ? 0 : 1
@@ -66,9 +70,11 @@ Item {
             id: volumeButton
 
             icon: Status.volumeIcon
-            iconGhost: true
+            iconFontSize: Theme.volumeIconSize
+            labelFontSize: Theme.statusLabelSize
+            iconGhost: root.ghostIcons
             label: Status.volumePercent + "%"
-            labelGhost: true
+            labelGhost: root.ghostIcons
             muted: Status.volumeMuted
             enabled: !root.desktopModeActive
             opacity: root.desktopModeActive ? 0 : 1
@@ -91,7 +97,9 @@ Item {
             id: bluetoothButton
 
             icon: "󰂯"
-            iconGhost: true
+            iconFontSize: Theme.bluetoothIconSize
+            labelFontSize: Theme.statusLabelSize
+            iconGhost: root.ghostIcons
             label: Status.bluetoothBatteryText
             labelColor: Status.bluetoothLowBattery ? Theme.danger : Status.bluetoothConnected ? Theme.text : Theme.textMuted
             muted: !Status.bluetoothConnected
@@ -107,6 +115,24 @@ Item {
             }
 
             onClicked: Popups.toggle(bluetoothPopup)
+        }
+
+        NotificationButton {
+            visible: root.showNotifications
+            anchorWindow: root.anchorWindow
+        }
+
+        Repeater {
+            model: root.showPhones ? PhoneBattery.phones : []
+
+            BarButton {
+                required property var modelData
+                icon: "󰏲"
+                iconFontSize: Theme.bluetoothIconSize
+                labelFontSize: Theme.statusLabelSize
+                label: modelData.charge + "%" + (modelData.charging ? " ⚡" : "")
+                danger: modelData.charge <= 15 && !modelData.charging
+            }
         }
     }
 

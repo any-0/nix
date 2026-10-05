@@ -18,10 +18,16 @@ Item {
     property bool muted: false
     property bool hoverDanger: false
     property int fontSize: Theme.fontSize
+    property int iconFontSize: fontSize
+    property int labelFontSize: fontSize
+    property int labelTextFormat: Text.PlainText
+    property real labelLineHeight: 1
     property int iconYOffset: 0
     property int labelYOffset: 0
     property string iconFontFamily: Theme.fontFamily
-    property string labelFontFamily: Theme.fontFamily
+    property int iconFontWeight: Font.DemiBold
+    property bool centerIconInk: false
+    property string labelFontFamily: Theme.barFontFamily
     readonly property bool hovered: mouse.containsMouse
     signal clicked(int button)
     signal wheel(int delta)
@@ -61,10 +67,25 @@ Item {
                 text: root.icon
                 color: root.hoverDanger && mouse.containsMouse ? Theme.danger : root.iconColor
                 font.family: root.iconFontFamily
-                font.pixelSize: root.fontSize
-                font.weight: Font.DemiBold
+                font.pixelSize: root.iconFontSize
+                font.weight: root.iconFontWeight
                 verticalAlignment: Text.AlignVCenter
                 y: root.iconYOffset
+
+                // Logo glyphs need their visible outline centered, not the
+                // font's ascent/descent box used by AlignVCenter.
+                transform: Translate {
+                    y: root.centerIconInk
+                        ? (iconText.height - iconMetrics.tightBoundingRect.height) / 2
+                            - iconText.baselineOffset - iconMetrics.tightBoundingRect.y
+                        : 0
+                }
+
+                TextMetrics {
+                    id: iconMetrics
+                    font: iconText.font
+                    text: iconText.text
+                }
 
                 Behavior on color {
                     ColorAnimation {
@@ -81,10 +102,14 @@ Item {
                 opacity: root.labelGhost ? 0 : 1
                 height: highlight.height
                 text: root.label
+                textFormat: root.labelTextFormat
                 color: root.hoverDanger && mouse.containsMouse ? Theme.danger : root.labelColor
                 font.family: root.labelFontFamily
-                font.pixelSize: root.fontSize
-                font.weight: Font.DemiBold
+                font.pixelSize: root.labelFontSize
+                font.features: { "tnum": 1 }
+                lineHeight: root.labelLineHeight
+                font.weight: Font.Medium
+                horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 y: root.labelYOffset
 

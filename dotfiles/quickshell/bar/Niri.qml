@@ -35,6 +35,8 @@ Singleton {
     }
 
     function activeWorkspaceEmpty(screenName) {
+        if (screenName === "DP-1" && Quickshell.screens.some(screen => screen.name.startsWith("portrait-")))
+            return false;
         const workspace = activeWorkspaceForScreen(screenName);
         if (!workspace) return false;
         return !niri.windows.some(window => window.workspace_id === workspace.id);

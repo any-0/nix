@@ -13,19 +13,13 @@ json_error() {
     plan: "",
     credits: null,
     resetCredits: null,
-    fiveHourPercentLeft: null,
     weeklyPercentLeft: null,
     monthlyPercentLeft: null,
-    fiveHourUsedPercent: null,
     weeklyUsedPercent: null,
-    fiveHourResetAt: null,
     weeklyResetAt: null,
-    fiveHourWindowSeconds: null,
     weeklyWindowSeconds: null,
-    fiveHourReset: "",
     weeklyReset: "",
-    monthlyReset: "",
-    raw: ""
+    monthlyReset: ""
   }'
 }
 
@@ -208,11 +202,13 @@ jq -cn \
         end
     end;
 
-  $usage.rate_limit.primary_window as $primary
-  | $usage.rate_limit.secondary_window as $secondary
+  [$usage.rate_limit.primary_window, $usage.rate_limit.secondary_window]
+  | map(select(.limit_window_seconds == 604800))
+  | first as $weekly
   | ($usage.individual_limit // $usage.rate_limit.individual_limit) as $monthly
   | {
       ok: true,
+      updatedAt: (now | strftime("%Y-%m-%dT%H:%M:%SZ")),
       error: "",
       plan: plan_label,
       credits: (
@@ -225,25 +221,19 @@ jq -cn \
         else $resetCredits.available_count
         end
       ),
-      fiveHourPercentLeft: percent_left($primary),
-      weeklyPercentLeft: percent_left($secondary),
+      weeklyPercentLeft: percent_left($weekly),
       monthlyPercentLeft: (
         if $monthly.remaining_percent == null then null
         else ($monthly.remaining_percent | tonumber | floor)
         end
       ),
-      fiveHourUsedPercent: ($primary.used_percent // null),
-      weeklyUsedPercent: ($secondary.used_percent // null),
-      fiveHourResetAt: ($primary.reset_at // null),
-      weeklyResetAt: ($secondary.reset_at // null),
-      fiveHourWindowSeconds: ($primary.limit_window_seconds // null),
-      weeklyWindowSeconds: ($secondary.limit_window_seconds // null),
-      fiveHourReset: reset_text($primary),
-      weeklyReset: reset_text($secondary),
+      weeklyUsedPercent: ($weekly.used_percent // null),
+      weeklyResetAt: ($weekly.reset_at // null),
+      weeklyWindowSeconds: ($weekly.limit_window_seconds // null),
+      weeklyReset: reset_text($weekly),
       monthlyReset: (
         if $monthly.resets_at == null and $monthly.resetsAt == null then ""
         else reset_text({reset_at: ($monthly.resets_at // $monthly.resetsAt)})
         end
-      ),
-      raw: ""
+      )
     }'

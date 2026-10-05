@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+socket_dir="${XDG_RUNTIME_DIR}/quickshell-ssh"
+mkdir -p "$socket_dir"
+chmod 700 "$socket_dir"
+
+exec ssh -T -o BatchMode=yes -o StrictHostKeyChecking=yes \
+  -o ControlMaster=auto -o ControlPersist=30 -o "ControlPath=$socket_dir/%C" \
+  -o ConnectTimeout=3 -o ServerAliveInterval=3 -o ServerAliveCountMax=1 \
+  "$1" 'bash -s' < "$(dirname "$0")/remote-hardware-sample"

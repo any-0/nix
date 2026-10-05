@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Alpha One
+GenericName=First test application
+Icon=utilities-terminal
+Exec=/usr/bin/touch /tmp/launcher-one
+Keywords=fixture;

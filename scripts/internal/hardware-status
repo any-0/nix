@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Discover drivers rather than depending on the kernel's hwmon numbering.
+cpu_temp=""
+gpu=""
+for chip in /sys/class/hwmon/hwmon*; do
+  case "$( < "$chip/name")" in
+    k10temp) cpu_temp="$chip/temp1_input" ;;
+    amdgpu) gpu="$chip" ;;
+  esac
+done
+energy=/sys/class/powercap/intel-rapl:0/energy_uj
+energy_range=/sys/class/powercap/intel-rapl:0/max_energy_range_uj
+
+read_optional() {
+  if [[ -r "$1" ]]; then
+    cat "$1"
+  else
+    printf 'null'
+  fi
+}
+
+while true; do
+  jq -cn \
+    --rawfile stat /proc/stat \
+    --rawfile memory /proc/meminfo \
+    --rawfile uptime /proc/uptime \
+    --argjson cpuTemp "$(read_optional "$cpu_temp")" \
+    --argjson gpuTemp "$(read_optional "$gpu/temp1_input")" \
+    --argjson gpuUsage "$(read_optional "$gpu/device/gpu_busy_percent")" \
+    --argjson gpuPower "$(read_optional "$gpu/power1_average")" \
+    --argjson energy "$(read_optional "$energy")" \
+    --argjson energyRange "$(read_optional "$energy_range")" '
+    ($stat | split("\n")[0] | [scan("[0-9]+") | tonumber]) as $cpu
+    | ($memory | split("\n") | map(capture("^(?<key>[^:]+):\\s+(?<value>[0-9]+)") | {key, value: (.value | tonumber)}) | from_entries) as $mem
+    | {
+        time: ($uptime | split(" ")[0] | tonumber),
+        cpuTotal: ($cpu[0:8] | add),
+        cpuIdle: ($cpu[3] + $cpu[4]),
+        cpuTemp: (if $cpuTemp == null then null else $cpuTemp / 1000 end),
+        gpuTemp: (if $gpuTemp == null then null else $gpuTemp / 1000 end),
+        gpuUsage: $gpuUsage,
+        gpuPower: (if $gpuPower == null then null else $gpuPower / 1000000 end),
+        energy: $energy,
+        energyRange: $energyRange,
+        ramUsed: (($mem.MemTotal - $mem.MemAvailable) / 1048576),
+        ramTotal: ($mem.MemTotal / 1048576)
+      }'
+  sleep 2
+done

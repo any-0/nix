@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.freedesktop.Notifications
+Exec=/run/current-system/sw/bin/quickshell --no-duplicate -c bar

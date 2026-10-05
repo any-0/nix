@@ -15,6 +15,8 @@
   };
 
   xdg.configFile."quickshell/bar" = dotFile "quickshell/bar";
+  xdg.dataFile."dbus-1/services/org.freedesktop.Notifications.service" =
+    dotFile "quickshell/org.freedesktop.Notifications.service";
   xdg.configFile."niri" = dotFile "niri";
   xdg.configFile."zen/odpbn0jp.Default Profile/user.js".text = ''
     user_pref("zen.window-sync.enabled", false);
@@ -24,9 +26,7 @@
 
   home.packages = with pkgs; [
     evince
-    fuzzel
     swaybg
-    mako
     libnotify
     grim
     slurp

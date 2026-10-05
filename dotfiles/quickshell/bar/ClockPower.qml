@@ -5,6 +5,13 @@ Item {
     id: root
 
     required property var anchorWindow
+    property bool showClock: true
+    property bool showPower: true
+    property bool expandedUsage: false
+    property var calendarAnchor: clockButton
+    property var powerAnchor: powerButton
+    function toggleCalendar() { Popups.toggle(calendarPopup); }
+    function togglePower() { Popups.toggle(powerPopup); }
     property bool desktopClockVisible: false
     property bool desktopClockActive: false
     // Width of the clock text block, provided by DesktopClock (which owns and
@@ -14,9 +21,9 @@ Item {
     readonly property real clockCenterOffsetFromRight: powerButton.width + clockRow.spacing + clockButton.implicitWidth / 2
 
     implicitWidth: clockRow.implicitWidth
-    implicitHeight: 30
+    implicitHeight: clockRow.implicitHeight
     width: implicitWidth
-    height: 30
+    height: implicitHeight
 
     onDesktopClockVisibleChanged: {
         if (desktopClockVisible) {
@@ -44,61 +51,25 @@ Item {
         id: clockRow
 
         anchors.centerIn: parent
-        spacing: 4
+        spacing: 10
 
         UsageStatus {
-            anchorWindow: root.anchorWindow
-            providerName: "Claude"
-            providerIcon: "✶"
-            usageLabel: Status.claudeLabel
-            ready: Status.claudeReady
-            loading: Status.claudeLoading
-            errorText: Status.claudeError
-            plan: Status.claudePlan
-            fiveHourPercentLeft: Status.claudeFiveHourPercentLeft
-            fiveHourPace: Status.usagePaceText(
-                Status.claudeFiveHourUsedPercent,
-                Status.claudeFiveHourResetAt,
-                Status.claudeFiveHourWindowSeconds,
-                true)
-            fiveHourReset: Status.claudeFiveHourReset
-            weeklyPercentLeft: Status.claudeWeeklyPercentLeft
-            weeklyPace: Status.usagePaceText(
-                Status.claudeWeeklyUsedPercent,
-                Status.claudeWeeklyResetAt,
-                Status.claudeWeeklyWindowSeconds,
-                false)
-            weeklyReset: Status.claudeWeeklyReset
-            monthlyPercentLeft: Status.claudeMonthlyPercentLeft
-            monthlyReset: Status.claudeMonthlyReset
-            footerVisible: Status.claudeCredits >= 0
-            footerLabel: "Extra usage"
-            footerValue: Status.claudeCredits < 0 ? "Unknown" : Status.claudeCredits.toFixed(2)
-            refreshAction: function() { Status.refreshClaudeUsage(); }
-        }
-
-        UsageStatus {
+            expanded: root.expandedUsage
             anchorWindow: root.anchorWindow
             providerName: "Codex"
-            providerIcon: "✦"
+            providerIcon: "\uE015\uE016\uE017"
             usageLabel: Status.codexLabel
+            usageReset: Status.codexLabelReset
             ready: Status.codexReady
             loading: Status.codexLoading
             errorText: Status.codexError
             plan: Status.codexPlan
-            fiveHourPercentLeft: Status.codexFiveHourPercentLeft
-            fiveHourPace: Status.usagePaceText(
-                Status.codexFiveHourUsedPercent,
-                Status.codexFiveHourResetAt,
-                Status.codexFiveHourWindowSeconds,
-                true)
-            fiveHourReset: Status.codexFiveHourReset
+            updatedAt: Status.codexUpdatedAt
             weeklyPercentLeft: Status.codexWeeklyPercentLeft
             weeklyPace: Status.usagePaceText(
                 Status.codexWeeklyUsedPercent,
                 Status.codexWeeklyResetAt,
-                Status.codexWeeklyWindowSeconds,
-                false)
+                Status.codexWeeklyWindowSeconds)
             weeklyReset: Status.codexWeeklyReset
             monthlyPercentLeft: Status.codexMonthlyPercentLeft
             monthlyReset: Status.codexMonthlyReset
@@ -110,6 +81,7 @@ Item {
 
         Item {
             id: clockSlot
+            visible: root.showClock
 
             width: root.desktopClockActive ? 0 : clockButton.implicitWidth
             height: 30
@@ -136,10 +108,11 @@ Item {
 
         BarButton {
             id: powerButton
+            visible: root.showPower
 
             icon: "⏻"
             iconColor: Theme.textMuted
-            fontSize: 16
+            iconFontSize: 14
             iconYOffset: -1
             hoverDanger: true
             onClicked: Popups.toggle(powerPopup)
@@ -150,7 +123,7 @@ Item {
         id: calendarPopup
 
         anchorWindow: root.anchorWindow
-        anchorItem: clockButton
+        anchorItem: root.calendarAnchor
         menuWidth: 260
 
         Item {
@@ -277,7 +250,7 @@ Item {
 
         menuWidth: 260
         anchorWindow: root.anchorWindow
-        anchorItem: powerButton
+        anchorItem: root.powerAnchor
 
         property string pendingAction: ""
 

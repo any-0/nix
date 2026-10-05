@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 
 Item {
     id: root
@@ -7,13 +8,12 @@ Item {
     required property string providerName
     required property string providerIcon
     required property string usageLabel
+    required property string usageReset
     required property bool ready
     required property bool loading
     required property string errorText
     required property string plan
-    required property int fiveHourPercentLeft
-    required property string fiveHourPace
-    required property string fiveHourReset
+    required property string updatedAt
     required property int weeklyPercentLeft
     required property string weeklyPace
     required property string weeklyReset
@@ -23,18 +23,43 @@ Item {
     required property string footerLabel
     required property string footerValue
     required property var refreshAction
+    property bool expanded: false
 
-    implicitWidth: usageButton.implicitWidth
-    implicitHeight: 30
+    implicitWidth: expanded ? 280 : usageButton.implicitWidth
+    implicitHeight: expanded ? 94 : 30
     width: implicitWidth
-    height: 30
+    height: implicitHeight
+
+    SystemClock {
+        id: updateClock
+        precision: SystemClock.Seconds
+    }
+
+    readonly property int updateAgeSeconds: updatedAt.length > 0
+        ? Math.max(0, Math.floor((updateClock.date.getTime() - Date.parse(updatedAt)) / 1000))
+        : 0
+
+    function updatedAgoText(seconds) {
+        if (seconds < 60) return seconds + "s ago";
+        if (seconds < 3600) return Math.floor(seconds / 60) + "m ago";
+        if (seconds < 86400) return Math.floor(seconds / 3600) + "h ago";
+        return Math.floor(seconds / 86400) + "d ago";
+    }
 
     BarButton {
         id: usageButton
+        visible: !root.expanded
 
         anchors.centerIn: parent
         icon: root.providerIcon
-        label: root.usageLabel
+        iconFontFamily: "IosevkaTermSlab Nerd Font Mono"
+        iconFontWeight: Font.Normal
+        centerIconInk: true
+        label: root.usageLabel + (root.usageReset.length > 0
+            ? '<br><font color="' + Theme.textSecondary + '">' + root.usageReset + '</font>' : "")
+        labelTextFormat: Text.StyledText
+        labelFontSize: root.usageReset.length > 0 ? 10 : Theme.fontSize
+        labelLineHeight: 0.85
         iconColor: root.ready ? Theme.accent : root.loading ? Theme.textMuted : Theme.danger
         labelColor: root.ready ? Theme.text : root.loading ? Theme.textMuted : Theme.danger
         onClicked: button => {
@@ -43,11 +68,52 @@ Item {
         }
     }
 
+    Item {
+        id: expandedUsage
+        visible: root.expanded
+        anchors.fill: parent
+
+        BarButton {
+            y: 12
+            icon: root.providerIcon
+            iconFontFamily: "IosevkaTermSlab Nerd Font Mono"
+            iconFontWeight: Font.Normal
+            iconFontSize: 24
+            centerIconInk: true
+            iconColor: usageButton.iconColor
+        }
+        Text {
+            x: 64
+            text: root.usageLabel
+            color: usageButton.labelColor
+            font.family: Theme.barFontFamily
+            font.pixelSize: 42
+            font.features: { "tnum": 1 }
+        }
+        Text {
+            x: 64
+            y: 58
+            text: root.usageReset.length > 0 ? "Resets in " + root.usageReset : root.loading ? "Updating…" : root.ready ? "No limit reported" : "Unavailable"
+            color: Theme.textSecondary
+            font.family: Theme.barFontFamily
+            font.pixelSize: 14
+        }
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: mouse => {
+                if (mouse.button === Qt.RightButton) root.refreshAction();
+                else Popups.toggle(usagePopup);
+            }
+        }
+    }
+
     MenuPopup {
         id: usagePopup
 
         anchorWindow: root.anchorWindow
-        anchorItem: usageButton
+        anchorItem: root.expanded ? expandedUsage : usageButton
         menuWidth: 360
 
         Row {
@@ -58,10 +124,10 @@ Item {
             Text {
                 width: parent.width - refreshButton.width - parent.spacing
                 height: parent.height
-                text: root.plan.length > 0 ? root.providerName.toUpperCase() + " · " + root.plan.toUpperCase() : root.providerName.toUpperCase()
+                text: root.plan.length > 0 ? root.providerName + " · " + root.plan : root.providerName
                 color: Theme.text
                 font.family: Theme.fontFamily
-                font.pixelSize: 13
+                font.pixelSize: 16
                 font.weight: Font.DemiBold
                 verticalAlignment: Text.AlignVCenter
             }
@@ -95,7 +161,7 @@ Item {
 
         Text {
             width: parent.width
-            visible: !root.ready
+            visible: !root.ready || root.loading
             text: root.loading ? "Checking usage…" : root.errorText
             color: root.loading ? Theme.textMuted : Theme.danger
             font.family: Theme.fontFamily
@@ -104,37 +170,39 @@ Item {
         }
 
         UsageRow {
-            title: "5H LIMIT"
-            percentLeft: root.fiveHourPercentLeft
-            pace: root.fiveHourPace
-            reset: root.fiveHourReset
-        }
-
-        UsageRow {
-            title: "WEEKLY"
+            title: "Weekly"
+            visible: root.ready && root.weeklyPercentLeft >= 0
             percentLeft: root.weeklyPercentLeft
             pace: root.weeklyPace
             reset: root.weeklyReset
         }
 
         UsageRow {
-            title: "MONTHLY"
-            visible: root.monthlyPercentLeft >= 0
+            title: "Monthly"
+            visible: root.ready && root.monthlyPercentLeft >= 0
             percentLeft: root.monthlyPercentLeft
             reset: root.monthlyReset
+        }
+
+        Text {
+            width: parent.width
+            visible: root.ready && root.weeklyPercentLeft < 0 && root.monthlyPercentLeft < 0
+            text: "No usage limits reported"
+            color: Theme.textMuted
+            font.family: Theme.fontFamily
+            font.pixelSize: 12
         }
 
         Rectangle {
             width: parent.width
             height: 1
-            visible: root.footerVisible
             color: Theme.track
         }
 
         Row {
             width: parent.width
             height: 24
-            visible: root.footerVisible
+            visible: root.ready && root.footerVisible
 
             Text {
                 width: parent.width / 2
@@ -159,6 +227,18 @@ Item {
                 verticalAlignment: Text.AlignVCenter
             }
         }
+
+        Text {
+            width: parent.width
+            text: root.updatedAt.length > 0
+                ? "Last updated " + root.updatedAgoText(root.updateAgeSeconds)
+                : "No successful update yet"
+            color: Theme.textMuted
+            font.family: Theme.fontFamily
+            font.pixelSize: 10
+            topPadding: 4
+            bottomPadding: 2
+        }
     }
 
     component UsageRow: Item {
@@ -168,64 +248,54 @@ Item {
         property string pace: ""
 
         width: parent.width
-        height: pace.length > 0 ? 76 : 48
+        height: details.implicitHeight + 16
 
         readonly property int remaining: percentLeft >= 0 ? percentLeft : 0
 
         Column {
-            anchors.fill: parent
-            spacing: 5
+            id: details
+            y: 8
+            width: parent.width
+            spacing: 8
 
             Row {
                 width: parent.width
-                height: 18
+                height: 24
 
                 Text {
-                    width: parent.width * 0.38
+                    width: parent.width * 0.5
                     height: parent.height
                     text: title
                     color: Theme.textMuted
                     font.family: Theme.fontFamily
-                    font.pixelSize: 10
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                     verticalAlignment: Text.AlignVCenter
                 }
 
                 Text {
-                    width: parent.width * 0.24
+                    width: parent.width * 0.5
                     height: parent.height
                     text: Status.usagePercentText(percentLeft)
                     color: Theme.text
                     font.family: Theme.fontFamily
-                    font.pixelSize: 11
+                    font.pixelSize: 16
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignRight
                     verticalAlignment: Text.AlignVCenter
-                }
-
-                Text {
-                    width: parent.width * 0.38
-                    height: parent.height
-                    text: reset.length > 0 ? "resets " + reset : ""
-                    color: Theme.textMuted
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 10
-                    horizontalAlignment: Text.AlignRight
-                    verticalAlignment: Text.AlignVCenter
-                    elide: Text.ElideLeft
                 }
             }
 
             Rectangle {
                 width: parent.width
-                height: 8
-                radius: 4
+                height: 5
+                radius: 2.5
                 color: Theme.track
 
                 Rectangle {
                     width: parent.width * remaining / 100
                     height: parent.height
-                    radius: 4
+                    radius: 2.5
                     color: remaining <= 10 ? Theme.danger : Theme.accent
 
                     Behavior on width {
@@ -235,6 +305,15 @@ Item {
                         }
                     }
                 }
+            }
+
+            Text {
+                width: parent.width
+                visible: reset.length > 0
+                text: "Resets in " + reset
+                color: Theme.textMuted
+                font.family: Theme.fontFamily
+                font.pixelSize: 11
             }
 
             Text {

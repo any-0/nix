@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Sent over SSH on stdin; nothing is installed on the remote host.
+case "$(uname -s)" in
+  Darwin)
+    storage="$(df -kP /System/Volumes/Data | awk 'NR == 2 {
+      printf "{\"total\":%.0f,\"used\":%.0f,\"free\":%.0f}\n", $2 * 1024, ($2 - $4) * 1024, $4 * 1024
+    }')"
+    # A18 Pro needs powermetrics for CPU energy; sample both power domains there.
+    power_sample="$(sudo -n /usr/bin/powermetrics --samplers cpu_power,gpu_power -n 1 -i 1000)"
+    power_json="$(printf '%s\n' "$power_sample" | awk '
+      /^CPU Power:/ { cpu = $3 / 1000; haveCpu = 1 }
+      /^GPU Power:/ { gpu = $3 / 1000; haveGpu = 1 }
+      END {
+        if (!haveCpu || !haveGpu) exit 1
+        printf "{\"cpu\":%g,\"gpu\":%g}\n", cpu, gpu
+      }')"
+    macmon pipe -s 1 -i 1000 | jq -c --argjson power "$power_json" --argjson storage "$storage" '{
+      storage: $storage,
+      cpu: (.cpu_active_ratio * 100),
+      cpuTemp: .temp.cpu_temp_avg,
+      cpuPower: $power.cpu,
+      gpuUsage: (.gpu_active_ratio * 100),
+      gpuTemp: .temp.gpu_temp_avg,
+      gpuPower: $power.gpu,
+      ramUsed: (.memory.ram_usage / 1073741824),
+      ramTotal: (.memory.ram_total / 1073741824)
+    }'
+    ;;
+  Linux)
+    cpu_temp=null
+    for chip in /sys/class/hwmon/hwmon*; do
+      if [[ "$(cat "$chip/name")" == coretemp ]]; then
+        cpu_temp="$(cat "$chip/temp1_input")"
+        break
+      fi
+    done
+    before="$(head -n 1 /proc/stat)"
+    # Intel's tool samples the GPU engines and package/GPU energy counters.
+    # A timeout ends the sample normally; other failures must remain errors.
+    gpu_stats="$(timeout -s INT 2 intel_gpu_top -l -s 1000 -o -)" || {
+      code=$?
+      [[ "$code" == 124 ]] || exit "$code"
+    }
+    after="$(head -n 1 /proc/stat)"
+    awk -v before="$before" -v after="$after" -v temperature="$cpu_temp" -v gpuStats="$gpu_stats" '
+      BEGIN {
+        split(before, a); split(after, b)
+        for (i = 2; i <= 9; i++) { total += b[i] - a[i] }
+        idle = b[5] + b[6] - a[5] - a[6]
+        cpu = total > 0 ? 100 * (1 - idle / total) : 0
+        count = split(gpuStats, lines, "\n")
+        for (line = 1; line <= count; line++) {
+          if (lines[line] !~ /^[[:space:]]*[0-9]/) continue
+          split(lines[line], fields)
+          gpuPower = fields[5]
+          packagePower = fields[6]
+          gpu = 0
+          for (field = 7; field <= 16; field += 3)
+            if (fields[field] > gpu) gpu = fields[field]
+        }
+        temp = temperature == "null" ? "null" : temperature / 1000
+      }
+      /^MemTotal:/ { totalRam = $2 }
+      /^MemAvailable:/ { available = $2 }
+      END {
+        printf "{\"cpu\":%.1f,\"cpuTemp\":%s,\"cpuPower\":%.2f,\"gpuUsage\":%.1f,\"gpuTemp\":null,\"gpuPower\":%.2f,\"ramUsed\":%.2f,\"ramTotal\":%.2f}\n", cpu, temp, packagePower, gpu, gpuPower, (totalRam - available) / 1048576, totalRam / 1048576
+      }' /proc/meminfo
+    ;;
+  *) exit 1 ;;
+esac

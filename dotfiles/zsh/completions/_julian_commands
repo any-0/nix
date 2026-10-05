@@ -1,4 +1,4 @@
-#compdef switch theme template get open cli-bootstrap direnv claude-usage codex-usage hf run yank mount-nas-smb umount-nas-smb format
+#compdef switch theme template get open cli-bootstrap direnv codex-usage hf run yank mount-nas-smb umount-nas-smb format
 
 _julian_no_arguments() {
   _message 'no arguments'
@@ -153,7 +153,7 @@ case "$service" in
   hf|run)
     _message 'free-form argument'
     ;;
-  claude-usage|codex-usage|yank|mount-nas-smb|umount-nas-smb|format)
+  codex-usage|yank|mount-nas-smb|umount-nas-smb|format)
     _julian_no_arguments
     ;;
 esac

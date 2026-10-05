@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Hidden Test
+Exec=/usr/bin/touch /tmp/launcher-hidden
+NoDisplay=true

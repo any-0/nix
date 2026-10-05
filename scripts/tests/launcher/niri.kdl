@@ -1,0 +1,21 @@
+output "TEST" {
+    create-virtual
+    mode "1920x1080@60"
+    position x=0 y=0
+}
+output "PORTRAIT" {
+    create-virtual
+    mode "1440x2560@60"
+    position x=1920 y=0
+}
+output "portrait-center" {
+    create-virtual
+    mode "1440x1280@60"
+    region-of "PORTRAIT" x=0 y=853
+}
+layout { background-color "#202228"; }
+animations { off; }
+hotkey-overlay { skip-at-startup; }
+binds {
+    Super+R { spawn "quickshell" "ipc" "-c" "bar" "call" "launcher" "toggle"; }
+}

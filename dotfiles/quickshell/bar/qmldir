@@ -1,10 +1,23 @@
 module qs
+singleton Notifications 1.0 Notifications.qml
+NotificationCard 1.0 NotificationCard.qml
+NotificationHistory 1.0 NotificationHistory.qml
+NotificationToasts 1.0 NotificationToasts.qml
+NotificationButton 1.0 NotificationButton.qml
+Launcher 1.0 Launcher.qml
+InfoPanel 1.0 InfoPanel.qml
+singleton LocalMetrics 1.0 LocalMetrics.qml
 Bar 1.0 Bar.qml
 BarButton 1.0 BarButton.qml
 BluetoothMenu 1.0 BluetoothMenu.qml
 ClockPower 1.0 ClockPower.qml
 DesktopClock 1.0 DesktopClock.qml
 DesktopStatus 1.0 DesktopStatus.qml
+HardwareStatus 1.0 HardwareStatus.qml
+HardwareReadout 1.0 HardwareReadout.qml
+singleton RemoteMetrics 1.0 RemoteMetrics.qml
+singleton StorageMetrics 1.0 StorageMetrics.qml
+StorageStatus 1.0 StorageStatus.qml
 MenuPopup 1.0 MenuPopup.qml
 MenuRow 1.0 MenuRow.qml
 NetworkMenu 1.0 NetworkMenu.qml
@@ -12,6 +25,7 @@ singleton Niri 1.0 Niri.qml
 singleton Popups 1.0 Popups.qml
 SectionLabel 1.0 SectionLabel.qml
 singleton Status 1.0 Status.qml
+singleton PhoneBattery 1.0 PhoneBattery.qml
 StatusPill 1.0 StatusPill.qml
 singleton Theme 1.0 Theme.qml
 ToggleSwitch 1.0 ToggleSwitch.qml

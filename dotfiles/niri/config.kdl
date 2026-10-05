@@ -84,7 +84,7 @@ layer-rule {
 
 // Startup
 spawn-sh-at-startup "exec swaybg -i \"$(find \"$HOME/Pictures/Wallpapers\" -maxdepth 1 -type f | shuf -n 1)\" -m fill"
-spawn-at-startup "quickshell" "-c" "bar"
+spawn-at-startup "quickshell" "--no-duplicate" "-c" "bar"
 spawn-at-startup "xwayland-satellite"
 
 hotkey-overlay {
@@ -118,7 +118,7 @@ binds {
     // Applications
     Mod+Shift+Slash { show-hotkey-overlay; }
     Mod+C hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
-    Mod+R hotkey-overlay-title="Run an Application: fuzzel" { spawn "fuzzel"; }
+    Mod+R repeat=false hotkey-overlay-title="Run an Application" { spawn "quickshell" "ipc" "-c" "bar" "call" "launcher" "toggle"; }
     Mod+E hotkey-overlay-title="Open File Manager" { spawn "dolphin"; }
     Mod+Y hotkey-overlay-title="Open Browser: zen-browser" { spawn "zen"; }
     Mod+Shift+T hotkey-overlay-title="Switch Theme" { spawn "theme" "next"; }

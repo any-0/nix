@@ -55,13 +55,8 @@ PopupWindow {
     color: "transparent"
     implicitWidth: Math.max(260, menuWidth)
     implicitHeight: contentColumn.implicitHeight + 24
-    // Anchor rect spans the bar's full height at the widget's x, so the card
-    // hangs flush from the bar's bottom edge, horizontally centered on the
-    // widget. Position is recomputed on every open (anchor.rect.x below).
+    // Map both corners when opening, including widgets scaled in the info panel.
     anchor.window: anchorWindow
-    anchor.rect.y: 0
-    anchor.rect.width: anchorItem.width
-    anchor.rect.height: anchorWindow.height
     anchor.edges: Edges.Bottom
     anchor.gravity: Edges.Bottom
     anchor.adjustment: PopupAdjustment.Slide
@@ -69,7 +64,12 @@ PopupWindow {
     onVisibleChanged: {
         Popups.noteVisibleChange(popup);
         if (visible) {
-            anchor.rect.x = anchorItem.mapToItem(null, 0, 0).x;
+            const topLeft = anchorItem.mapToItem(null, 0, 0);
+            const bottomRight = anchorItem.mapToItem(null, anchorItem.width, anchorItem.height);
+            anchor.rect.x = topLeft.x;
+            anchor.rect.y = topLeft.y;
+            anchor.rect.width = bottomRight.x - topLeft.x;
+            anchor.rect.height = bottomRight.y - topLeft.y;
             anchor.updateAnchor();
             openAnimation.restart();
         }

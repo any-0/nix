@@ -74,9 +74,10 @@ Item {
                             height: 20
                             text: Niri.workspaceDisplayName(workspaceButton.workspace)
                             color: workspaceButton.workspace.is_urgent ? Theme.danger : workspaceButton.workspace.is_focused ? Theme.accent : Theme.text
-                            font.family: Theme.fontFamily
+                            font.family: Theme.barFontFamily
+                            font.features: { "tnum": 1 }
                             font.pixelSize: 12
-                            font.weight: Font.DemiBold
+                            font.weight: Font.Medium
                             verticalAlignment: Text.AlignVCenter
 
                             Behavior on color {

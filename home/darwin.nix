@@ -12,6 +12,7 @@ in
 
   home.packages = with pkgs; [
     coreutils
+    (pkgs.callPackage ./macmon.nix { })
     wakeonlan
     yabai
   ];

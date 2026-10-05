@@ -11,7 +11,16 @@ in
 {
   imports = [ ./remote-display.nix ];
 
+  # Permit local desktop users to read package energy for CPU power telemetry.
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="powercap", KERNEL=="intel-rapl:0", RUN+="${pkgs.coreutils}/bin/chgrp users /sys%p/energy_uj", RUN+="${pkgs.coreutils}/bin/chmod 0440 /sys%p/energy_uj"
+  '';
+  systemd.tmpfiles.rules = [
+    "z /sys/devices/virtual/powercap/intel-rapl/intel-rapl:0/energy_uj 0440 root users -"
+  ];
+
   fonts.packages = [
+    pkgs.inter
     pkgs.jetbrains-mono
     iosevkaTermSlab
   ];
@@ -71,6 +80,7 @@ in
   };
 
   services.dbus.enable = true;
+  programs.kdeconnect.enable = true;
   services.sunshine = {
     enable = true;
     autoStart = true;

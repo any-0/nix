@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Terminal Test
+GenericName=Runs in Kitty
+Icon=utilities-terminal
+Exec=/usr/bin/touch /tmp/launcher-terminal
+Terminal=true

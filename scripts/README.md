@@ -65,6 +65,32 @@ the results. Select a line. The command then copies the line to the clipboard.
 
 ## The `internal/` directory
 
+### `hardware-status`
+
+Streams CPU, AMD GPU, and RAM samples every two seconds for Quickshell.
+CPU power is derived from package energy; the NixOS desktop configuration
+grants the local users group read access to that counter.
+
+### `remote-hardware-status` and `remote-hardware-sample`
+
+Read CPU/GPU utilization, available temperatures and power, and used/total
+RAM from physical hosts over SSH.
+Quickshell polls every ten seconds and shares samples across monitors.
+The collector is sent over stdin; it does not install remote files or jobs.
+SSH uses existing trusted host keys, key authentication, and a reused connection.
+Unavailable or stale hosts are marked offline; authentication failures are
+displayed as requiring SSH access.
+
+SRV uses `intel-gpu-tools` on Proxmox for measured package/GPU power and
+the busiest GPU engine utilization. Its CPU temperature comes from coretemp;
+it exposes no separate GPU temperature. NEO uses macmon 0.8.2 to read
+CPU/GPU active residency, temperatures, and RAM without sudo.
+The pinned release includes the A18 Pro frequency fix missing in the older
+Nix package. CPU/GPU power comes from `powermetrics`, since the unprivileged
+CPU energy counter stays at zero under load. NEO permits passwordless sudo
+only for `/usr/bin/powermetrics --samplers cpu_power,gpu_power -n 1 -i 1000`.
+The comma must be escaped as `cpu_power\,gpu_power` in the sudoers rule.
+
 Do not start these commands manually. Other software starts them. The quickshell
 status bar is an example.
 
@@ -102,8 +128,20 @@ It does not override application renderers: Kitty uses grayscale, and a global
 Fontconfig RGB setting is deliberately not forced across the mixed-orientation
 displays.
 
-### `claude-usage` and `codex-usage`
+### `storage-status`
 
-These two commands print the current usage data and the rate-limit data. The
-commands print the data in the JSON format. `claude-usage` reads the data of the
-Claude CLI. `codex-usage` reads the data of the Codex CLI.
+Reads capacity for an explicit mount path and expected filesystem source.
+Quickshell polls the NixOS SSD and the NAS `media1`/`media2`/`backups` mounts once a minute,
+with a five-second timeout. Missing or mismatched mounts remain unavailable;
+they must not show the underlying local disk's capacity. NEO capacity comes
+from its shared remote sample and counts the APFS container once, including
+the system and Nix volumes. The bar shows used capacity with thin progress
+tracks with a consistent accent color at every capacity.
+Click a drive to see used, available, and total capacity in GiB/TiB and its
+mount or share path. Available capacity excludes filesystem-reserved space.
+
+### `codex-usage`
+
+Prints Codex usage and rate-limit data as JSON using the Codex CLI credentials.
+Reports weekly and monthly limits, credits, and the last successful fetch time.
+The weekly window is identified by its duration, not its position in the response.

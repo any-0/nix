@@ -5,15 +5,22 @@ import QtQuick
 
 Singleton {
     readonly property string fontFamily: "JetBrains Mono"
+    readonly property string barFontFamily: "Inter"
     readonly property int fontSize: 12
-    readonly property int clockFontSize: 13
+    readonly property int networkIconSize: 18
+    readonly property int volumeIconSize: 18
+    readonly property int bluetoothIconSize: 14
+    readonly property int statusLabelSize: 10
+    readonly property int clockFontSize: 10
 
-    readonly property color bg: Qt.rgba(32 / 255, 32 / 255, 38 / 255, 0.62)
+    readonly property color bg: Qt.rgba(32 / 255, 32 / 255, 38 / 255, 0.78)
+    readonly property color barBg: Qt.rgba(32 / 255, 33 / 255, 40 / 255, 0.84)
     readonly property color menuBg: bg
     // Desktop cards have no blur behind them, so slightly more opaque.
     readonly property color cardBg: Qt.rgba(32 / 255, 32 / 255, 38 / 255, 0.8)
     readonly property color text: "#f2f2f4"
     readonly property color textMuted: "#9a9aa2"
+    readonly property color textSecondary: "#bec0c8"
     readonly property color accent: "#7aa2f7"
     readonly property color danger: "#ff7a90"
 
