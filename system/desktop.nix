@@ -43,11 +43,12 @@ in
     enable = true;
     package = pkgs.niri.overrideAttrs (old: {
       src = niri-virtual;
+      patches = (old.patches or [ ]) ++ [ ./patches/niri-output-regions.patch ];
       cargoDeps = pkgs.rustPlatform.importCargoLock {
         lockFile = "${niri-virtual}/Cargo.lock";
         allowBuiltinFetchGit = true;
       };
-      env = old.env // { NIRI_BUILD_COMMIT = "dc0505f-virtual-outputs"; };
+      env = old.env // { NIRI_BUILD_COMMIT = "dc0505f-output-regions"; };
       preCheck = ''
         export XDG_RUNTIME_DIR="$(mktemp -d)"
       '';
@@ -89,6 +90,14 @@ in
       RestartSec = 5;
     };
   };
+
+  # Keep the session override in sync with the compositor package on rebuilds.
+  home-manager.users.${username}.xdg.configFile."systemd/user/niri.service.d/90-regions.conf".text = ''
+    [Service]
+    ExecStart=
+    ExecStart=${config.programs.niri.package}/bin/niri --session
+    Environment=NIRI_BIN=${config.programs.niri.package}/bin/niri
+  '';
 
   hardware.graphics.enable = true;
   hardware.enableRedistributableFirmware = true;

@@ -1,0 +1,1005 @@
+diff --git a/niri-config/src/lib.rs b/niri-config/src/lib.rs
+index 7f2a0aa..cbc1f4f 100644
+--- a/niri-config/src/lib.rs
++++ b/niri-config/src/lib.rs
+@@ -54,7 +54,7 @@ pub use crate::input::{Input, ModKey, ScrollMethod, TrackLayout, WarpMouseToFocu
+ pub use crate::layer_rule::LayerRule;
+ pub use crate::layout::*;
+ pub use crate::misc::*;
+-pub use crate::output::{Output, OutputName, Outputs, Position, Vrr};
++pub use crate::output::{Output, OutputName, OutputRegion, Outputs, Position, Subpixel, Vrr};
+ use crate::recent_windows::RecentWindowsPart;
+ pub use crate::recent_windows::{MruDirection, MruFilter, MruPreviews, MruScope, RecentWindows};
+ pub use crate::utils::FloatOrInt;
+@@ -207,6 +207,17 @@ where
+                 // Multipart sections.
+                 "output" => {
+                     let part = Output::decode_node(node, ctx)?;
++                    if let Some(region) = &part.region_of {
++                        if !part.create_virtual
++                            || region.output == part.name
++                            || region.x < 0
++                            || region.y < 0
++                            || part.mode.is_none()
++                        {
++                            ctx.emit_error(DecodeError::missing(node,
++                                "region-of requires create-virtual, an explicit mode, a different host output, and non-negative x/y"));
++                        }
++                    }
+                     config.borrow_mut().outputs.0.push(part);
+                 }
+                 "spawn-at-startup" => m_push!(spawn_at_startup),
+@@ -1174,6 +1185,8 @@ mod tests {
+                     Output {
+                         off: false,
+                         create_virtual: false,
++                        region_of: None,
++                        subpixel: None,
+                         name: "eDP-1",
+                         scale: Some(
+                             FloatOrInt(
+@@ -1234,6 +1247,8 @@ mod tests {
+                     Output {
+                         off: false,
+                         create_virtual: false,
++                        region_of: None,
++                        subpixel: None,
+                         name: "eDP-2",
+                         scale: None,
+                         transform: Normal,
+@@ -1262,6 +1277,8 @@ mod tests {
+                     Output {
+                         off: false,
+                         create_virtual: false,
++                        region_of: None,
++                        subpixel: None,
+                         name: "eDP-3",
+                         scale: None,
+                         transform: Normal,
+diff --git a/niri-config/src/output.rs b/niri-config/src/output.rs
+index 83c2e5f..5d79145 100644
+--- a/niri-config/src/output.rs
++++ b/niri-config/src/output.rs
+@@ -53,6 +53,12 @@ pub struct Output {
+     pub off: bool,
+     #[knuffel(child)]
+     pub create_virtual: bool,
++    /// Present this virtual output inside a rectangle of another output.
++    #[knuffel(child)]
++    pub region_of: Option<OutputRegion>,
++    /// Subpixel order in desktop coordinates, after the configured rotation.
++    #[knuffel(child, unwrap(argument))]
++    pub subpixel: Option<Subpixel>,
+     #[knuffel(argument)]
+     pub name: String,
+     #[knuffel(child, unwrap(argument))]
+@@ -101,6 +107,8 @@ impl Default for Output {
+         Self {
+             off: false,
+             create_virtual: false,
++            region_of: None,
++            subpixel: None,
+             focus_at_startup: false,
+             name: String::new(),
+             scale: None,
+@@ -118,6 +126,16 @@ impl Default for Output {
+     }
+ }
+ 
++#[derive(knuffel::DecodeScalar, Debug, Clone, Copy, PartialEq, Eq)]
++pub enum Subpixel {
++    Unknown,
++    None,
++    Rgb,
++    Bgr,
++    Vrgb,
++    Vbgr,
++}
++
+ #[derive(Debug, Clone)]
+ pub struct OutputName {
+     pub connector: String,
+@@ -134,6 +152,16 @@ pub struct Position {
+     pub y: i32,
+ }
+ 
++#[derive(knuffel::Decode, Debug, Clone, PartialEq, Eq)]
++pub struct OutputRegion {
++    #[knuffel(argument)]
++    pub output: String,
++    #[knuffel(property, default = 0)]
++    pub x: i32,
++    #[knuffel(property, default = 0)]
++    pub y: i32,
++}
++
+ #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+ pub struct MaxBpc(pub niri_ipc::MaxBpc);
+ 
+diff --git a/niri-ipc/src/lib.rs b/niri-ipc/src/lib.rs
+index 833989f..7563efb 100644
+--- a/niri-ipc/src/lib.rs
++++ b/niri-ipc/src/lib.rs
+@@ -1781,7 +1781,9 @@ impl FromStr for WorkspaceReferenceArg {
+     type Err = &'static str;
+ 
+     fn from_str(s: &str) -> Result<Self, Self::Err> {
+-        let reference = if let Ok(index) = s.parse::<i32>() {
++        let reference = if let Some(id) = s.strip_prefix("id:") {
++            Self::Id(id.parse().map_err(|_| "invalid workspace id")?)
++        } else if let Ok(index) = s.parse::<i32>() {
+             if let Ok(idx) = u8::try_from(index) {
+                 Self::Index(idx)
+             } else {
+diff --git a/src/backend/headless.rs b/src/backend/headless.rs
+index 7d20f9b..be84de4 100644
+--- a/src/backend/headless.rs
++++ b/src/backend/headless.rs
+@@ -314,7 +314,7 @@ impl Headless {
+             };
+             let config = niri.config.borrow();
+             if let Some(output_config) = config.outputs.find(&lookup_name) {
+-                should_connect = !output_config.off;
++                should_connect = !output_config.off && niri.region_available(output_config);
+ 
+                 if let Some(mode_config) = output_config.mode {
+                     width = mode_config.mode.width;
+@@ -344,6 +344,7 @@ impl Headless {
+             height,
+             refresh_millihz,
+             name,
++            &niri.config.borrow(),
+         );
+ 
+         if self.outputs.contains_key(&built.name)
+diff --git a/src/backend/mod.rs b/src/backend/mod.rs
+index 3c22595..bff9247 100644
+--- a/src/backend/mod.rs
++++ b/src/backend/mod.rs
+@@ -58,6 +58,19 @@ impl VirtualOutputMarker {
+ 
+ static OUTPUT_ID_COUNTER: IdCounter = IdCounter::new();
+ 
++pub(crate) fn subpixel_from_config(subpixel: niri_config::Subpixel) -> smithay::output::Subpixel {
++    use niri_config::Subpixel as Config;
++    use smithay::output::Subpixel;
++    match subpixel {
++        Config::Unknown => Subpixel::Unknown,
++        Config::None => Subpixel::None,
++        Config::Rgb => Subpixel::HorizontalRgb,
++        Config::Bgr => Subpixel::HorizontalBgr,
++        Config::Vrgb => Subpixel::VerticalRgb,
++        Config::Vbgr => Subpixel::VerticalBgr,
++    }
++}
++
+ #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+ pub struct OutputId(u64);
+ 
+diff --git a/src/backend/tty.rs b/src/backend/tty.rs
+index 55f4439..bbb454b 100644
+--- a/src/backend/tty.rs
++++ b/src/backend/tty.rs
+@@ -1384,7 +1384,10 @@ impl Tty {
+             connector_name.clone(),
+             PhysicalProperties {
+                 size: (physical_width as i32, physical_height as i32).into(),
+-                subpixel: connector.subpixel().into(),
++                subpixel: config
++                    .subpixel
++                    .map(super::subpixel_from_config)
++                    .unwrap_or_else(|| connector.subpixel().into()),
+                 model: output_name.model.as_deref().unwrap_or("Unknown").to_owned(),
+                 make: output_name.make.as_deref().unwrap_or("Unknown").to_owned(),
+                 serial_number: output_name
+@@ -2394,7 +2397,7 @@ impl Tty {
+             };
+             let config = self.config.borrow();
+             if let Some(output_config) = config.outputs.find(&lookup_name) {
+-                should_connect = !output_config.off;
++                should_connect = !output_config.off && niri.region_available(output_config);
+ 
+                 if let Some(mode_config) = output_config.mode {
+                     width = mode_config.mode.width;
+@@ -2419,6 +2422,7 @@ impl Tty {
+             height,
+             refresh_millihz,
+             name,
++            &niri.config.borrow(),
+         );
+ 
+         if self.virtual_outputs.outputs.contains_key(&built.name)
+diff --git a/src/backend/virtual_output.rs b/src/backend/virtual_output.rs
+index 7dcc576..c82f323 100644
+--- a/src/backend/virtual_output.rs
++++ b/src/backend/virtual_output.rs
+@@ -21,6 +21,64 @@ pub(super) struct BuiltVirtualOutput {
+     pub ipc_output: niri_ipc::Output,
+ }
+ 
++#[cfg(test)]
++mod subpixel_tests {
++    use super::*;
++
++    #[test]
++    fn output_subpixel_config_and_region_inheritance() {
++        for (name, expected) in [
++            ("unknown", Subpixel::Unknown),
++            ("none", Subpixel::None),
++            ("rgb", Subpixel::HorizontalRgb),
++            ("bgr", Subpixel::HorizontalBgr),
++            ("vrgb", Subpixel::VerticalRgb),
++            ("vbgr", Subpixel::VerticalBgr),
++        ] {
++            let config = Config::parse_mem(&format!(
++                r#"
++                output "DP-1" {{ subpixel "{name}"; }}
++                output "region" {{
++                    create-virtual
++                    mode "1440x1280@60"
++                    region-of "DP-1" x=0 y=640
++                }}
++                output "explicit" {{ create-virtual; subpixel "{name}"; }}
++            "#
++            ))
++            .unwrap();
++            for output in ["region", "explicit"] {
++                let built = build_headless_virtual_output(
++                    &mut 0,
++                    1440,
++                    1280,
++                    60_000,
++                    Some(output.into()),
++                    &config,
++                );
++                assert_eq!(built.output.physical_properties().subpixel, expected);
++            }
++        }
++        assert!(Config::parse_mem(r#"output "DP-1" { subpixel "rbga"; }"#).is_err());
++    }
++
++    #[test]
++    fn ordinary_virtual_output_does_not_assume_a_panel_layout() {
++        let built = build_headless_virtual_output(
++            &mut 0,
++            1920,
++            1080,
++            60_000,
++            Some("sunshine".into()),
++            &Config::default(),
++        );
++        assert_eq!(
++            built.output.physical_properties().subpixel,
++            Subpixel::Unknown
++        );
++    }
++}
++
+ pub(super) fn refresh_interval_from_millihz(refresh_millihz: u64) -> Duration {
+     let refresh_millihz = refresh_millihz.max(1);
+     let interval_nanos = 1_000_000_000_000 / refresh_millihz;
+@@ -60,6 +118,7 @@ pub(super) fn build_headless_virtual_output(
+     height: u16,
+     refresh_millihz: u32,
+     name: Option<String>,
++    config: &niri_config::Config,
+ ) -> BuiltVirtualOutput {
+     let refresh_millihz = if refresh_millihz < 2_000 {
+         60_000
+@@ -83,11 +142,34 @@ pub(super) fn build_headless_virtual_output(
+     let model = connector.clone();
+     let make = "niri".to_string();
+ 
++    let lookup = OutputName {
++        connector: connector.clone(),
++        make: Some(make.clone()),
++        model: Some(model.clone()),
++        serial: Some(serial.clone()),
++    };
++    let subpixel = config
++        .outputs
++        .find(&lookup)
++        .and_then(|output| {
++            output.subpixel.or_else(|| {
++                let region = output.region_of.as_ref()?;
++                config
++                    .outputs
++                    .0
++                    .iter()
++                    .find(|parent| parent.name == region.output)?
++                    .subpixel
++            })
++        })
++        .map(super::subpixel_from_config)
++        .unwrap_or(Subpixel::Unknown);
++
+     let output = Output::new(
+         connector.clone(),
+         PhysicalProperties {
+             size: (0, 0).into(),
+-            subpixel: Subpixel::Unknown,
++            subpixel,
+             make: make.clone(),
+             model: model.clone(),
+             serial_number: serial.clone(),
+@@ -199,7 +281,7 @@ pub(super) fn apply_config_to_managed_virtual_outputs(
+         let name = output.user_data().get::<OutputName>().unwrap();
+         let output_config = config.outputs.find(name);
+ 
+-        let is_off = output_config.is_some_and(|c| c.off);
++        let is_off = output_config.is_some_and(|c| c.off || !niri.region_available(c));
+         let new_mode = output_config.and_then(|config| {
+             config.mode.as_ref().map(|mode_config| {
+                 let refresh_hz = mode_config.mode.refresh.unwrap_or(60.0);
+diff --git a/src/handlers/xdg_shell.rs b/src/handlers/xdg_shell.rs
+index b0525d2..d7a1f5a 100644
+--- a/src/handlers/xdg_shell.rs
++++ b/src/handlers/xdg_shell.rs
+@@ -670,7 +670,20 @@ impl XdgShellHandler for State {
+         toplevel: ToplevelSurface,
+         wl_output: Option<wl_output::WlOutput>,
+     ) {
+-        let requested_output = wl_output.and_then(|o| self.niri.output_from_resource(&o));
++        let requested_output = wl_output
++            .and_then(|o| self.niri.output_from_resource(&o))
++            .map(|output| {
++                if let Some((_, Some(current))) = self
++                    .niri
++                    .layout
++                    .find_window_and_output(toplevel.wl_surface())
++                {
++                    if self.niri.region_parent(current).as_ref() == Some(&output) {
++                        return current.clone();
++                    }
++                }
++                self.niri.preferred_region(&output).unwrap_or(output)
++            });
+ 
+         if let Some((mapped, current_output)) = self
+             .niri
+@@ -1079,6 +1092,18 @@ impl XdgForeignHandler for State {
+ impl State {
+     pub fn send_initial_configure(&mut self, toplevel: &ToplevelSurface) {
+         let _span = tracy_client::span!("State::send_initial_configure");
++        // A partitioned physical output is a presentation host, not a window
++        // destination. Resolve its region before sizing the new surface.
++        let region_targets = self
++            .niri
++            .global_space
++            .outputs()
++            .filter_map(|host| {
++                self.niri
++                    .preferred_region(host)
++                    .map(|region| (host.clone(), region))
++            })
++            .collect::<Vec<_>>();
+ 
+         let Some(unmapped) = self.niri.unmapped_windows.get_mut(toplevel.wl_surface()) else {
+             error!("window must be present in unmapped_windows in send_initial_configure()");
+@@ -1150,6 +1175,15 @@ impl State {
+                 .map(|mon| (mon, false))
+         });
+ 
++        let mon = mon.map(|(mon, follow_parent)| {
++            if let Some((_, region)) = region_targets.iter().find(|(host, _)| host == mon.output())
++            {
++                (self.niri.layout.monitor_for_output(region).unwrap(), false)
++            } else {
++                (mon, follow_parent)
++            }
++        });
++
+         // If we're following the parent, don't set the target output, so that when the window is
+         // mapped, it fetches the possibly changed parent's output again, and shows up there.
+         let output = mon
+diff --git a/src/niri.rs b/src/niri.rs
+index 4b88f74..c246b6d 100644
+--- a/src/niri.rs
++++ b/src/niri.rs
+@@ -2774,6 +2774,69 @@ impl Niri {
+         Ok(())
+     }
+ 
++    pub fn region_config(&self, output: &Output) -> Option<niri_config::OutputRegion> {
++        let name = output.user_data().get::<OutputName>()?;
++        self.config.borrow().outputs.find(name)?.region_of.clone()
++    }
++
++    pub fn region_parent(&self, output: &Output) -> Option<Output> {
++        let region = self.region_config(output)?;
++        self.global_space
++            .outputs()
++            .find(|o| o.name() == region.output)
++            .cloned()
++    }
++
++    pub fn region_children(&self, output: &Output) -> Vec<Output> {
++        self.global_space
++            .outputs()
++            .filter(|child| {
++                self.region_config(child)
++                    .is_some_and(|r| r.output == output.name())
++            })
++            .cloned()
++            .collect()
++    }
++
++    pub fn region_available(&self, config: &niri_config::Output) -> bool {
++        let Some(region) = &config.region_of else {
++            return true;
++        };
++        let Some(parent) = self
++            .global_space
++            .outputs()
++            .find(|o| o.name() == region.output)
++        else {
++            return false;
++        };
++        if self.region_config(parent).is_some() {
++            return false;
++        }
++        let Some(mode) = config.mode else {
++            return false;
++        };
++        let scale = config.scale.map(|s| s.0).unwrap_or(1.);
++        let size = output_size(parent);
++        region.x >= 0
++            && region.y >= 0
++            && region.x as f64 + f64::from(mode.mode.width) / scale <= size.w
++            && region.y as f64 + f64::from(mode.mode.height) / scale <= size.h
++            && scale == parent.current_scale().fractional_scale()
++    }
++
++    pub fn preferred_region(&self, output: &Output) -> Option<Output> {
++        let pointer = self.seat.get_pointer().unwrap().current_location();
++        self.region_children(output).into_iter().min_by(|a, b| {
++            let distance = |child: &Output| {
++                let geo = self.global_space.output_geometry(child).unwrap().to_f64();
++                let x = pointer.x.clamp(geo.loc.x, geo.loc.x + geo.size.w);
++                let y = pointer.y.clamp(geo.loc.y, geo.loc.y + geo.size.h);
++                (pointer.x - x).powi(2) + (pointer.y - y).powi(2)
++            };
++            distance(a).total_cmp(&distance(b))
++        })
++    }
++
+     /// Repositions all outputs, optionally adding a new output.
+     pub fn reposition_outputs(&mut self, new_output: Option<&Output>) {
+         let _span = tracy_client::span!("Niri::reposition_outputs");
+@@ -2788,8 +2851,13 @@ impl Niri {
+ 
+         let config = self.config.borrow();
+         let mut outputs = vec![];
++        let mut regions = vec![];
+         for output in self.global_space.outputs().chain(new_output) {
+             let name = output.user_data().get::<OutputName>().unwrap();
++            if let Some(region) = config.outputs.find(name).and_then(|c| c.region_of.clone()) {
++                regions.push((output.clone(), region));
++                continue;
++            }
+             let position = self.global_space.output_geometry(output).map(|geo| geo.loc);
+             let config = config.outputs.find(name).and_then(|c| c.position);
+ 
+@@ -2805,6 +2873,9 @@ impl Niri {
+         for Data { output, .. } in &outputs {
+             self.global_space.unmap_output(output);
+         }
++        for (output, _) in &regions {
++            self.global_space.unmap_output(output);
++        }
+ 
+         // Connectors can appear in udev in any order. If we sort by name then we get output
+         // positioning that does not depend on the order they appeared.
+@@ -2896,6 +2967,26 @@ impl Niri {
+                 self.queue_redraw(&output);
+             }
+         }
++
++        // Child outputs deliberately overlap their host. Place them last so
++        // ordinary output placement never pushes the physical monitor aside.
++        for (output, region) in regions {
++            let Some(parent) = self
++                .global_space
++                .outputs()
++                .find(|o| o.name() == region.output)
++                .cloned()
++            else {
++                continue;
++            };
++            let parent_geo = self.global_space.output_geometry(&parent).unwrap();
++            let position = parent_geo.loc + Point::from((region.x, region.y));
++            self.global_space.map_output(&output, position);
++            output.change_current_state(None, None, None, Some(position));
++            self.sorted_outputs.push(output.clone());
++            self.ipc_outputs_changed = true;
++            self.queue_redraw(&output);
++        }
+     }
+ 
+     pub fn add_output(&mut self, output: Output, refresh_interval: Option<Duration>, vrr: bool) {
+@@ -2993,6 +3084,9 @@ impl Niri {
+     }
+ 
+     pub fn remove_output(&mut self, output: &Output) {
++        for child in self.region_children(output) {
++            self.remove_output(&child);
++        }
+         for layer in layer_map_for_output(output).layers() {
+             layer.layer_surface().send_close();
+         }
+@@ -3137,7 +3231,11 @@ impl Niri {
+     }
+ 
+     pub fn output_under(&self, pos: Point<f64, Logical>) -> Option<(&Output, Point<f64, Logical>)> {
+-        let output = self.global_space.output_under(pos).next()?;
++        let output = self
++            .global_space
++            .output_under(pos)
++            .filter(|output| !self.is_locked() || self.region_config(output).is_none())
++            .max_by_key(|output| self.region_config(output).is_some())?;
+         let pos_within_output = pos
+             - self
+                 .global_space
+@@ -3376,11 +3474,35 @@ impl Niri {
+     ///
+     /// This function does not take pointer or touch grabs into account.
+     pub fn contents_under(&self, pos: Point<f64, Logical>) -> PointContents {
+-        let mut rv = PointContents::default();
+-
+         let Some((output, pos_within_output)) = self.output_under(pos) else {
+-            return rv;
++            return PointContents::default();
+         };
++        if let Some(parent) = self.region_parent(output) {
++            let parent_pos = self
++                .global_space
++                .output_geometry(&parent)
++                .unwrap()
++                .loc
++                .to_f64();
++            let above = self.contents_under_output(&parent, pos - parent_pos);
++            if self.is_locked()
++                || above
++                    .layer
++                    .as_ref()
++                    .is_some_and(|layer| matches!(layer.layer(), Layer::Top | Layer::Overlay))
++            {
++                return above;
++            }
++        }
++        self.contents_under_output(output, pos_within_output)
++    }
++
++    fn contents_under_output(
++        &self,
++        output: &Output,
++        pos_within_output: Point<f64, Logical>,
++    ) -> PointContents {
++        let mut rv = PointContents::default();
+         rv.output = Some(output.clone());
+         let output_pos_in_global_space = self.global_space.output_geometry(output).unwrap().loc;
+ 
+@@ -3554,7 +3676,7 @@ impl Niri {
+ 
+     pub fn output_under_cursor(&self) -> Option<Output> {
+         let pos = self.seat.get_pointer().unwrap().current_location();
+-        self.global_space.output_under(pos).next().cloned()
++        self.output_under(pos).map(|(output, _)| output.clone())
+     }
+ 
+     pub fn output_left_of(&self, current: &Output) -> Option<Output> {
+@@ -3566,6 +3688,7 @@ impl Niri {
+ 
+         self.global_space
+             .outputs()
++            .filter(|output| self.region_children(output).is_empty())
+             .map(|output| (output, self.global_space.output_geometry(output).unwrap()))
+             .filter(|(_, geo)| center(*geo).x < center(current_geo).x && geo.overlaps(extended_geo))
+             .min_by_key(|(_, geo)| center(current_geo).x - center(*geo).x)
+@@ -3582,6 +3705,7 @@ impl Niri {
+ 
+         self.global_space
+             .outputs()
++            .filter(|output| self.region_children(output).is_empty())
+             .map(|output| (output, self.global_space.output_geometry(output).unwrap()))
+             .filter(|(_, geo)| center(*geo).x > center(current_geo).x && geo.overlaps(extended_geo))
+             .min_by_key(|(_, geo)| center(*geo).x - center(current_geo).x)
+@@ -3598,6 +3722,7 @@ impl Niri {
+ 
+         self.global_space
+             .outputs()
++            .filter(|output| self.region_children(output).is_empty())
+             .map(|output| (output, self.global_space.output_geometry(output).unwrap()))
+             .filter(|(_, geo)| center(*geo).y < center(current_geo).y && geo.overlaps(extended_geo))
+             .min_by_key(|(_, geo)| center(current_geo).y - center(*geo).y)
+@@ -3614,6 +3739,7 @@ impl Niri {
+ 
+         self.global_space
+             .outputs()
++            .filter(|output| self.region_children(output).is_empty())
+             .map(|output| (output, self.global_space.output_geometry(output).unwrap()))
+             .filter(|(_, geo)| center(*geo).y > center(current_geo).y && geo.overlaps(extended_geo))
+             .min_by_key(|(_, geo)| center(*geo).y - center(current_geo).y)
+@@ -3762,6 +3888,11 @@ impl Niri {
+     pub fn queue_redraw(&mut self, output: &Output) {
+         let state = self.output_state.get_mut(output).unwrap();
+         state.redraw_state = mem::take(&mut state.redraw_state).queue_redraw();
++        if let Some(parent) = self.region_parent(output) {
++            if let Some(state) = self.output_state.get_mut(&parent) {
++                state.redraw_state = mem::take(&mut state.redraw_state).queue_redraw();
++            }
++        }
+     }
+ 
+     pub fn redraw_queued_outputs(&mut self, backend: &mut Backend) {
+@@ -4247,7 +4378,7 @@ impl Niri {
+         ctx: RenderCtx<R>,
+         output: &Output,
+         include_pointer: bool,
+-    ) -> Vec<OutputRenderElements<R>> {
++    ) -> Vec<CompositedOutputRenderElements<R>> {
+         let mut elements = Vec::new();
+         self.render(ctx, output, include_pointer, &mut |elem| {
+             elements.push(elem)
+@@ -4260,7 +4391,7 @@ impl Niri {
+         mut ctx: RenderCtx<R>,
+         output: &Output,
+         include_pointer: bool,
+-        push: &mut dyn FnMut(OutputRenderElements<R>),
++        push: &mut dyn FnMut(CompositedOutputRenderElements<R>),
+     ) {
+         let _span = tracy_client::span!("Niri::render");
+ 
+@@ -4274,14 +4405,53 @@ impl Niri {
+         }
+ 
+         self.fill_xray_elements(ctx.as_gles(), output);
++        let mut base = Vec::new();
++        let mut region_boundary = 0;
++        {
++            let mut base_ctx = ctx.r();
++            base_ctx.xray = Some(&self.output_state.get(output).unwrap().xray);
++            self.render_inner(
++                base_ctx,
++                output,
++                include_pointer,
++                &mut region_boundary,
++                &mut |elem| base.push(elem),
++            );
++        }
++        let lower = base.split_off(region_boundary);
++        for elem in base {
++            push(elem.into());
++        }
+ 
+-        // Reborrow to shorten lifetime to be able to put in xray.
+-        let mut ctx = ctx.r();
+-        let state = self.output_state.get(output).unwrap();
+-        ctx.xray = Some(&state.xray);
+-
+-        self.render_inner(ctx, output, include_pointer, push);
++        // Regions are independent outputs for layout and input. Only their final
++        // presentation is composited into the physical output, clipped to its
++        // rectangle. Never composite unlocked region contents above a lock.
++        if !self.is_locked() && !self.screenshot_ui.is_open() {
++            let parent_geo = self.global_space.output_geometry(output).unwrap();
++            let scale = Scale::from(output.current_scale().fractional_scale());
++            for child in self.region_children(output) {
++                let child_geo = self.global_space.output_geometry(&child).unwrap();
++                let location = child_geo.loc - parent_geo.loc;
++                let clip =
++                    Rectangle::new(location, child_geo.size).to_physical_precise_round(scale);
++                self.fill_xray_elements(ctx.as_gles(), &child);
++                let state = self.output_state.get(&child).unwrap();
++                let mut child_ctx = ctx.r();
++                child_ctx.xray = Some(&state.xray);
++                self.render_inner(child_ctx, &child, false, &mut 0, &mut |elem| {
++                    let elem =
++                        RelocateRenderElement::from_element(elem, clip.loc, Relocate::Relative);
++                    if let Some(elem) = CropRenderElement::from_element(elem, scale, clip) {
++                        push(CompositedOutputRenderElements::Region(elem));
++                    }
++                });
++                self.clear_xray_elements(&child);
++            }
++        }
+ 
++        for elem in lower {
++            push(elem.into());
++        }
+         self.clear_xray_elements(output);
+     }
+ 
+@@ -4290,10 +4460,16 @@ impl Niri {
+         mut ctx: RenderCtx<R>,
+         output: &Output,
+         include_pointer: bool,
++        region_boundary: &mut usize,
+         push: &mut dyn FnMut(OutputRenderElements<R>),
+     ) {
+         let state = self.output_state.get(output).unwrap();
+         let output_scale = Scale::from(output.current_scale().fractional_scale());
++        let element_count = Cell::new(0);
++        let push: &mut dyn FnMut(OutputRenderElements<R>) = &mut |elem| {
++            element_count.set(element_count.get() + 1);
++            push(elem);
++        };
+ 
+         let push = if self.debug_draw_opaque_regions {
+             &mut move |elem| {
+@@ -4477,6 +4653,7 @@ impl Niri {
+         } else {
+             push_popups_from_layer!(Layer::Top);
+             push_normal_from_layer!(Layer::Top);
++            *region_boundary = element_count.get();
+ 
+             self.layout
+                 .render_interactive_move_for_output(ctx.r(), output, &mut |elem| push(elem.into()));
+@@ -6659,6 +6836,14 @@ niri_render_elements! {
+     }
+ }
+ 
++niri_render_elements! {
++    CompositedOutputRenderElements<R> => {
++        Output = OutputRenderElements<R>,
++        Region = CropRenderElement<RelocateRenderElement<OutputRenderElements<R>>>,
++        DebugColor = SolidColorRenderElement,
++    }
++}
++
+ niri_render_elements! {
+     OutputRenderElements<R> => {
+         Monitor = MonitorRenderElement<R>,
+diff --git a/src/render_helpers/debug.rs b/src/render_helpers/debug.rs
+index ed96d77..3aded7e 100644
+--- a/src/render_helpers/debug.rs
++++ b/src/render_helpers/debug.rs
+@@ -6,7 +6,7 @@ use smithay::utils::Scale;
+ 
+ use super::renderer::NiriRenderer;
+ use super::solid_color::SolidColorRenderElement;
+-use crate::niri::OutputRenderElements;
++use crate::niri::{CompositedOutputRenderElements, OutputRenderElements};
+ 
+ pub fn push_opaque_regions<R: NiriRenderer>(
+     elem: &OutputRenderElements<R>,
+@@ -52,7 +52,7 @@ pub fn push_opaque_regions<R: NiriRenderer>(
+ 
+ pub fn draw_damage<R: NiriRenderer>(
+     damage_tracker: &mut OutputDamageTracker,
+-    elements: &mut Vec<OutputRenderElements<R>>,
++    elements: &mut Vec<CompositedOutputRenderElements<R>>,
+ ) {
+     let _span = tracy_client::span!("draw_damage");
+ 
+@@ -72,6 +72,6 @@ pub fn draw_damage<R: NiriRenderer>(
+             Color32F::from([0.3, 0., 0., 0.3]),
+             Kind::Unspecified,
+         );
+-        elements.insert(0, OutputRenderElements::SolidColor(color));
++        elements.insert(0, CompositedOutputRenderElements::DebugColor(color));
+     }
+ }
+diff --git a/src/screencasting/mod.rs b/src/screencasting/mod.rs
+index 85b3180..6ef10fa 100644
+--- a/src/screencasting/mod.rs
++++ b/src/screencasting/mod.rs
+@@ -17,7 +17,7 @@ use smithay::utils::{Physical, Point, Scale, Size};
+ use zbus::object_server::SignalEmitter;
+ 
+ use crate::dbus::mutter_screen_cast::{self, CursorMode, ScreenCastToNiri, StreamTargetId};
+-use crate::niri::{CastTarget, Niri, OutputRenderElements, PointerRenderElements, State};
++use crate::niri::{CastTarget, CompositedOutputRenderElements, Niri, PointerRenderElements, State};
+ use crate::niri_render_elements;
+ use crate::render_helpers::{RenderCtx, RenderTarget};
+ use crate::utils::{get_monotonic_time, CastSessionId, CastStreamId};
+@@ -796,7 +796,7 @@ fn cast_params_for_output(output: &Output) -> (Size<i32, Physical>, u32) {
+ 
+ niri_render_elements! {
+     CastRenderElement<R> => {
+-        Output = OutputRenderElements<R>,
++        Output = CompositedOutputRenderElements<R>,
+         Window = WindowCastRenderElements<R>,
+         Pointer = PointerRenderElements<R>,
+         RelocatedPointer = RelocateRenderElement<PointerRenderElements<R>>,
+diff --git a/src/tests/mod.rs b/src/tests/mod.rs
+index 0ff3105..e794e36 100644
+--- a/src/tests/mod.rs
++++ b/src/tests/mod.rs
+@@ -8,6 +8,7 @@ mod animations;
+ mod floating;
+ mod fullscreen;
+ mod layer_shell;
++mod output_regions;
+ mod remove_output;
+ mod transactions;
+ mod virtual_output;
+diff --git a/src/tests/output_regions.rs b/src/tests/output_regions.rs
+new file mode 100644
+index 0000000..f3f3787
+--- /dev/null
++++ b/src/tests/output_regions.rs
+@@ -0,0 +1,183 @@
++use niri_config::Config;
++use smithay::utils::Point;
++
++use super::*;
++
++fn regions() -> Fixture {
++    let config = Config::parse_mem(
++        r#"
++        output "headless-1" { position x=0 y=0; }
++        output "portrait-top" {
++            create-virtual
++            mode "1440x843@60"
++            region-of "headless-1" x=0 y=30
++        }
++        output "portrait-bottom" {
++            create-virtual
++            mode "1440x1687@60"
++            region-of "headless-1" x=0 y=873
++        }
++        output "portrait-center" {
++            off
++            create-virtual
++            mode "1440x843@60"
++            region-of "headless-1" x=0 y=873
++        }
++        layout { gaps 0; default-column-width { proportion 1.0; }; }
++    "#,
++    )
++    .unwrap();
++    let mut f = Fixture::with_config(config);
++    f.add_output(1, (1440, 2560));
++    let state = f.niri_state();
++    state.backend.on_output_config_changed(&mut state.niri);
++    f
++}
++
++#[test]
++fn regions_keep_host_position_and_route_pointer() {
++    let mut f = regions();
++    for (point, expected) in [
++        ((700., 15.), "headless-1"),
++        ((700., 30.), "portrait-top"),
++        ((700., 872.), "portrait-top"),
++        ((700., 873.), "portrait-bottom"),
++        ((700., 2559.), "portrait-bottom"),
++    ] {
++        let (output, local) = f.niri().output_under(Point::from(point)).unwrap();
++        assert_eq!(output.name(), expected);
++        assert!(local.x >= 0. && local.y >= 0.);
++    }
++    assert!(f.niri().output_under(Point::from((1440., 100.))).is_none());
++}
++
++#[test]
++fn region_new_window_gets_region_size_before_mapping() {
++    let mut f = regions();
++    let bottom = f
++        .niri()
++        .global_space
++        .outputs()
++        .find(|o| o.name() == "portrait-bottom")
++        .unwrap()
++        .clone();
++    f.niri().layout.focus_output(&bottom);
++    let id = f.add_client();
++    let window = f.client(id).create_window();
++    let surface = window.surface.clone();
++    window.commit();
++    f.roundtrip(id);
++    let configures = f.client(id).window(&surface).format_recent_configures();
++    assert!(configures.contains("1440 × 1687"), "{configures}");
++    let window = f.client(id).window(&surface);
++    window.attach_new_buffer();
++    window.ack_last_and_commit();
++    f.double_roundtrip(id);
++    let window = f.client(id).window(&surface);
++    window.set_fullscreen(None);
++    window.commit();
++    f.double_roundtrip(id);
++    let configures = f.client(id).window(&surface).format_recent_configures();
++    assert!(configures.contains("1440 × 1687"), "{configures}");
++    assert!(configures.contains("Fullscreen"), "{configures}");
++    // Even clients requesting the physical monitor must remain in their region.
++    let host_resource = f
++        .client(id)
++        .state
++        .outputs
++        .iter()
++        .find(|(_, name)| name.as_str() == "headless-1")
++        .unwrap()
++        .0
++        .clone();
++    let window = f.client(id).window(&surface);
++    window.ack_last_and_commit();
++    window.set_fullscreen(Some(&host_resource));
++    window.commit();
++    f.double_roundtrip(id);
++    let configures = f.client(id).window(&surface).format_recent_configures();
++    assert!(configures.contains("1440 × 1687"), "{configures}");
++}
++
++#[test]
++fn removing_host_removes_its_regions() {
++    let mut f = regions();
++    let host = f
++        .niri()
++        .global_space
++        .outputs()
++        .find(|o| o.name() == "headless-1")
++        .unwrap()
++        .clone();
++    f.niri().remove_output(&host);
++    assert_eq!(f.niri().global_space.outputs().count(), 0);
++}
++
++#[test]
++fn region_config_requires_virtual_output_and_mode() {
++    assert!(Config::parse_mem("output \"bad\" { region-of \"host\"; }").is_err());
++    assert!(Config::parse_mem(
++        "output \"bad\" { create-virtual; mode \"100x100\"; region-of \"bad\"; }"
++    )
++    .is_err());
++}
++
++#[test]
++fn center_region_sizes_new_windows_even_when_host_is_focused() {
++    let mut f = regions();
++    f.niri_state()
++        .modify_output_config("portrait-top", |c| c.off = true);
++    f.niri_state()
++        .modify_output_config("portrait-bottom", |c| c.off = true);
++    f.niri_state()
++        .modify_output_config("portrait-center", |c| c.off = false);
++    f.niri_state().reload_output_config();
++    let host = f
++        .niri()
++        .global_space
++        .outputs()
++        .find(|o| o.name() == "headless-1")
++        .unwrap()
++        .clone();
++    f.niri().layout.focus_output(&host);
++    assert_eq!(
++        f.niri().output_under((700., 500.).into()).unwrap().0.name(),
++        "headless-1"
++    );
++    assert_eq!(
++        f.niri()
++            .output_under((700., 1000.).into())
++            .unwrap()
++            .0
++            .name(),
++        "portrait-center"
++    );
++    let id = f.add_client();
++    let window = f.client(id).create_window();
++    let surface = window.surface.clone();
++    window.commit();
++    f.roundtrip(id);
++    let configures = f.client(id).window(&surface).format_recent_configures();
++    assert!(configures.contains("1440 × 843"), "{configures}");
++}
++
++#[test]
++fn region_directional_focus_skips_presentation_host() {
++    let mut f = regions();
++    let top = f
++        .niri()
++        .global_space
++        .outputs()
++        .find(|o| o.name() == "portrait-top")
++        .unwrap()
++        .clone();
++    let bottom = f
++        .niri()
++        .global_space
++        .outputs()
++        .find(|o| o.name() == "portrait-bottom")
++        .unwrap()
++        .clone();
++    assert_eq!(f.niri().output_down_of(&top), Some(bottom.clone()));
++    assert_eq!(f.niri().output_up_of(&bottom), Some(top));
++}

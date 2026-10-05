@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+niri() {
+  command "${NIRI_BIN:-niri}" "$@"
+}
+
+# These outputs are native compositor regions, not window-placement scripts.
+mode="${1:-split}"
+case "$mode" in
+  split) enabled=(portrait-top portrait-bottom); destination=portrait-bottom ;;
+  center) enabled=(portrait-center); destination=portrait-center ;;
+  full) enabled=(); destination=DP-1 ;;
+  *) printf 'usage: niri-regions split|center|full\n' >&2; exit 2 ;;
+esac
+
+focused="$(niri msg -j focused-window | jq -r '.id // empty')"
+for output in "${enabled[@]}"; do
+  niri msg output "$output" on
+done
+
+# Move entire occupied workspaces, retaining their columns and window state.
+# Enabling the destination first keeps windows on the portrait monitor.
+workspaces="$(niri msg -j workspaces)"
+windows="$(niri msg -j windows)"
+while IFS= read -r workspace; do
+  niri msg action move-workspace-to-monitor --reference "id:$workspace" "$destination"
+done < <(jq -nr --argjson workspaces "$workspaces" --argjson windows "$windows" \
+  --arg destination "$destination" --argjson enabled "$(jq -cn '$ARGS.positional' --args "${enabled[@]}")" '
+  $workspaces[]
+  | select(.output == "DP-1" or (.output | startswith("portrait-")))
+  | select(.output != $destination)
+  | select(.output as $output | $enabled | index($output) | not)
+  | .id as $id
+  | select(any($windows[]; .workspace_id == $id))
+  | $id')
+
+for output in portrait-top portrait-bottom portrait-center; do
+  keep=false
+  for active in "${enabled[@]}"; do
+    [[ "$output" != "$active" ]] || keep=true
+  done
+  "$keep" || niri msg output "$output" off
+done
+
+if [[ -n "$focused" ]]; then
+  niri msg action focus-window --id "$focused"
+else
+  niri msg action focus-monitor "$destination"
+fi

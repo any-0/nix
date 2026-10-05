@@ -1,0 +1,20 @@
+// Top third (853px) is reserved for information; split the remainder 1:2.
+output "portrait-top" {
+    create-virtual
+    mode "1440x569@164.956"
+    scale 1
+    region-of "DP-1" x=0 y=853
+}
+output "portrait-bottom" {
+    create-virtual
+    mode "1440x1138@164.956"
+    scale 1
+    region-of "DP-1" x=0 y=1422
+}
+output "portrait-center" {
+    off
+    create-virtual
+    mode "1440x1280@164.956"
+    scale 1
+    region-of "DP-1" x=0 y=853
+}

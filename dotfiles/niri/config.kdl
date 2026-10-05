@@ -1,3 +1,5 @@
+// Portrait regions are saved in regions.kdl; the normal layout uses full monitors.
+
 input {
     keyboard {
         xkb {
@@ -15,7 +17,9 @@ input {
 }
 
 output "DP-1" {
+    focus-at-startup
     mode "2560x1440@164.956"
+    transform "normal"
     position x=0 y=0
 }
 
@@ -23,16 +27,16 @@ output "HDMI-A-1" {
     position x=2560 y=0
 }
 
-workspace "S"
-workspace "1"
-workspace "2"
-workspace "3"
-workspace "4"
-workspace "5"
-workspace "6"
-workspace "7"
-workspace "8"
-workspace "9"
+workspace "S" { open-on-output "DP-1"; }
+workspace "1" { open-on-output "DP-1"; }
+workspace "2" { open-on-output "DP-1"; }
+workspace "3" { open-on-output "DP-1"; }
+workspace "4" { open-on-output "DP-1"; }
+workspace "5" { open-on-output "DP-1"; }
+workspace "6" { open-on-output "DP-1"; }
+workspace "7" { open-on-output "DP-1"; }
+workspace "8" { open-on-output "DP-1"; }
+workspace "9" { open-on-output "DP-1"; }
 
 layout {
     background-color "#00000000"

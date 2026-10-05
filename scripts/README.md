@@ -68,6 +68,40 @@ the results. Select a line. The command then copies the line to the clipboard.
 Do not start these commands manually. Other software starts them. The quickshell
 status bar is an example.
 
+### `niri-regions`
+
+Selects native portrait-display regions: `split` (top third and bottom two-thirds),
+`center` (middle half only), or `full` (one full physical output). The compositor
+patch presents virtual outputs inside the physical monitor; each has its own
+workspaces, focus, window sizing, and fullscreen bounds. This does not move new
+windows after they open. Switching profiles transfers occupied workspaces,
+retaining their columns and windows. Quickshell only creates a bar on the host.
+Regression checks: `bash scripts/tests/niri-regions`.
+
+Shortcuts: Super+Alt+1 selects split, Super+Alt+2 selects center-only,
+Super+Alt+0 restores the full monitor. Profiles keep occupied workspaces;
+the default after restarting Niri is split. Standard monitor-focus and
+move-to-monitor shortcuts also operate between regions.
+
+`dotfiles/niri/regions.kdl` defines the rectangles below the physical bar.
+The native `region-of "DP-1" x=0 y=30` output property requires
+`create-virtual`, an explicit mode, the same scale as the physical parent,
+and a rectangle completely inside it. Nested regions are not supported.
+Disconnecting the parent also disconnects its regions and lets Niri move
+their workspaces onto a remaining monitor.
+
+The patched compositor also supports `subpixel "rgb"|"bgr"|"vrgb"|"vbgr"|
+"none"|"unknown"` on an output. This describes the final order in desktop
+coordinates, after rotation: the BenQ uses `rgb`, the LG with its physical top
+edge pointing left uses `vbgr`. Regions inherit their parent's configured order unless explicitly
+overridden; independent virtual displays keep `unknown`. Changes to this
+physical metadata require restarting the compositor.
+
+Output-aware clients (for example Fuzzel and Foot) can use this directly.
+It does not override application renderers: Kitty uses grayscale, and a global
+Fontconfig RGB setting is deliberately not forced across the mixed-orientation
+displays.
+
 ### `claude-usage` and `codex-usage`
 
 These two commands print the current usage data and the rate-limit data. The

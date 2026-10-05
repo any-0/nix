@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+case "$*" in
+  'msg -j focused-window') printf '{"id":10}\n' ;;
+  'msg -j workspaces') printf '%s\n' '[{"id":1,"output":"HDMI-A-1"},{"id":2,"output":"DP-1"},{"id":3,"output":"portrait-top"},{"id":4,"output":"portrait-bottom"},{"id":5,"output":"portrait-center"}]' ;;
+  'msg -j windows') printf '%s\n' '[{"id":10,"workspace_id":1},{"id":20,"workspace_id":2},{"id":30,"workspace_id":3},{"id":40,"workspace_id":4},{"id":50,"workspace_id":5}]' ;;
+  'msg action '*|'msg output '*) printf '%s\n' "$*" ;;
+  *) exit 1 ;;
+esac

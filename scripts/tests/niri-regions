@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+test_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
+export NIRI_BIN="$test_dir/fixtures/niri-regions-ipc"
+
+split="$(bash "$test_dir/../internal/niri-regions" split)"
+[[ "$split" == *'move-workspace-to-monitor --reference id:2 portrait-bottom'* ]]
+[[ "$split" == *'move-workspace-to-monitor --reference id:5 portrait-bottom'* ]]
+[[ "$split" != *'--reference id:1 '* && "$split" != *'--reference id:3 '* && "$split" != *'--reference id:4 '* ]]
+[[ "$split" == *'msg output portrait-center off'* ]]
+
+center="$(bash "$test_dir/../internal/niri-regions" center)"
+for id in 2 3 4; do
+  [[ "$center" == *"move-workspace-to-monitor --reference id:$id portrait-center"* ]]
+done
+[[ "$center" != *'--reference id:1 '* && "$center" != *'--reference id:5 '* ]]
+
+full="$(bash "$test_dir/../internal/niri-regions" full)"
+for id in 3 4 5; do
+  [[ "$full" == *"move-workspace-to-monitor --reference id:$id DP-1"* ]]
+done
+[[ "$full" != *'--reference id:1 '* && "$full" != *'--reference id:2 '* ]]
+[[ "$full" == *'msg action focus-window --id 10' ]]
+printf 'Region profile switching: split, center, full passed\n'
