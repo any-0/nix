@@ -62,7 +62,10 @@ in
       export DISABLE_AUTOUPDATER=1
       exec "${npmGlobalDir}/bin/claude" \
         --dangerously-skip-permissions \
-        --settings '{"theme":"custom:current"}' \
+        --settings ${lib.escapeShellArg (builtins.toJSON {
+          theme = "custom:current";
+          attribution.commit = "";
+        })} \
         "$@"
     '';
   };
