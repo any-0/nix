@@ -121,9 +121,8 @@ for km in emacs viins; do
     bindkey -M "$km" '^[[5C' forward-word
 done
 
-# Auto-start mux for interactive shells. Skip when mux is missing, so a shell on
-# a half-applied profile still comes up instead of greeting every login with a
-# command-not-found.
+# Auto-start mux for interactive shells. mux is not installed by nix: the mux
+# repo's `scripts/install` puts it in ~/.local/bin. Without it, zsh starts plain.
 if [[ -o interactive ]] \
     && [[ -z "$MUX" ]] \
     && [[ "$TERM" != "dumb" ]] \

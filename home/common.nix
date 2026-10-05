@@ -1,4 +1,4 @@
-{ config, pkgs, lib, mux, cachix, ... }:
+{ config, pkgs, lib, cachix, ... }:
 
 let
   dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
@@ -11,7 +11,7 @@ let
     source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.configHome}/theme/current/${path}";
     force = true;
   };
-  scriptPackages = import ./scripts.nix { inherit config lib mux pkgs; };
+  scriptPackages = import ./scripts.nix { inherit config lib pkgs; };
 in
 {
   _module.args = { inherit activeThemeFile dot dotFile scriptPackages; };

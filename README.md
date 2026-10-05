@@ -74,6 +74,10 @@ Use the Vim mode to do these tasks in the scrollback:
 - Find text
 - Copy text
 
+Nix does not build mux. Build and install it from the mux repository with
+`scripts/install`, which puts the binary in `~/.local/bin`. Zsh starts mux only
+when that binary exists.
+
 ### jj in place of git
 
 This setup uses [jj](https://github.com/jj-vcs/jj) in place of git.

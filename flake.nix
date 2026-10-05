@@ -9,15 +9,13 @@
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    mux.url = "github:any-0/mux";
-
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { nixpkgs, nixpkgs-cachix, home-manager, mux, zen-browser, ... }:
+  outputs = { nixpkgs, nixpkgs-cachix, home-manager, zen-browser, ... }:
     let
       system = "x86_64-linux";
       hostname = "pc";
@@ -55,7 +53,6 @@
         home-manager.lib.homeManagerConfiguration {
           pkgs = mkPkgs system;
           extraSpecialArgs = {
-            inherit mux;
             cachix = nixpkgs-cachix.legacyPackages.${system}.cachix;
           };
           modules = modules
@@ -103,7 +100,6 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = {
-              inherit mux;
               cachix = nixpkgs-cachix.legacyPackages.${system}.cachix;
             };
             home-manager.users.${username} = { imports = desktopModules; };

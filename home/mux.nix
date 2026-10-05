@@ -1,7 +1,8 @@
-{ config, pkgs, mux, ... }:
+{ config, ... }:
 
+# The mux binary is not built by Nix: the mux repository installs it to
+# ~/.local/bin with `scripts/install`, and zsh skips mux when it is missing.
 {
-  home.packages = [ mux.packages.${pkgs.stdenv.hostPlatform.system}.default ];
   xdg.configFile."mux/config.toml" = {
     text = ''
       theme = "${config.xdg.configHome}/theme/current/mux.toml"

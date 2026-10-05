@@ -1,8 +1,7 @@
-{ config, lib, mux, pkgs }:
+{ config, lib, pkgs }:
 
 let
   scriptsDir = "${config.home.homeDirectory}/nix/scripts";
-  muxPackage = mux.packages.${pkgs.stdenv.hostPlatform.system}.default;
   mkBashScript = subdir: name: runtimeInputs:
     pkgs.writeShellApplication {
       inherit name runtimeInputs;
@@ -21,10 +20,10 @@ let
     hf = mkCli "hf" [ pkgs.coreutils pkgs.fzf pkgs.gnugrep pkgs.gnused yank ];
     run = mkCli "run" [ pkgs.bash ];
     switch = mkCli "switch" [ pkgs.coreutils pkgs.nh ];
-    # kitty is deliberately absent: it is installed outside nix on some hosts and
-    # not at all on others, so `theme` probes for it rather than depending on it.
+    # kitty and mux are deliberately absent: they are installed outside nix (or
+    # not at all), so `theme` finds them on PATH rather than depending on them.
     theme = mkCli "theme" (
-      [ pkgs.coreutils muxPackage ]
+      [ pkgs.coreutils ]
       ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.procps ]
     );
     template = mkCli "template" [ pkgs.coreutils pkgs.direnv pkgs.nix ];
