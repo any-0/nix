@@ -17,6 +17,7 @@ let
           niri msg output DP-1 on
           niri msg output HDMI-A-1 on
           niri msg output sunshine off
+          niri msg action focus-monitor HDMI-A-1
           ;;
         *) exit 2 ;;
       esac
@@ -28,6 +29,13 @@ in
   # Use its display lifecycle, which also runs before probing on resume.
   services.sunshine.package = pkgs.sunshine.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [
+      # Capture support belongs to the compositor, even with all outputs off.
+      ./patches/sunshine-wayland-headless.patch
+      # Avoid flooding Wi-Fi queues with gigabit-speed video bursts.
+      ./patches/sunshine-video-pacing.patch
+      # Let WirePlumber select the local output after streaming, including
+      # Bluetooth headphones that reconnect after the session ends.
+      ./patches/sunshine-audio-default.patch
       (pkgs.replaceVars ./patches/sunshine-niri-displays.patch {
         displayCommand = "${displays}/bin/sunshine-displays";
       })

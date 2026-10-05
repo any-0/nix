@@ -1,0 +1,31 @@
+--- a/src/audio.cpp
++++ b/src/audio.cpp
+@@ -311,12 +311,11 @@
+       return;
+     }
+ 
+-    // Change back to the host sink, unless there was none
+-    const std::string &sink = ctx.sink.host.empty() ? config::audio.sink : ctx.sink.host;
+-    if (!sink.empty()) {
+-      // Best effort, it's allowed to fail
+-      ctx.control->set_sink(sink);
+-    }
++    // Release the streaming override to WirePlumber's automatic selection.
++    // Restoring a physical sink selected while Bluetooth was disconnected
++    // would save it as the preferred output and prevent Bluetooth reconnects
++    // from becoming the default again.
++    ctx.control->set_sink("");
+   }
+ 
+   void apply_surround_params(opus_stream_config_t &stream, const stream_params_t &params) {
+--- a/src/platform/linux/audio.cpp
++++ b/src/platform/linux/audio.cpp
+@@ -472,7 +472,7 @@
+         op_t op {
+           pa_context_set_default_sink(
+             ctx.get(),
+-            sink.c_str(),
++            sink.empty() ? nullptr : sink.c_str(),
+             success_cb,
+             alarm.get()
+           ),

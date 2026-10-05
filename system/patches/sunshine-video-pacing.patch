@@ -1,0 +1,24 @@
+--- a/src/stream.cpp
++++ b/src/stream.cpp
+@@ -1406,8 +1406,10 @@
+       }
+ 
+       try {
+-        // Use around 80% of 1Gbps          1Gbps            percent    ms     packet      byte
+-        size_t ratecontrol_packets_in_1ms = std::giga::num * 80 / 100 / 1000 / blocksize / 8;
++        // Pace to twice the stream bitrate, leaving room for keyframes and FEC.
++        // Kilobits per second are also bits per millisecond; round up to a packet.
++        size_t ratecontrol_packets_in_1ms =
++          (static_cast<size_t>(session->config.monitor.bitrate) * 2 + blocksize * 8 - 1) / (blocksize * 8);
+ 
+         // Send less than 64K in a single batch.
+         // On Windows, batches above 64K seem to bypass SO_SNDBUF regardless of its size,
+@@ -1419,7 +1421,7 @@
+         // Also don't exceed 64 packets, which can happen when Moonlight requests
+         // unusually small packet size.
+         // Generic Segmentation Offload on Linux can't do more than 64.
+-        send_batch_size = std::min<size_t>(64, send_batch_size);
++        send_batch_size = std::min({size_t {64}, send_batch_size, ratecontrol_packets_in_1ms});
+ 
+         // Don't ignore the last ratecontrol group of the previous frame
+         auto ratecontrol_frame_start = std::max(ratecontrol_next_frame_start, std::chrono::steady_clock::now());

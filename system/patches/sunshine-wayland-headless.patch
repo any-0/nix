@@ -1,0 +1,52 @@
+--- a/src/platform/linux/misc.cpp
++++ b/src/platform/linux/misc.cpp
+@@ -985,11 +985,12 @@
+ #endif
+ 
+ #ifdef SUNSHINE_BUILD_WAYLAND
++  bool wl_available();
+   std::vector<std::string> wl_display_names();
+   std::shared_ptr<display_t> wl_display(mem_type_e hwdevice_type, const std::string &display_name, const video::config_t &config);
+ 
+   bool verify_wl() {
+-    return window_system == window_system_e::WAYLAND && !wl_display_names().empty();
++    return window_system == window_system_e::WAYLAND && wl_available();
+   }
+ #endif
+ 
+--- a/src/platform/linux/wlgrab.cpp
++++ b/src/platform/linux/wlgrab.cpp
+@@ -73,6 +73,11 @@
+       }
+       display.roundtrip();
+ 
++      if (interface.monitors.empty()) {
++        BOOST_LOG(error) << "[wlgrab] No active Wayland outputs"sv;
++        return -1;
++      }
++
+       auto monitor = interface.monitors[0].get();
+ 
+       if (!display_name.empty()) {
+@@ -436,6 +441,21 @@
+     return wlr;
+   }
+ 
++  bool wl_available() {
++    wl::display_t display;
++    if (display.init()) {
++      return false;
++    }
++
++    wl::interface_t interface;
++    interface.listen(display.registry());
++    display.roundtrip();
++
++    // Outputs can appear later when the streaming display is enabled.
++    return interface[wl::interface_t::XDG_OUTPUT] &&
++           interface[wl::interface_t::WLR_EXPORT_DMABUF];
++  }
++
+   std::vector<std::string> wl_display_names() {
+     std::vector<std::string> display_names;
+ 

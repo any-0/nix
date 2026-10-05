@@ -254,6 +254,7 @@ binds {
 }
 
 output "sunshine" {
+    off
     create-virtual
     mode "2408x1506@60"
     scale 2
