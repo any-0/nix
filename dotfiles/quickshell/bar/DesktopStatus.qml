@@ -154,7 +154,8 @@ PanelWindow {
                 Text {
                     text: "󰁅 DOWN"
                     color: Theme.textMuted
-                    font.family: Theme.fontFamily
+                    font.family: Theme.barFontFamily
+                    font.features: { "tnum": 1 }
                     font.pixelSize: 10
                     font.weight: Font.DemiBold
                     font.letterSpacing: 1
@@ -163,7 +164,8 @@ PanelWindow {
                 Text {
                     text: Status.networkDownRate
                     color: Theme.text
-                    font.family: Theme.fontFamily
+                    font.family: Theme.barFontFamily
+                    font.features: { "tnum": 1 }
                     font.pixelSize: 20
                     font.weight: Font.DemiBold
                 }
@@ -175,7 +177,8 @@ PanelWindow {
                 Text {
                     text: "󰁝 UP"
                     color: Theme.textMuted
-                    font.family: Theme.fontFamily
+                    font.family: Theme.barFontFamily
+                    font.features: { "tnum": 1 }
                     font.pixelSize: 10
                     font.weight: Font.DemiBold
                     font.letterSpacing: 1
@@ -184,7 +187,8 @@ PanelWindow {
                 Text {
                     text: Status.networkUpRate
                     color: Theme.text
-                    font.family: Theme.fontFamily
+                    font.family: Theme.barFontFamily
+                    font.features: { "tnum": 1 }
                     font.pixelSize: 20
                     font.weight: Font.DemiBold
                 }
@@ -287,7 +291,8 @@ PanelWindow {
                 height: 26
                 text: "Nothing paired"
                 color: Theme.textMuted
-                font.family: Theme.fontFamily
+                font.family: Theme.barFontFamily
+                font.features: { "tnum": 1 }
                 font.pixelSize: 12
                 font.weight: Font.DemiBold
                 verticalAlignment: Text.AlignVCenter
@@ -325,7 +330,8 @@ PanelWindow {
                         text: modelData.name
                         color: deviceConnected ? Theme.text : Theme.textMuted
                         elide: Text.ElideRight
-                        font.family: Theme.fontFamily
+                        font.family: Theme.barFontFamily
+                        font.features: { "tnum": 1 }
                         font.pixelSize: 12
                         font.weight: Font.DemiBold
                     }
@@ -338,7 +344,8 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         text: deviceConnected ? (modelData.batteryAvailable ? Math.round(modelData.battery * 100) + "%" : "󰂱") : ""
                         color: deviceConnected ? Theme.accent : Theme.textMuted
-                        font.family: Theme.fontFamily
+                        font.family: Theme.barFontFamily
+                        font.features: { "tnum": 1 }
                         font.pixelSize: 12
                         font.weight: Font.DemiBold
                     }
@@ -480,7 +487,8 @@ PanelWindow {
                     height: 34
                     text: card.title
                     color: Theme.textMuted
-                    font.family: Theme.fontFamily
+                    font.family: Theme.barFontFamily
+                    font.features: { "tnum": 1 }
                     font.pixelSize: 10
                     font.weight: Font.DemiBold
                     font.letterSpacing: 1.5
@@ -492,7 +500,8 @@ PanelWindow {
                     height: 34
                     text: card.headerTrailing
                     color: Theme.text
-                    font.family: Theme.fontFamily
+                    font.family: Theme.barFontFamily
+                    font.features: { "tnum": 1 }
                     font.pixelSize: 12
                     font.weight: Font.DemiBold
                     verticalAlignment: Text.AlignVCenter
@@ -522,7 +531,8 @@ PanelWindow {
         Text {
             text: card.icon
             color: card.iconColor
-            font.family: Theme.fontFamily
+            font.family: Theme.barFontFamily
+            font.features: { "tnum": 1 }
             font.pixelSize: Math.round(card.lerp(card.barIconSize, 26))
             font.weight: Font.DemiBold
             x: card.iconCx - implicitWidth / 2

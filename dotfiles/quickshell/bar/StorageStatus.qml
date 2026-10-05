@@ -22,12 +22,10 @@ Grid {
             : (bytes / 1073741824).toFixed(1) + " GiB";
     }
 
-    // Used out of total, sharing the unit of the total: "3.5/3.6T", "501/916G".
+    // Used out of total, always in TiB so every disk reads the same: "3.52/3.64T".
     function usage(sample) {
-        const tib = 1099511627776, gib = 1073741824;
-        return sample.total >= tib
-            ? (sample.used / tib).toFixed(1) + "/" + (sample.total / tib).toFixed(1) + "T"
-            : Math.round(sample.used / gib) + "/" + Math.round(sample.total / gib) + "G";
+        const tib = 1099511627776;
+        return (sample.used / tib).toFixed(2) + "/" + (sample.total / tib).toFixed(2) + "T";
     }
 
     component Disk: Item {

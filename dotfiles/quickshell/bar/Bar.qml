@@ -47,6 +47,15 @@ PanelWindow {
     Rectangle {
         anchors.fill: parent
         color: Theme.barBg
+
+        // Hairline edge so the bar stays defined over busy wallpapers.
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: 1
+            color: Qt.rgba(1, 1, 1, 0.07)
+        }
     }
 
     MouseArea {
@@ -142,8 +151,8 @@ PanelWindow {
             anchorWindow: bar
             spacing: 14
             visible: bar.showMetrics
-            anchors.left: workspaceGroup.right
-            anchors.leftMargin: 24
+            anchors.right: rightGroup.left
+            anchors.rightMargin: 28
             anchors.verticalCenter: parent.verticalCenter
         }
 

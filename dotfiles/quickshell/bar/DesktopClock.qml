@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland._WlrLayerShell
 
@@ -66,7 +67,7 @@ PanelWindow {
         return a + (b - a) * progress;
     }
 
-    // Outline fades in across the entire flight (0 parked, full on desktop).
+    // Shadow fades in across the entire flight (0 parked, full on desktop).
     readonly property real effectProgress: progress
 
     screen: screenInfo
@@ -128,12 +129,12 @@ PanelWindow {
         color: Theme.text
         font.family: Theme.barFontFamily
             font.features: { "tnum": 1 }
-        font.pixelSize: Math.round(window.lerp(Theme.clockFontSize, 96))
+        font.pixelSize: Math.round(window.lerp(Theme.clockFontSize, 112))
         font.weight: Font.Medium
-        // Soft black outline for legibility on bright wallpapers; desktop
-        // mode only (fades in over the last half of the flight).
-        style: Text.Outline
-        styleColor: Qt.rgba(0, 0, 0, 0.8 * window.effectProgress)
+        font.letterSpacing: window.lerp(0, -2)
+        // Soft shadow for legibility on bright wallpapers; desktop mode only.
+        layer.enabled: window.effectProgress > 0
+        layer.effect: ClockShadow {}
         x: window.lerp(window.barClockCenterX, window.deskCx) - implicitWidth / 2
         y: window.lerp(window.barClockCenterY + window.barLineOffset, window.deskTimeCy) - implicitHeight / 2
     }
@@ -148,11 +149,23 @@ PanelWindow {
             window.lerp(Theme.textSecondary.b, Theme.text.b), 1)
         font.family: Theme.barFontFamily
             font.features: { "tnum": 1 }
-        font.pixelSize: Math.round(window.lerp(Theme.clockFontSize, 29))
+        font.pixelSize: Math.round(window.lerp(Theme.clockFontSize, 24))
         font.weight: Font.Medium
-        style: Text.Outline
-        styleColor: Qt.rgba(0, 0, 0, 0.8 * window.effectProgress)
+        font.letterSpacing: window.lerp(0, 1)
+        layer.enabled: window.effectProgress > 0
+        layer.effect: ClockShadow {}
         x: window.lerp(window.barClockCenterX, window.deskCx) - implicitWidth / 2
         y: window.lerp(window.barClockCenterY - window.barLineOffset, window.deskTimeCy + timeText.implicitHeight / 2 + 6 + implicitHeight / 2) - implicitHeight / 2
+    }
+
+    component ClockShadow: MultiEffect {
+        shadowEnabled: true
+        shadowColor: "black"
+        shadowBlur: 1.0
+        shadowOpacity: 0.95 * window.effectProgress
+        shadowVerticalOffset: 1
+        blurMax: 64
+        shadowScale: 1.04
+        autoPaddingEnabled: true
     }
 }
