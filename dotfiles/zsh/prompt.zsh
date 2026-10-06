@@ -91,7 +91,7 @@ jj_prompt() {
   local stat summary rc
   local added=0 removed=0
 
-  stat="$(timeout --kill-after=0.05s 0.2s jj --no-pager --color=never --quiet diff --stat 2>/dev/null)"
+  stat="$(timeout --kill-after=0.05s 1.0s jj --no-pager --color=never --quiet diff --stat 2>/dev/null)"
   rc=$?
 
   if (( rc == 124 || rc == 137 )); then

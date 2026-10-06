@@ -3,6 +3,12 @@
 let
   zsh = "${pkgs.zsh}/bin/zsh";
   startZsh = ''
+    # Session launchers can run noninteractive Bash on a terminal.
+    # Preserve their command instead of replacing it with a login shell.
+    case $- in
+      *i*) ;;
+      *) return ;;
+    esac
     if [ -z "''${ZSH_VERSION:-}" ] && [ -t 0 ] && [ -t 1 ]; then
       export SHELL="${zsh}"
       exec "${zsh}" -l

@@ -2,7 +2,8 @@ system:
 { config, lib, pkgs, ... }:
 let
   isDarwin = builtins.match ".*-darwin" system != null;
-  keepArgs = "--keep-since 24h --keep 1";
+  # Preserve project/build roots when cleaning profile generations.
+  keepArgs = "--keep-since 24h --keep 1 --no-gcroots";
 in
 if isDarwin then
   {

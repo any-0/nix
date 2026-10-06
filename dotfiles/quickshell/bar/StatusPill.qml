@@ -9,6 +9,10 @@ Item {
     property bool showPhones: true
     property bool showNotifications: true
     property bool desktopModeActive: false
+    // Once the icons have flown out to the desktop cards, their bar slots
+    // shrink away so the rest of the bar closes the gap. They grow back
+    // immediately when leaving desktop mode, ahead of the return flight.
+    property bool collapsed: false
 
     // Icon glyph centers relative to this item, for the desktop overlay
     // (which renders the actual glyphs; see BarButton.iconGhost).
@@ -33,6 +37,23 @@ Item {
         }
     }
 
+    onDesktopModeActiveChanged: {
+        if (desktopModeActive) {
+            collapseDelay.restart();
+        } else {
+            collapseDelay.stop();
+            collapsed = false;
+        }
+    }
+
+    Timer {
+        id: collapseDelay
+
+        // Card flight (900ms) plus stagger, so the slots never move mid-flight.
+        interval: 1200
+        onTriggered: root.collapsed = root.desktopModeActive
+    }
+
     Timer {
         id: desktopModeDelay
 
@@ -44,7 +65,14 @@ Item {
         id: leftRow
 
         anchors.centerIn: parent
-        spacing: 4
+        spacing: root.collapsed ? 0 : 4
+
+        Behavior on spacing {
+            NumberAnimation {
+                duration: root.collapsed ? 450 : 250
+                easing.type: Easing.OutCubic
+            }
+        }
 
         BarButton {
             id: networkButton
@@ -55,10 +83,19 @@ Item {
             danger: Status.networkOffline
             enabled: !root.desktopModeActive
             opacity: root.desktopModeActive ? 0 : 1
+            width: root.collapsed ? 0 : implicitWidth
+            clip: true
 
             Behavior on opacity {
                 NumberAnimation {
                     duration: root.desktopModeActive ? 600 : 300
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            Behavior on width {
+                NumberAnimation {
+                    duration: root.collapsed ? 450 : 250
                     easing.type: Easing.OutCubic
                 }
             }
@@ -78,10 +115,19 @@ Item {
             muted: Status.volumeMuted
             enabled: !root.desktopModeActive
             opacity: root.desktopModeActive ? 0 : 1
+            width: root.collapsed ? 0 : implicitWidth
+            clip: true
 
             Behavior on opacity {
                 NumberAnimation {
                     duration: root.desktopModeActive ? 600 : 300
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            Behavior on width {
+                NumberAnimation {
+                    duration: root.collapsed ? 450 : 250
                     easing.type: Easing.OutCubic
                 }
             }
@@ -106,10 +152,19 @@ Item {
             danger: Status.bluetoothLowBattery
             enabled: !root.desktopModeActive
             opacity: root.desktopModeActive ? 0 : 1
+            width: root.collapsed ? 0 : implicitWidth
+            clip: true
 
             Behavior on opacity {
                 NumberAnimation {
                     duration: root.desktopModeActive ? 600 : 300
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            Behavior on width {
+                NumberAnimation {
+                    duration: root.collapsed ? 450 : 250
                     easing.type: Easing.OutCubic
                 }
             }
