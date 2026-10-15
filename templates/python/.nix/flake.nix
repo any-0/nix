@@ -21,7 +21,7 @@
           packages = with pkgs; [
             # Add project python packages here (nix-first; the .envrc venv
             # fallback is only for packages nixpkgs doesn't have).
-            (python312.withPackages (ps: [ ps.tkinter ]))
+            (python312.withPackages (ps: with ps; [  ]))
             pyright
             ruff
           ];
