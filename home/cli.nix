@@ -12,6 +12,15 @@ let
   iosevkaTermSlab = pkgs.callPackage ../dotfiles/fonts/iosevka-termslab-custom { };
 in
 {
+  # A standalone CLI activation replaces the desktop's Home Manager generation.
+  home.activation.checkCliHost = lib.hm.dag.entryBefore [ "checkLinkTargets" "writeBoundary" ] ''
+    if [[ -e /etc/NIXOS || -e /run/current-system/nixos-version || -e /.host-etc/NIXOS ]]; then
+      echo "The CLI profile cannot be activated on NixOS: it would remove desktop configuration." >&2
+      echo "Use ~/nix/scripts/cli/switch to apply the system and desktop configuration." >&2
+      exit 1
+    fi
+  '';
+
   home.file.".profile".text = startZsh;
   home.file.".bashrc".text = startZsh;
 

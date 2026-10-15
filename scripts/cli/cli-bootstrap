@@ -6,6 +6,12 @@ REPO_DIR="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
 BACKUP_EXT="${HM_BACKUP_EXT:-hm-bak}"
 platform="$(uname -s)"
 
+if [[ "${platform}" == Linux ]] \
+  && [[ -e /etc/NIXOS || -e /run/current-system/nixos-version || -e /.host-etc/NIXOS ]]; then
+  echo "This host is NixOS. Use '${REPO_DIR}/scripts/cli/switch' to apply its system and desktop configuration." >&2
+  exit 2
+fi
+
 if [[ $# -ge 1 ]]; then
   PROFILE="$1"
 else

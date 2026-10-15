@@ -29,7 +29,8 @@ case "${OS}" in
     nh home "${MODE}" "${REPO_DIR}" -c mac -- "${home_nix_args[@]}"
     ;;
   Linux)
-    if [[ -e /etc/NIXOS ]]; then
+    # AppImage/FHS environments replace /etc, but retain the host system path.
+    if [[ -e /etc/NIXOS || -e /run/current-system/nixos-version || -e /.host-etc/NIXOS ]]; then
       host="$(hostnamectl --static 2>/dev/null || hostname)"
       nh os "${MODE}" "${REPO_DIR}" -H "${host}" -- "${common_nix_args[@]}"
     else
