@@ -1,7 +1,9 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   zramSwap.enable = true;
+
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   boot.loader.systemd-boot.enable = false;
   boot.loader.grub = {

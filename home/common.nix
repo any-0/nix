@@ -1,4 +1,4 @@
-{ config, pkgs, lib, cachix, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   dotfilesDir = "${config.home.homeDirectory}/nix/dotfiles";
@@ -131,7 +131,6 @@ in
     eza
     bc
     gh
-    cachix
     jujutsu
     jjui
     nix-zsh-completions

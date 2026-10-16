@@ -9,8 +9,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixpkgs-cachix.url = "github:NixOS/nixpkgs/nixos-25.11";
-
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -20,7 +18,7 @@
     };
   };
 
-  outputs = { nixpkgs, nixpkgs-cachix, home-manager, zen-browser, niri-virtual, ... }:
+  outputs = { nixpkgs, home-manager, zen-browser, niri-virtual, ... }:
     let
       system = "x86_64-linux";
       hostname = "pc";
@@ -57,9 +55,6 @@
       mkHome = { modules, system, username, homeDirectory, enableGc ? false }:
         home-manager.lib.homeManagerConfiguration {
           pkgs = mkPkgs system;
-          extraSpecialArgs = {
-            cachix = nixpkgs-cachix.legacyPackages.${system}.cachix;
-          };
           modules = modules
             ++ nixpkgs.lib.optional enableGc (import ./home/gc.nix system)
             ++ [
@@ -104,9 +99,6 @@
 
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = {
-              cachix = nixpkgs-cachix.legacyPackages.${system}.cachix;
-            };
             home-manager.users.${username} = { imports = desktopModules; };
           }
         ];

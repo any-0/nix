@@ -79,7 +79,6 @@ in
     };
   };
 
-  services.dbus.enable = true;
   programs.kdeconnect.enable = true;
   services.sunshine = {
     enable = true;
@@ -111,7 +110,6 @@ in
 
   hardware.graphics.enable = true;
   hardware.enableRedistributableFirmware = true;
-  services.seatd.enable = true;
 
   console.keyMap = "de";
 

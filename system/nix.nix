@@ -1,4 +1,4 @@
-{ pkgs, homeDirectory, ... }:
+{ homeDirectory, ... }:
 
 {
   nix.settings = {
@@ -10,8 +10,4 @@
     enable = true;
     flake = "${homeDirectory}/nix";
   };
-
-  environment.systemPackages = with pkgs; [
-    home-manager
-  ];
 }
