@@ -1,6 +1,7 @@
 { homeDirectory, ... }:
 
 let
+  nasHost = "192.168.0.112";
   smbCredentials = "${homeDirectory}/.config/samba/nas.cred";
   smbMountOptions = [
     "credentials=${smbCredentials}"
@@ -17,19 +18,19 @@ in
 
   fileSystems = {
     "${homeDirectory}/storage/media1" = {
-      device = "//192.168.0.112/media1";
+      device = "//${nasHost}/media1";
       fsType = "cifs";
       options = smbMountOptions;
     };
 
     "${homeDirectory}/storage/media2" = {
-      device = "//192.168.0.112/media2";
+      device = "//${nasHost}/media2";
       fsType = "cifs";
       options = smbMountOptions;
     };
 
     "${homeDirectory}/storage/backups" = {
-      device = "//192.168.0.112/backups";
+      device = "//${nasHost}/backups";
       fsType = "cifs";
       options = smbMountOptions;
     };

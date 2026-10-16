@@ -96,18 +96,18 @@ in
     done
 
     if [[ "$npm_needs_install" == 1 ]]; then
-      $DRY_RUN_CMD rm -rf "$npm_next"
-      $DRY_RUN_CMD mkdir -p "$npm_next"
-      $DRY_RUN_CMD env PATH="${pkgs.nodejs}/bin:$PATH" "$npm" install --global --prefix "$npm_next" --no-audit --no-fund ${lib.escapeShellArgs (map (p: "${p}@latest") npmPackages)}
-      $DRY_RUN_CMD rm -rf "$npm_prefix"
-      $DRY_RUN_CMD mv "$npm_next" "$npm_prefix"
+      run rm -rf "$npm_next"
+      run mkdir -p "$npm_next"
+      run env PATH="${pkgs.nodejs}/bin:$PATH" "$npm" install --global --prefix "$npm_next" --no-audit --no-fund ${lib.escapeShellArgs (map (p: "${p}@latest") npmPackages)}
+      run rm -rf "$npm_prefix"
+      run mv "$npm_next" "$npm_prefix"
     else
       verboseEcho "npm global packages up to date; skipping install"
     fi
 
     completion_dir="$npm_prefix/share/zsh/site-functions"
-    $DRY_RUN_CMD mkdir -p "$completion_dir"
-    $DRY_RUN_CMD ${pkgs.runtimeShell} -c \
+    run mkdir -p "$completion_dir"
+    run ${pkgs.runtimeShell} -c \
       'PATH="$1:$PATH" "$2" completion zsh > "$3"' \
       generate-codex-completion \
       "${pkgs.nodejs}/bin" \

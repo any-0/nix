@@ -75,11 +75,6 @@ in
     size = 24;
   };
 
-  home.sessionVariables = {
-    XCURSOR_THEME = "Bibata-Modern-Ice";
-    XCURSOR_SIZE = "24";
-  };
-
   xdg.configFile."quickshell/bar" = dotFile "quickshell/bar";
   xdg.dataFile."dbus-1/services/org.freedesktop.Notifications.service" =
     dotFile "quickshell/org.freedesktop.Notifications.service";
@@ -102,10 +97,10 @@ in
       t3_url="$(${lib.getExe pkgs.curl} -fsSL \
         https://api.github.com/repos/pingdotgg/t3code/releases/latest \
         | ${lib.getExe pkgs.jq} -er '.assets[] | select(.name | endswith("-x86_64.AppImage")) | .browser_download_url')"
-      $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p "${t3CodeDir}"
-      $DRY_RUN_CMD ${lib.getExe pkgs.curl} -fL "$t3_url" -o "${t3CodeAppImage}.download"
-      $DRY_RUN_CMD ${pkgs.coreutils}/bin/chmod +x "${t3CodeAppImage}.download"
-      $DRY_RUN_CMD ${pkgs.coreutils}/bin/mv "${t3CodeAppImage}.download" "${t3CodeAppImage}"
+      run ${pkgs.coreutils}/bin/mkdir -p "${t3CodeDir}"
+      run ${lib.getExe pkgs.curl} -fL "$t3_url" -o "${t3CodeAppImage}.download"
+      run ${pkgs.coreutils}/bin/chmod +x "${t3CodeAppImage}.download"
+      run ${pkgs.coreutils}/bin/mv "${t3CodeAppImage}.download" "${t3CodeAppImage}"
     fi
   '';
 
