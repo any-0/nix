@@ -3,6 +3,7 @@
 {
   environment.systemPackages = with pkgs; [
     discord
+    prismlauncher
   ];
 
 programs.steam = {

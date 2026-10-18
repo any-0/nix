@@ -1,6 +1,13 @@
 { config, pkgs, lib, dotFile, ... }:
 
 let
+  qtAppearance = {
+    style = "Breeze";
+    custom_palette = true;
+    color_scheme_path = "${pkgs.kdePackages.breeze}/share/color-schemes/BreezeDark.colors";
+    icon_theme = "breeze-dark";
+    standard_dialogs = "xdgdesktopportal";
+  };
   t3CodeDir = "${config.xdg.dataHome}/t3-code";
   t3CodeAppImage = "${t3CodeDir}/T3-Code.AppImage";
   t3Code = pkgs.writeShellScriptBin "t3-code" ''
@@ -70,9 +77,18 @@ in
   home.pointerCursor = {
     gtk.enable = true;
     x11.enable = true;
-    package = pkgs.bibata-cursors;
-    name = "Bibata-Modern-Ice";
+    package = pkgs.hackneyed;
+    name = "Hackneyed";
     size = 24;
+  };
+
+  # niri has no Qt platform theme, so Qt apps fall back to bare Fusion widgets.
+  qt = {
+    enable = true;
+    platformTheme.name = "qtct";
+    style.name = "breeze";
+    qt5ctSettings.Appearance = qtAppearance;
+    qt6ctSettings.Appearance = qtAppearance;
   };
 
   xdg.configFile."quickshell/bar" = dotFile "quickshell/bar";
@@ -106,6 +122,7 @@ in
 
   home.packages = with pkgs; [
     t3CodeDesktop
+    kdePackages.breeze-icons
     evince
     swaybg
     libnotify
